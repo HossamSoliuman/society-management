@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\Society;
+use App\Models\SubscriptionPlan;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -26,7 +28,8 @@ class UserController extends Controller
     {
         $roles = Role::where('status', 'active')->get();
         $societies = Society::where('status', 'active')->get();
-        $plans = \App\Models\SubscriptionPlan::where('status', 'active')->get();
+        $plans = SubscriptionPlan::where('status', 'active')->get();
+
         return view('superadmin.user.create', compact('roles', 'societies', 'plans'));
     }
 
@@ -60,6 +63,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load('roles');
+
         return view('superadmin.user.show', compact('user'));
     }
 
@@ -67,6 +71,7 @@ class UserController extends Controller
     {
         $roles = Role::where('status', 'active')->get();
         $user->load('roles');
+
         return view('superadmin.user.edit', compact('user', 'roles'));
     }
 
@@ -74,7 +79,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'mobile' => 'required|string|max:20',
             'status' => 'required|in:active,inactive,suspended',
         ]);
@@ -87,6 +92,17 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+
         return redirect()->route('superadmin.users.index')->with('success', 'User deleted successfully');
+    }
+
+    public function loginActivity()
+    {
+        $activities = ActivityLog::where('action', 'like', '%login%')
+            ->orWhere('description', 'like', '%login%')
+            ->latest()
+            ->paginate(20);
+
+        return view('superadmin.user.login-activity', compact('activities'));
     }
 }

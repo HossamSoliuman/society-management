@@ -1,19 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\SuperAdmin\AccountController;
+use App\Http\Controllers\SuperAdmin\ActivityLogController;
+use App\Http\Controllers\SuperAdmin\BillingController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
+use App\Http\Controllers\SuperAdmin\MasterController;
+use App\Http\Controllers\SuperAdmin\NotificationController;
+use App\Http\Controllers\SuperAdmin\ReportController;
+use App\Http\Controllers\SuperAdmin\RoleController;
+use App\Http\Controllers\SuperAdmin\SettingController;
 use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\SuperAdmin\SubscriptionController;
-use App\Http\Controllers\SuperAdmin\BillingController;
-use App\Http\Controllers\SuperAdmin\UserController;
-use App\Http\Controllers\SuperAdmin\ReportController;
-use App\Http\Controllers\SuperAdmin\NotificationController;
 use App\Http\Controllers\SuperAdmin\SupportTicketController;
-use App\Http\Controllers\SuperAdmin\ActivityLogController;
-use App\Http\Controllers\SuperAdmin\MasterController;
 use App\Http\Controllers\SuperAdmin\TermsConditionController;
-use App\Http\Controllers\SuperAdmin\SettingController;
+use App\Http\Controllers\SuperAdmin\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -53,6 +55,7 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::get('/users/login-activity', [UserController::class, 'loginActivity'])->name('users.login-activity');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -76,6 +79,18 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
 
     Route::get('/logs/user-activities', [ActivityLogController::class, 'userActivities'])->name('logs.user-activities');
     Route::get('/logs/system-logs', [ActivityLogController::class, 'systemLogs'])->name('logs.system-logs');
+    Route::get('/logs/audit-trail', [ActivityLogController::class, 'auditTrail'])->name('logs.audit-trail');
+
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
+    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+    Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+    Route::get('/account', [AccountController::class, 'index'])->name('account.index');
+    Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
 
     Route::get('/masters', [MasterController::class, 'index'])->name('masters.index');
     Route::post('/masters/society-types', [MasterController::class, 'storeSocietyType'])->name('masters.society-types.store');

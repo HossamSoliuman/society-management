@@ -21,15 +21,15 @@
 
 <div class="grid-3">
     @php $reports = [
-        ['icon' => 'fa-building', 'color' => 'blue', 'title' => 'Society Report', 'desc' => 'View detailed reports about societies.'],
-        ['icon' => 'fa-rupee-sign', 'color' => 'green', 'title' => 'Revenue Report', 'desc' => 'Track revenue and financial performance.'],
-        ['icon' => 'fa-credit-card', 'color' => 'purple', 'title' => 'Subscription Report', 'desc' => 'Monitor subscription status and renewals.'],
-        ['icon' => 'fa-money-bill-wave', 'color' => 'orange', 'title' => 'Payment Report', 'desc' => 'Analyze payment trends and methods.'],
-        ['icon' => 'fa-users', 'color' => 'teal', 'title' => 'Member Report', 'desc' => 'Get insights on member activities.'],
-        ['icon' => 'fa-file-invoice', 'color' => 'red', 'title' => 'Invoice Report', 'desc' => 'Review invoice statistics and trends.'],
-        ['icon' => 'fa-clipboard-list', 'color' => 'pink', 'title' => 'Complaint Report', 'desc' => 'Track complaint resolution metrics.'],
-        ['icon' => 'fa-chart-line', 'color' => 'info', 'title' => 'Growth Report', 'desc' => 'Analyze platform growth metrics.'],
-        ['icon' => 'fa-cog', 'color' => 'gray', 'title' => 'Custom Report', 'desc' => 'Generate custom reports.'],
+        ['icon' => 'fa-building', 'color' => 'blue', 'title' => 'Society Report', 'desc' => 'View detailed reports about societies.', 'route' => 'superadmin.reports.society'],
+        ['icon' => 'fa-rupee-sign', 'color' => 'green', 'title' => 'Revenue Report', 'desc' => 'Track revenue and financial performance.', 'route' => 'superadmin.reports.revenue'],
+        ['icon' => 'fa-credit-card', 'color' => 'purple', 'title' => 'Subscription Report', 'desc' => 'Monitor subscription status and renewals.', 'route' => 'superadmin.reports.subscription'],
+        ['icon' => 'fa-money-bill-wave', 'color' => 'orange', 'title' => 'Payment Report', 'desc' => 'Analyze payment trends and methods.', 'route' => 'superadmin.reports.payment'],
+        ['icon' => 'fa-users', 'color' => 'teal', 'title' => 'Member Report', 'desc' => 'Get insights on member activities.', 'route' => null],
+        ['icon' => 'fa-file-invoice', 'color' => 'red', 'title' => 'Invoice Report', 'desc' => 'Review invoice statistics and trends.', 'route' => null],
+        ['icon' => 'fa-clipboard-list', 'color' => 'pink', 'title' => 'Complaint Report', 'desc' => 'Track complaint resolution metrics.', 'route' => null],
+        ['icon' => 'fa-chart-line', 'color' => 'info', 'title' => 'Growth Report', 'desc' => 'Analyze platform growth metrics.', 'route' => null],
+        ['icon' => 'fa-cog', 'color' => 'gray', 'title' => 'Custom Report', 'desc' => 'Generate custom reports.', 'route' => null],
     ]; @endphp
     @foreach($reports as $report)
     <div class="card">
@@ -40,7 +40,11 @@
             <div style="flex: 1;">
                 <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">{{ $report['title'] }}</div>
                 <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">{{ $report['desc'] }}</div>
-                <a href="#" class="btn btn-outline-primary btn-sm" style="font-size: 12px;"><i class="fas fa-eye"></i> View Report</a>
+                @if($report['route'])
+                    <a href="{{ route($report['route']) }}" class="btn btn-outline-primary btn-sm" style="font-size: 12px;"><i class="fas fa-eye"></i> View Report</a>
+                @else
+                    <span class="badge" style="background: var(--gray-100); color: var(--text-muted); font-size: 11px; padding: 4px 8px;">Coming Soon</span>
+                @endif
             </div>
         </div>
     </div>
