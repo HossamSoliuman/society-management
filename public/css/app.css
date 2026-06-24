@@ -178,6 +178,7 @@ body {
     width: 20px;
     text-align: center;
     font-size: 14px;
+    color: var(--primary);
 }
 
 .nav-item:hover {
@@ -223,6 +224,10 @@ body {
     cursor: pointer;
     font-family: inherit;
     transition: all 0.2s ease;
+}
+
+.logout-btn i {
+    color: var(--primary);
 }
 
 .logout-btn:hover {
@@ -502,15 +507,15 @@ body {
     flex-shrink: 0;
 }
 
-.stat-icon.blue { background: var(--info-light); color: var(--primary); }
-.stat-icon.green { background: var(--success-light); color: var(--success); }
-.stat-icon.red { background: var(--danger-light); color: var(--danger); }
-.stat-icon.purple { background: var(--purple-light); color: var(--purple); }
-.stat-icon.orange { background: var(--orange-light); color: var(--orange); }
-.stat-icon.teal { background: var(--teal-light); color: var(--teal); }
-.stat-icon.pink { background: var(--pink-light); color: var(--pink); }
-.stat-icon.gray { background: var(--gray-100); color: var(--gray-500); }
-.stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+.stat-icon.blue,
+.stat-icon.green,
+.stat-icon.red,
+.stat-icon.purple,
+.stat-icon.orange,
+.stat-icon.teal,
+.stat-icon.pink,
+.stat-icon.gray,
+.stat-icon.yellow { background: var(--primary-light); color: var(--primary); }
 
 .stat-info {
     flex: 1;
@@ -2455,6 +2460,7 @@ select.form-control {
     width: 20px;
     text-align: center;
     font-size: 14px;
+    color: var(--primary);
 }
 
 .nav-group-toggle:hover {
