@@ -121,8 +121,8 @@
                     <div class="form-group">
                         <label class="form-label">Plan Color (Optional)</label>
                         <div style="display: flex; gap: 8px;">
-                            <input type="color" name="color" class="form-control" value="#2563EB" style="width: 50px; padding: 4px; height: 40px;">
-                            <input type="text" class="form-control" value="#2563EB" readonly>
+                            <input type="color" name="color" class="form-control" value="#E84B1E" style="width: 50px; padding: 4px; height: 40px;">
+                            <input type="text" class="form-control" value="#E84B1E" readonly>
                         </div>
                         <div class="form-text">Color used for plan badge/label</div>
                     </div>

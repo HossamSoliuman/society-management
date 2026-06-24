@@ -53,7 +53,7 @@
                     <tr>
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div class="user-avatar" style="background: {{ ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'][($loop->index % 5)] }}; width: 32px; height: 32px; font-size: 12px;">{{ collect(explode(' ', $log->user_name ?? 'U'))->map(fn($n) => $n[0] ?? '')->join('') }}</div>
+                                <div class="user-avatar" style="background: {{ ['#E84B1E', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'][($loop->index % 5)] }}; width: 32px; height: 32px; font-size: 12px;">{{ collect(explode(' ', $log->user_name ?? 'U'))->map(fn($n) => $n[0] ?? '')->join('') }}</div>
                                 <div class="user-info">
                                     <div class="user-name">{{ $log->user_name ?? '—' }}</div>
                                     <div class="user-email">{{ $log->user_email ?? '' }}</div>

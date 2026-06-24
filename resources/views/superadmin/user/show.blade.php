@@ -26,7 +26,7 @@
         <div class="card-header"><div class="card-title"><i class="fas fa-user" style="color: var(--primary); margin-right: 8px;"></i>User Information</div></div>
         <div class="card-body">
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=2563EB&color=fff&size=80" alt="" style="width: 80px; height: 80px; border-radius: 50%;">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=E84B1E&color=fff&size=80" alt="" style="width: 80px; height: 80px; border-radius: 50%;">
                 <div>
                     <div style="font-size: 18px; font-weight: 700;">{{ $user->name }}</div>
                     <div style="font-size: 13px; color: var(--text-secondary);">{{ $user->email }}</div>

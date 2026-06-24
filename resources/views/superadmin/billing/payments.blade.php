@@ -136,7 +136,7 @@
                 <div class="pie-chart-container" style="width: 100px; height: 100px;">
                     <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
                         <circle cx="50" cy="50" r="38" fill="none" stroke="#e2e8f0" stroke-width="10"/>
-                        @php $pmOffset = 0; $pmColors = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#64748b']; $pmPcts = [51, 30, 10, 6, 3]; @endphp
+                        @php $pmOffset = 0; $pmColors = ['#E84B1E', '#10B981', '#F59E0B', '#8B5CF6', '#64748b']; $pmPcts = [51, 30, 10, 6, 3]; @endphp
                         @foreach($pmPcts as $pi => $pct)
                             @php $dash = ($pct / 100) * 238.76; @endphp
                             <circle cx="50" cy="50" r="38" fill="none" stroke="{{ $pmColors[$pi] }}" stroke-width="10" stroke-dasharray="{{ $dash }} {{ 238.76 - $dash }}" stroke-dashoffset="-{{ $pmOffset }}"/>

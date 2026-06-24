@@ -305,7 +305,7 @@
                     <div class="profile-dropdown">
                         <button class="profile-btn">
                             <div class="avatar">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=2563EB&color=fff" alt="">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=E84B1E&color=fff" alt="">
                             </div>
                             <div class="profile-info">
                                 <span class="profile-name">{{ auth()->user()->name ?? 'Administrator' }}</span>

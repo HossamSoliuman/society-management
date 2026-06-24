@@ -84,7 +84,7 @@
                         <td><input type="checkbox" class="form-check-input"></td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background={{ ['2563EB','10B981','F59E0B','8B5CF6','EC4899'][($user->id % 5)] }}&color=fff&size=40" alt="" style="width: 40px; height: 40px; border-radius: 50%;">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background={{ ['E84B1E','10B981','F59E0B','8B5CF6','EC4899'][($user->id % 5)] }}&color=fff&size=40" alt="" style="width: 40px; height: 40px; border-radius: 50%;">
                                 <div class="user-info">
                                     <div class="user-name">{{ $user->name }}</div>
                                     <div class="user-email">{{ $user->email }}</div>

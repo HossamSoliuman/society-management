@@ -47,7 +47,7 @@
             right: -50%;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(232,75,30,0.2) 0%, transparent 70%);
         }
         .login-brand {
             position: relative;
@@ -57,7 +57,7 @@
         .login-brand-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #2563EB, #60a5fa);
+            background: linear-gradient(135deg, #E84B1E, #F97316);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -81,7 +81,7 @@
             font-size: 13px;
             opacity: 0.9;
         }
-        .login-features li i { color: #60a5fa; }
+        .login-features li i { color: #FDBA74; }
         .login-right {
             flex: 1;
             padding: 60px 48px;
@@ -112,8 +112,8 @@
             transition: all 0.2s ease;
         }
         .form-control:focus {
-            border-color: #2563EB;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+            border-color: #E84B1E;
+            box-shadow: 0 0 0 3px rgba(232,75,30,0.1);
         }
         .input-wrapper { position: relative; }
         .input-wrapper i {
@@ -133,14 +133,14 @@
             font-size: 12px;
         }
         .form-check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .form-check input { accent-color: #2563EB; }
+        .form-check input { accent-color: #E84B1E; }
         .form-check label { color: #475569; cursor: pointer; }
-        .forgot-link { color: #2563EB; text-decoration: none; font-weight: 500; }
+        .forgot-link { color: #E84B1E; text-decoration: none; font-weight: 500; }
         .forgot-link:hover { text-decoration: underline; }
         .btn-login {
             width: 100%;
             padding: 12px;
-            background: #2563EB;
+            background: #E84B1E;
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -150,7 +150,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .btn-login:hover { background: #1d4ed8; }
+        .btn-login:hover { background: #C63D15; }
         .login-footer {
             margin-top: 24px;
             text-align: center;

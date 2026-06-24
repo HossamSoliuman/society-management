@@ -294,7 +294,7 @@
                         @php $rpOffset = 0; @endphp
                         @foreach($revenueByPlan as $plan)
                             @php $rpPct = ($plan['percentage'] / 100) * 251.2; @endphp
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ ['#2563EB', '#10B981', '#F59E0B'][$loop->index] }}" stroke-width="14"
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ ['#E84B1E', '#10B981', '#F59E0B'][$loop->index] }}" stroke-width="14"
                                 stroke-dasharray="{{ $rpPct }} {{ 251.2 - $rpPct }}"
                                 stroke-dashoffset="-{{ $rpOffset }}"/>
                             @php $rpOffset += $rpPct; @endphp
@@ -304,7 +304,7 @@
                 <div class="chart-legend" style="flex: 1;">
                     @foreach($revenueByPlan as $plan)
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: {{ ['#2563EB', '#10B981', '#F59E0B'][$loop->index] }};"></span>
+                        <span class="legend-dot" style="background: {{ ['#E84B1E', '#10B981', '#F59E0B'][$loop->index] }};"></span>
                         <span class="legend-label">{{ $plan['name'] }}</span>
                         <span class="legend-value">&#8377; {{ number_format($plan['amount']) }} ({{ $plan['percentage'] }}%)</span>
                     </div>

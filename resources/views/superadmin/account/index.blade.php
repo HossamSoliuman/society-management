@@ -95,7 +95,7 @@
     <div class="card-body">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div class="avatar" style="width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=2563EB&color=fff&size=72" alt="">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=E84B1E&color=fff&size=72" alt="">
             </div>
             <div>
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">{{ $user->name }}</div>
