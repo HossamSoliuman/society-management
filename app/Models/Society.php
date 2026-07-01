@@ -22,6 +22,12 @@ class Society extends Model
         'subscription_plan_id', 'subscription_start_date', 'subscription_end_date',
         'billing_cycle', 'grace_period_days', 'auto_renewal', 'trial_period_days',
         'subscription_status', 'status', 'notes',
+        // Society Admin profile fields
+        'society_code', 'rera_number', 'building_type', 'year_established',
+        'wings_count', 'blocks_count', 'total_units', 'logo_path', 'photo_path',
+        'management_type', 'committee_members_count', 'audit_type', 'financial_year',
+        'maintenance_collection_day', 'bank_name', 'account_number', 'ifsc_code',
+        'gst_number', 'office_timings', 'amenities', 'about',
     ];
 
     protected $casts = [
@@ -29,6 +35,11 @@ class Society extends Model
         'subscription_start_date' => 'date',
         'subscription_end_date' => 'date',
         'auto_renewal' => 'boolean',
+        'amenities' => 'array',
+        'year_established' => 'integer',
+        'wings_count' => 'integer',
+        'blocks_count' => 'integer',
+        'committee_members_count' => 'integer',
     ];
 
     public function societyType()
@@ -61,8 +72,29 @@ class Society extends Model
         return $this->hasMany(SupportTicket::class);
     }
 
+    public function units()
+    {
+        return $this->hasMany(Unit::class);
+    }
+
+    public function members()
+    {
+        return $this->hasMany(Member::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(SocietyDocument::class);
+    }
+
+    public function billUploads()
+    {
+        return $this->hasMany(BillUpload::class);
+    }
+
     public function getTotalUnitsAttribute()
     {
-        return $this->flats_count + $this->shops_count + $this->offices_count;
+        return $this->attributes['total_units']
+            ?? ($this->flats_count + $this->shops_count + $this->offices_count);
     }
 }

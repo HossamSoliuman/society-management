@@ -2608,3 +2608,122 @@ select.form-control {
     border-color: var(--danger) !important;
     box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
 }
+
+/* === Society Admin panel additions (Phase 1) === */
+
+/* True-color stat icon chips (the base .stat-icon.* variants are forced to peach) */
+.stat-icon.is-success { background: var(--success-light); color: var(--success); }
+.stat-icon.is-warning { background: var(--warning-light); color: var(--warning); }
+.stat-icon.is-danger  { background: var(--danger-light);  color: var(--danger);  }
+.stat-icon.is-purple  { background: var(--purple-light);  color: var(--purple);  }
+.stat-icon.is-info    { background: var(--info-light);    color: var(--info);    }
+.stat-icon.is-pink    { background: var(--pink-light);    color: var(--pink);    }
+.stat-icon.is-primary { background: var(--primary-light); color: var(--primary); }
+
+/* Under-maintenance row highlight on the Units table */
+.data-table tbody tr.row-maintenance { background: var(--purple-light); }
+.data-table tbody tr.row-maintenance:hover { background: #e3dbff; }
+
+/* Small rounded icon chip for activity / notice lists */
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.activity-icon.is-success { background: var(--success-light); color: var(--success); }
+.activity-icon.is-warning { background: var(--warning-light); color: var(--warning); }
+.activity-icon.is-danger  { background: var(--danger-light);  color: var(--danger);  }
+.activity-icon.is-purple  { background: var(--purple-light);  color: var(--purple);  }
+.activity-icon.is-info    { background: var(--info-light);    color: var(--info);    }
+.activity-icon.is-primary { background: var(--primary-light); color: var(--primary); }
+
+/* Society info-strip (dashboard footer bar) */
+.info-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.info-strip-cell {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 14px 16px;
+    border-right: 1px solid var(--border-color);
+}
+
+.info-strip-cell:last-child { border-right: none; }
+
+.info-strip-cell .info-strip-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    background: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.info-strip-cell .info-strip-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.info-strip-cell .info-strip-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Detail row list (profile overview / contact) */
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+}
+
+.detail-row:last-child { border-bottom: none; }
+
+.detail-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    background: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.detail-row-label {
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.detail-row-value {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+@media (max-width: 1024px) {
+    .info-strip { grid-template-columns: repeat(2, 1fr); }
+    .info-strip-cell { border-right: none; border-bottom: 1px solid var(--border-color); }
+}
+
+@media (max-width: 768px) {
+    .info-strip { grid-template-columns: 1fr; }
+}

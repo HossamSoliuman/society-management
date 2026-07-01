@@ -1,6 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Society\BulkUploadController;
+use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
+use App\Http\Controllers\Society\MemberController;
+use App\Http\Controllers\Society\PlaceholderController;
+use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
+use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BillingController;
@@ -120,4 +126,41 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
     Route::put('/settings/backup', [SettingController::class, 'updateBackup'])->name('settings.backup.update');
     Route::get('/settings/security', [SettingController::class, 'securitySettings'])->name('settings.security');
     Route::put('/settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
+});
+
+Route::middleware(['auth'])->prefix('society')->name('society.')->group(function () {
+    Route::get('/dashboard', [SocietyDashboardController::class, 'index'])->name('dashboard');
+
+    // Society Profile
+    Route::get('/profile', [SocietyProfileController::class, 'show'])->name('profile');
+    Route::get('/profile/edit', [SocietyProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [SocietyProfileController::class, 'update'])->name('profile.update');
+
+    // Members
+    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+    Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
+    Route::post('/members', [MemberController::class, 'store'])->name('members.store');
+    Route::get('/members/{member}', [MemberController::class, 'show'])->name('members.show');
+    Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
+    Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
+    Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
+
+    // Units
+    Route::get('/units', [UnitController::class, 'index'])->name('units.index');
+    Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
+    Route::post('/units', [UnitController::class, 'store'])->name('units.store');
+    Route::get('/units/import', [UnitController::class, 'importForm'])->name('units.import');
+    Route::post('/units/import', [UnitController::class, 'import'])->name('units.import.store');
+    Route::get('/units/{unit}', [UnitController::class, 'show'])->name('units.show');
+    Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
+    Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
+    Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+
+    // Maintenance Billing -> Bulk Upload (Phase 1: step 1 + upload)
+    Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
+    Route::post('/billing/bulk-upload', [BulkUploadController::class, 'upload'])->name('billing.bulk-upload.store');
+    Route::get('/billing/bulk-upload/sample', [BulkUploadController::class, 'sample'])->name('billing.bulk-upload.sample');
+
+    // Placeholder for not-yet-built pages
+    Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
 });
