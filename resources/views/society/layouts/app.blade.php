@@ -190,10 +190,10 @@
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'Payment Collection']) }}" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Payment Collection</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Online Payments']) }}" class="nav-item"><i class="fas fa-credit-card"></i><span>Online Payments</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Pending Dues']) }}" class="nav-item"><i class="fas fa-clock"></i><span>Pending Dues</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Payment Receipts']) }}" class="nav-item"><i class="fas fa-file-invoice"></i><span>Payment Receipts</span></a>
+                        <a href="{{ route('society.collections.index') }}" class="nav-item {{ request()->routeIs('society.collections.index') || request()->routeIs('society.collections.create') ? 'active' : '' }}"><i class="fas fa-money-bill-wave"></i><span>Payment Collection</span></a>
+                        <a href="{{ route('society.collections.online') }}" class="nav-item {{ request()->routeIs('society.collections.online') ? 'active' : '' }}"><i class="fas fa-credit-card"></i><span>Online Payments</span></a>
+                        <a href="{{ route('society.collections.pending-dues') }}" class="nav-item {{ request()->routeIs('society.collections.pending-dues') ? 'active' : '' }}"><i class="fas fa-clock"></i><span>Pending Dues</span></a>
+                        <a href="{{ route('society.collections.receipts.index') }}" class="nav-item {{ request()->routeIs('society.collections.receipts.*') ? 'active' : '' }}"><i class="fas fa-file-invoice"></i><span>Payment Receipts</span></a>
                     </div>
                 </div>
 

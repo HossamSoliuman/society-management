@@ -485,10 +485,10 @@ body {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 20px;
+    padding: 16px;
     display: flex;
     align-items: flex-start;
-    gap: 14px;
+    gap: 12px;
     transition: box-shadow 0.2s ease;
 }
 
@@ -497,13 +497,13 @@ body {
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
     border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 18px;
     flex-shrink: 0;
 }
 
@@ -523,10 +523,11 @@ body {
 }
 
 .stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
     font-weight: 500;
     margin-bottom: 4px;
+    white-space: nowrap;
 }
 
 .stat-label span {
@@ -535,7 +536,7 @@ body {
 }
 
 .stat-value {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 4px;
@@ -601,9 +602,9 @@ body {
 }
 
 .data-table thead th {
-    padding: 12px 16px;
+    padding: 10px 14px;
     text-align: left;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -614,8 +615,8 @@ body {
 }
 
 .data-table tbody td {
-    padding: 14px 16px;
-    font-size: 13px;
+    padding: 11px 14px;
+    font-size: 12px;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
@@ -1180,7 +1181,7 @@ select.form-control {
 /* Content Grid for sidebar panels */
 .content-grid {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: minmax(0, 1fr) 320px;
     gap: 20px;
 }
 
@@ -3130,4 +3131,286 @@ select.form-control {
 
 .charge-table .form-control {
     padding: 8px 10px;
+}
+
+/* ============================================================
+   Collections (Phase 2C)
+   ============================================================ */
+
+/* Refunded status badge (purple) */
+.status-badge.refunded {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+/* "Due Today" pill (amber) used on Pending Dues */
+.status-badge.due-today {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Payment-mode tiles (Record Payment §4.1) — compact 6-up radio cards */
+.payment-mode-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+.payment-mode-grid .radio-card {
+    flex: none;
+    min-width: 0;
+    padding: 16px 12px;
+}
+
+.radio-card-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.radio-card-content i,
+.radio-card-content img {
+    font-size: 18px;
+    color: var(--text-secondary);
+    height: 18px;
+}
+
+.radio-card:has(input:checked) .radio-card-content i {
+    color: var(--primary);
+}
+
+.payment-mode-grid .radio-card .check-icon {
+    top: auto;
+    bottom: 8px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-mode-grid .radio-card:has(input:checked) .check-icon {
+    display: flex;
+}
+
+/* Small payment-mode brand glyph in the collections table */
+.pay-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pay-mode i {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* Collections table — receipt-number cell with muted sub-line */
+.receipt-cell .receipt-no {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.receipt-cell .receipt-sub,
+.cell-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Quick Links / Quick Actions list (right rail) */
+.quick-link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.quick-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background 0.2s ease;
+}
+
+.quick-link-item:hover {
+    background: var(--gray-50);
+}
+
+.quick-link-item .ql-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.quick-link-item .ql-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.quick-link-item .ql-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Recent transaction rows (right rail) */
+.recent-txn {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recent-txn:last-of-type {
+    border-bottom: none;
+}
+
+.recent-txn .txn-no {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.recent-txn .txn-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.recent-txn .txn-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--success);
+}
+
+/* Receipt (printable) — watermark + stamp + particulars table */
+.receipt-print-area {
+    position: relative;
+}
+
+.receipt-watermark {
+    position: absolute;
+    top: 70px;
+    right: 24px;
+    font-size: 90px;
+    color: var(--gray-100);
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.receipt-body {
+    position: relative;
+    z-index: 1;
+}
+
+.receipt-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin: 18px 0 20px;
+}
+
+.receipt-paid-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.particulars-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 13px;
+}
+
+.particulars-table th {
+    background: var(--gray-50);
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.particulars-table th:last-child,
+.particulars-table td:last-child {
+    text-align: right;
+}
+
+.particulars-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+}
+
+.particulars-table tr.total-row td {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.particulars-table tr.balance-row td {
+    font-weight: 800;
+    background: var(--gray-50);
+}
+
+.receipt-stamp {
+    width: 96px;
+    height: 96px;
+    border: 2px solid #3730a3;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #3730a3;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    opacity: 0.85;
+    transform: rotate(-12deg);
+}
+
+/* Print: show only the receipt panel */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .receipt-print-area,
+    .receipt-print-area * {
+        visibility: visible;
+    }
+
+    .receipt-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none;
+    }
 }

@@ -5,9 +5,11 @@ use App\Http\Controllers\Society\BillController;
 use App\Http\Controllers\Society\BillSettingController;
 use App\Http\Controllers\Society\BulkUploadController;
 use App\Http\Controllers\Society\ChargeHeadController;
+use App\Http\Controllers\Society\CollectionController;
 use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
 use App\Http\Controllers\Society\MemberController;
 use App\Http\Controllers\Society\NumberingSeriesController;
+use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
 use App\Http\Controllers\Society\TaxController;
@@ -195,6 +197,15 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::post('billing/settings/numbering', [NumberingSeriesController::class, 'store'])->name('billing.settings.numbering.store');
     Route::put('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'update'])->name('billing.settings.numbering.update');
     Route::delete('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'destroy'])->name('billing.settings.numbering.destroy');
+
+    // Collections (Phase 2C). Static routes precede the {payment} wildcard.
+    Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+    Route::get('collections/online', [CollectionController::class, 'online'])->name('collections.online');
+    Route::get('collections/pending-dues', [CollectionController::class, 'pendingDues'])->name('collections.pending-dues');
+    Route::get('collections/record', [CollectionController::class, 'create'])->name('collections.create');
+    Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
+    Route::get('collections/receipts', [PaymentReceiptController::class, 'index'])->name('collections.receipts.index');
+    Route::get('collections/receipts/{payment}', [PaymentReceiptController::class, 'show'])->name('collections.receipts.show');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
