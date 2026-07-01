@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             MemberSeeder::class,
             BillUploadSeeder::class,
+            Phase2SettingsSeeder::class,
             InvoiceSeeder::class,
             PaymentSeeder::class,
             RefundSeeder::class,

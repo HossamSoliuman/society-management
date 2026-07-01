@@ -173,15 +173,29 @@
                         <a href="{{ route('society.placeholder', ['page' => 'Create Bill']) }}" class="nav-item"><i class="fas fa-file-circle-plus"></i><span>Create Bill</span></a>
                         <a href="{{ route('society.placeholder', ['page' => 'Bill List']) }}" class="nav-item"><i class="fas fa-list"></i><span>Bill List</span></a>
                         <a href="{{ route('society.billing.bulk-upload') }}" class="nav-item {{ request()->routeIs('society.billing.bulk-upload') ? 'active' : '' }}"><i class="fas fa-file-arrow-up"></i><span>Bulk Upload</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Bill Settings']) }}" class="nav-item"><i class="fas fa-gear"></i><span>Bill Settings</span></a>
+                        <a href="{{ route('society.billing.settings.general') }}" class="nav-item {{ request()->routeIs('society.billing.settings.general') ? 'active' : '' }}"><i class="fas fa-gear"></i><span>Bill Settings</span></a>
+                        <a href="{{ route('society.billing.settings.charge-heads') }}" class="nav-item {{ request()->routeIs('society.billing.settings.charge-heads') ? 'active' : '' }}"><i class="fas fa-list-check"></i><span>Charge Heads</span></a>
+                        <a href="{{ route('society.billing.settings.design') }}" class="nav-item {{ request()->routeIs('society.billing.settings.design') ? 'active' : '' }}"><i class="fas fa-palette"></i><span>Bill Design</span></a>
+                        <a href="{{ route('society.billing.settings.late-fee') }}" class="nav-item {{ request()->routeIs('society.billing.settings.late-fee') ? 'active' : '' }}"><i class="fas fa-percent"></i><span>Late Fees &amp; Penalty</span></a>
+                        <a href="{{ route('society.billing.settings.taxes') }}" class="nav-item {{ request()->routeIs('society.billing.settings.taxes') ? 'active' : '' }}"><i class="fas fa-receipt"></i><span>Taxes</span></a>
+                        <a href="{{ route('society.billing.settings.numbering') }}" class="nav-item {{ request()->routeIs('society.billing.settings.numbering') ? 'active' : '' }}"><i class="fas fa-hashtag"></i><span>Numbering</span></a>
                     </div>
                 </div>
 
-                {{-- Collections --}}
-                <a href="{{ route('society.placeholder', ['page' => 'Collections']) }}" class="nav-item">
-                    <i class="fas fa-hand-holding-dollar"></i>
-                    <span>Collections</span>
-                </a>
+                {{-- Collections (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.collections.*') ? 'open' : '' }}">
+                    <button class="nav-group-toggle">
+                        <i class="fas fa-hand-holding-dollar"></i>
+                        <span>Collections</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="nav-submenu">
+                        <a href="{{ route('society.placeholder', ['page' => 'Payment Collection']) }}" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Payment Collection</span></a>
+                        <a href="{{ route('society.placeholder', ['page' => 'Online Payments']) }}" class="nav-item"><i class="fas fa-credit-card"></i><span>Online Payments</span></a>
+                        <a href="{{ route('society.placeholder', ['page' => 'Pending Dues']) }}" class="nav-item"><i class="fas fa-clock"></i><span>Pending Dues</span></a>
+                        <a href="{{ route('society.placeholder', ['page' => 'Payment Receipts']) }}" class="nav-item"><i class="fas fa-file-invoice"></i><span>Payment Receipts</span></a>
+                    </div>
+                </div>
 
                 {{-- Expenses --}}
                 <a href="{{ route('society.placeholder', ['page' => 'Expenses']) }}" class="nav-item">

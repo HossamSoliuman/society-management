@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Society\BillSettingController;
 use App\Http\Controllers\Society\BulkUploadController;
+use App\Http\Controllers\Society\ChargeHeadController;
 use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
 use App\Http\Controllers\Society\MemberController;
+use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
+use App\Http\Controllers\Society\TaxController;
 use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
@@ -160,6 +164,27 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
     Route::post('/billing/bulk-upload', [BulkUploadController::class, 'upload'])->name('billing.bulk-upload.store');
     Route::get('/billing/bulk-upload/sample', [BulkUploadController::class, 'sample'])->name('billing.bulk-upload.sample');
+
+    // Maintenance Billing -> Bill Settings (Phase 2A)
+    Route::get('billing/settings/general', [BillSettingController::class, 'general'])->name('billing.settings.general');
+    Route::put('billing/settings/general', [BillSettingController::class, 'updateGeneral'])->name('billing.settings.general.update');
+    Route::get('billing/settings/charge-heads', [ChargeHeadController::class, 'index'])->name('billing.settings.charge-heads');
+    Route::post('billing/settings/charge-heads', [ChargeHeadController::class, 'store'])->name('billing.settings.charge-heads.store');
+    Route::put('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'update'])->name('billing.settings.charge-heads.update');
+    Route::delete('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'destroy'])->name('billing.settings.charge-heads.destroy');
+    Route::get('billing/settings/design', [BillSettingController::class, 'design'])->name('billing.settings.design');
+    Route::put('billing/settings/design', [BillSettingController::class, 'updateDesign'])->name('billing.settings.design.update');
+    Route::get('billing/settings/late-fee', [BillSettingController::class, 'lateFee'])->name('billing.settings.late-fee');
+    Route::put('billing/settings/late-fee', [BillSettingController::class, 'updateLateFee'])->name('billing.settings.late-fee.update');
+    Route::get('billing/settings/taxes', [TaxController::class, 'index'])->name('billing.settings.taxes');
+    Route::post('billing/settings/taxes', [TaxController::class, 'store'])->name('billing.settings.taxes.store');
+    Route::put('billing/settings/taxes/{tax}', [TaxController::class, 'update'])->name('billing.settings.taxes.update');
+    Route::delete('billing/settings/taxes/{tax}', [TaxController::class, 'destroy'])->name('billing.settings.taxes.destroy');
+    Route::get('billing/settings/notifications', [BillSettingController::class, 'notifications'])->name('billing.settings.notifications');
+    Route::get('billing/settings/numbering', [NumberingSeriesController::class, 'index'])->name('billing.settings.numbering');
+    Route::post('billing/settings/numbering', [NumberingSeriesController::class, 'store'])->name('billing.settings.numbering.store');
+    Route::put('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'update'])->name('billing.settings.numbering.update');
+    Route::delete('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'destroy'])->name('billing.settings.numbering.destroy');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
