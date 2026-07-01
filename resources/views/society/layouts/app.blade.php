@@ -170,9 +170,9 @@
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'Create Bill']) }}" class="nav-item"><i class="fas fa-file-circle-plus"></i><span>Create Bill</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Bill List']) }}" class="nav-item"><i class="fas fa-list"></i><span>Bill List</span></a>
-                        <a href="{{ route('society.billing.bulk-upload') }}" class="nav-item {{ request()->routeIs('society.billing.bulk-upload') ? 'active' : '' }}"><i class="fas fa-file-arrow-up"></i><span>Bulk Upload</span></a>
+                        <a href="{{ route('society.billing.bills.create') }}" class="nav-item {{ request()->routeIs('society.billing.bills.create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus"></i><span>Create Bill</span></a>
+                        <a href="{{ route('society.billing.bills.index') }}" class="nav-item {{ request()->routeIs('society.billing.bills.index') || request()->routeIs('society.billing.bills.show') ? 'active' : '' }}"><i class="fas fa-list"></i><span>Bill List</span></a>
+                        <a href="{{ route('society.billing.bills.bulk') }}" class="nav-item {{ request()->routeIs('society.billing.bills.bulk') ? 'active' : '' }}"><i class="fas fa-file-arrow-up"></i><span>Bulk Upload</span></a>
                         <a href="{{ route('society.billing.settings.general') }}" class="nav-item {{ request()->routeIs('society.billing.settings.general') ? 'active' : '' }}"><i class="fas fa-gear"></i><span>Bill Settings</span></a>
                         <a href="{{ route('society.billing.settings.charge-heads') }}" class="nav-item {{ request()->routeIs('society.billing.settings.charge-heads') ? 'active' : '' }}"><i class="fas fa-list-check"></i><span>Charge Heads</span></a>
                         <a href="{{ route('society.billing.settings.design') }}" class="nav-item {{ request()->routeIs('society.billing.settings.design') ? 'active' : '' }}"><i class="fas fa-palette"></i><span>Bill Design</span></a>

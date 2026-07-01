@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Society\BillController;
 use App\Http\Controllers\Society\BillSettingController;
 use App\Http\Controllers\Society\BulkUploadController;
 use App\Http\Controllers\Society\ChargeHeadController;
@@ -164,6 +165,15 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
     Route::post('/billing/bulk-upload', [BulkUploadController::class, 'upload'])->name('billing.bulk-upload.store');
     Route::get('/billing/bulk-upload/sample', [BulkUploadController::class, 'sample'])->name('billing.bulk-upload.sample');
+
+    // Maintenance Billing -> Bills (Phase 2B). Static routes precede the {bill} wildcard.
+    Route::get('billing/bills', [BillController::class, 'index'])->name('billing.bills.index');
+    Route::get('billing/bills/create', [BillController::class, 'create'])->name('billing.bills.create');
+    Route::post('billing/bills', [BillController::class, 'store'])->name('billing.bills.store');
+    Route::get('billing/bills/bulk-upload', [BillController::class, 'bulkUpload'])->name('billing.bills.bulk');
+    Route::post('billing/bills/bulk-upload', [BillController::class, 'bulkStore'])->name('billing.bills.bulk.store');
+    Route::get('billing/bills/{bill}', [BillController::class, 'show'])->name('billing.bills.show');
+    Route::get('billing/bills/{bill}/print', [BillController::class, 'print'])->name('billing.bills.print');
 
     // Maintenance Billing -> Bill Settings (Phase 2A)
     Route::get('billing/settings/general', [BillSettingController::class, 'general'])->name('billing.settings.general');

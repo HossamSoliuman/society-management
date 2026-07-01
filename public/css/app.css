@@ -687,6 +687,11 @@ body {
     color: #ca8a04;
 }
 
+.status-badge.partial {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
 .status-badge.overdue,
 .status-badge.expired,
 .status-badge.failed,
@@ -3070,4 +3075,59 @@ select.form-control {
 .bill-terms ul {
     padding-left: 16px;
     margin-top: 6px;
+}
+
+/* Create Bill — input with trailing icon */
+.input-icon-group {
+    position: relative;
+}
+
+.input-icon-group .form-control {
+    padding-right: 36px;
+}
+
+.input-icon-group > i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+/* Create Bill — selected member chip card */
+.member-chip-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--primary-light);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+}
+
+.member-chip-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Create Bill — editable charge line-item table */
+.charge-table th {
+    background: var(--gray-50);
+}
+
+.charge-table td {
+    vertical-align: middle;
+}
+
+.charge-table .form-control {
+    padding: 8px 10px;
 }
