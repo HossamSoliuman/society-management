@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Society\AssetCategoryController;
+use App\Http\Controllers\Society\AssetController;
 use App\Http\Controllers\Society\BillController;
 use App\Http\Controllers\Society\BillSettingController;
 use App\Http\Controllers\Society\BulkUploadController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
+use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
 use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\Society\VendorController;
@@ -233,6 +236,29 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
     Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
     Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+
+    // Assets (Phase 3B). Static segments precede the {asset} wildcard so they aren't captured by binding.
+    Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
+    Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
+
+    Route::get('assets/categories', [AssetCategoryController::class, 'index'])->name('assets.categories.index');
+    Route::get('assets/categories/create', [AssetCategoryController::class, 'create'])->name('assets.categories.create');
+    Route::post('assets/categories', [AssetCategoryController::class, 'store'])->name('assets.categories.store');
+    Route::get('assets/categories/{category}/edit', [AssetCategoryController::class, 'edit'])->name('assets.categories.edit');
+    Route::put('assets/categories/{category}', [AssetCategoryController::class, 'update'])->name('assets.categories.update');
+    Route::delete('assets/categories/{category}', [AssetCategoryController::class, 'destroy'])->name('assets.categories.destroy');
+
+    Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
+    Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
+    Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
+    Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
+    Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
+
+    // Priority Support (Phase 3B). Static segment precedes the {request} wildcard.
+    Route::get('support/create', [SupportController::class, 'create'])->name('support.create');
+    Route::get('support', [SupportController::class, 'index'])->name('support.index');
+    Route::post('support', [SupportController::class, 'store'])->name('support.store');
+    Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');

@@ -651,6 +651,7 @@ body {
 .badge-purple { background: var(--purple-light); color: #5b21b6; }
 .badge-orange { background: var(--orange-light); color: #9a3412; }
 .badge-teal { background: var(--teal-light); color: #115e59; }
+.badge-pink { background: var(--pink-light); color: #9d174d; }
 .badge-primary { background: var(--primary-light); color: var(--primary-dark); }
 
 .badge-dot {
