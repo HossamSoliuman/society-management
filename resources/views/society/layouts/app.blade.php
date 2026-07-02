@@ -197,11 +197,21 @@
                     </div>
                 </div>
 
-                {{-- Expenses --}}
-                <a href="{{ route('society.placeholder', ['page' => 'Expenses']) }}" class="nav-item">
-                    <i class="fas fa-receipt"></i>
-                    <span>Expenses</span>
-                </a>
+                {{-- Expenses (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.expenses.*') ? 'open' : '' }}">
+                    <button class="nav-group-toggle">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Expenses</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="nav-submenu">
+                        <a href="{{ route('society.expenses.index') }}" class="nav-item {{ request()->routeIs('society.expenses.index') || request()->routeIs('society.expenses.edit') ? 'active' : '' }}"><i class="fas fa-list"></i><span>All Expenses</span></a>
+                        <a href="{{ route('society.expenses.create') }}" class="nav-item {{ request()->routeIs('society.expenses.create') ? 'active' : '' }}"><i class="fas fa-plus"></i><span>Add Expense</span></a>
+                        <a href="{{ route('society.expenses.categories.index') }}" class="nav-item {{ request()->routeIs('society.expenses.categories.*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i><span>Expense Categories</span></a>
+                        <a href="{{ route('society.expenses.vendors.index') }}" class="nav-item {{ request()->routeIs('society.expenses.vendors.*') ? 'active' : '' }}"><i class="fas fa-store"></i><span>Vendors</span></a>
+                        <a href="{{ route('society.expenses.reports') }}" class="nav-item {{ request()->routeIs('society.expenses.reports') ? 'active' : '' }}"><i class="fas fa-chart-line"></i><span>Expense Reports</span></a>
+                    </div>
+                </div>
 
                 {{-- Accounting --}}
                 <a href="{{ route('society.placeholder', ['page' => 'Accounting']) }}" class="nav-item">

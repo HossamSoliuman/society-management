@@ -7,6 +7,8 @@ use App\Http\Controllers\Society\BulkUploadController;
 use App\Http\Controllers\Society\ChargeHeadController;
 use App\Http\Controllers\Society\CollectionController;
 use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
+use App\Http\Controllers\Society\ExpenseCategoryController;
+use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
 use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\PaymentReceiptController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
 use App\Http\Controllers\Society\TaxController;
 use App\Http\Controllers\Society\UnitController;
+use App\Http\Controllers\Society\VendorController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BillingController;
@@ -206,6 +209,30 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
     Route::get('collections/receipts', [PaymentReceiptController::class, 'index'])->name('collections.receipts.index');
     Route::get('collections/receipts/{payment}', [PaymentReceiptController::class, 'show'])->name('collections.receipts.show');
+
+    // Expenses (Phase 3A). Static segments precede the {expense} wildcard so they aren't captured by binding.
+    Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+    Route::get('expenses/reports', [ExpenseController::class, 'reports'])->name('expenses.reports');
+
+    Route::get('expenses/categories', [ExpenseCategoryController::class, 'index'])->name('expenses.categories.index');
+    Route::get('expenses/categories/create', [ExpenseCategoryController::class, 'create'])->name('expenses.categories.create');
+    Route::post('expenses/categories', [ExpenseCategoryController::class, 'store'])->name('expenses.categories.store');
+    Route::get('expenses/categories/{category}/edit', [ExpenseCategoryController::class, 'edit'])->name('expenses.categories.edit');
+    Route::put('expenses/categories/{category}', [ExpenseCategoryController::class, 'update'])->name('expenses.categories.update');
+    Route::delete('expenses/categories/{category}', [ExpenseCategoryController::class, 'destroy'])->name('expenses.categories.destroy');
+
+    Route::get('expenses/vendors', [VendorController::class, 'index'])->name('expenses.vendors.index');
+    Route::get('expenses/vendors/create', [VendorController::class, 'create'])->name('expenses.vendors.create');
+    Route::post('expenses/vendors', [VendorController::class, 'store'])->name('expenses.vendors.store');
+    Route::get('expenses/vendors/{vendor}/edit', [VendorController::class, 'edit'])->name('expenses.vendors.edit');
+    Route::put('expenses/vendors/{vendor}', [VendorController::class, 'update'])->name('expenses.vendors.update');
+    Route::delete('expenses/vendors/{vendor}', [VendorController::class, 'destroy'])->name('expenses.vendors.destroy');
+
+    Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+    Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+    Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+    Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+    Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');

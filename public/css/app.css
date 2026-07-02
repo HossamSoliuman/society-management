@@ -3414,3 +3414,92 @@ select.form-control {
         border: none;
     }
 }
+
+/* ==========================================================================
+   Phase 3 additions (Expenses / Assets / Accounting / Support)
+   Added once in 3A; reused by 3B & 3C. Do not re-add.
+   ========================================================================== */
+
+/* --- Real multi-color stat icons (override the all-primary block above) --- */
+.stat-icon.blue   { background: var(--info-light);    color: var(--info); }
+.stat-icon.green  { background: var(--success-light); color: var(--success); }
+.stat-icon.red    { background: var(--danger-light);  color: var(--danger); }
+.stat-icon.orange { background: var(--orange-light);  color: var(--orange); }
+.stat-icon.purple { background: var(--purple-light);  color: var(--purple); }
+.stat-icon.teal   { background: var(--teal-light);    color: var(--teal); }
+.stat-icon.pink   { background: var(--pink-light);    color: var(--pink); }
+.stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+.stat-icon.gray   { background: var(--gray-100);      color: var(--gray-500); }
+
+/* --- Right-rail quick action row (icon + two lines) --- */
+.qa-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; text-decoration: none; }
+.qa-item + .qa-item { border-top: 1px solid var(--border-color); }
+.qa-item .qa-ico { width: 34px; height: 34px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.qa-item .qa-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.qa-item .qa-desc  { font-size: 11px; color: var(--text-muted); }
+
+/* --- Right-rail list row (categories with count, bank accounts, etc.) --- */
+.rail-list-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; }
+.rail-list-item + .rail-list-item { border-top: 1px solid var(--border-color); }
+.rail-list-item .rli-ico { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.rail-list-item .rli-main { flex: 1; min-width: 0; }
+.rail-list-item .rli-title { font-weight: 600; color: var(--text-primary); }
+.rail-list-item .rli-sub { font-size: 11px; color: var(--text-muted); }
+.rail-list-item .rli-meta { margin-left: auto; font-weight: 600; color: var(--text-primary); }
+
+/* --- Condition dot (assets) --- */
+.cond { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.cond::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.cond.good::before { background: var(--success); }
+.cond.fair::before { background: var(--warning); }
+.cond.poor::before { background: var(--danger); }
+
+/* --- Payment-mode pill (table cell) --- */
+.pay-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; background: var(--white); white-space: nowrap; }
+.pay-pill i { font-size: 12px; color: var(--text-secondary); }
+
+/* --- Chart-of-accounts hierarchy --- */
+.coa-name { display: flex; align-items: center; gap: 8px; }
+.coa-indent-1 { padding-left: 20px; }
+.coa-indent-2 { padding-left: 40px; }
+.coa-indent-3 { padding-left: 60px; }
+.coa-toggle { color: var(--text-muted); font-size: 11px; width: 12px; }
+.type-pill { display: inline-flex; padding: 2px 10px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; }
+.type-pill.group  { background: var(--info-light); color: #1e40af; }
+.type-pill.detail { background: var(--gray-100);   color: var(--gray-600); }
+
+/* --- Financial statement (P&L / Balance Sheet) tables --- */
+.fin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fin-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary); background: var(--gray-50); border-bottom: 1px solid var(--border-color); }
+.fin-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-color); }
+.fin-table td.num, .fin-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.fin-section-row td { font-weight: 700; }
+.fin-section-row.income td  { color: var(--success); }
+.fin-section-row.expense td { color: var(--danger); }
+.fin-total-row.income  td { background: var(--success-light); color: #065f46; font-weight: 700; }
+.fin-total-row.expense td { background: var(--danger-light);  color: #991b1b; font-weight: 700; }
+.fin-total-row.net     td { background: var(--success-light); color: #065f46; font-weight: 700; }
+.chg-up   { color: var(--success); }
+.chg-down { color: var(--danger); }
+
+/* --- Balance sheet two-pane headers --- */
+.bs-head-assets { background: var(--success-light); color: #065f46; font-weight: 700; padding: 12px 16px; }
+.bs-head-liab   { background: var(--orange-light);  color: #9a3412; font-weight: 700; padding: 12px 16px; }
+
+/* --- Tinted KPI cards (P&L top row) --- */
+.kpi-tinted { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; }
+.kpi-tinted.income  { background: #f0fdf4; }
+.kpi-tinted.expense { background: #fef2f2; }
+.kpi-tinted.profit  { background: #eff6ff; }
+.kpi-tinted.margin  { background: #fffbeb; }
+
+/* --- Guidelines / tips rail card variants --- */
+.tips-card  { background: var(--info-light); border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 16px; }
+.tips-card.warn { background: var(--warning-light); border-color: #fde68a; }
+.tips-card li { display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 5px 0; }
+.tips-card li i { color: var(--success); margin-top: 2px; }
+
+/* --- Soft tip banner (bottom of accounting pages) --- */
+.tip-banner { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: var(--radius); font-size: 13px; }
+.tip-banner.orange { background: var(--warning-light); color: #92400e; }
+.tip-banner.blue   { background: var(--info-light);    color: #1e40af; }
