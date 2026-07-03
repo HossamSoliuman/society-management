@@ -89,15 +89,15 @@
                         <i class="fas fa-user-plus" style="color: var(--primary);"></i><span>Add Member</span>
                     </a>
                     <a href="{{ route('society.units.create') }}" class="quick-action-item">
-                        <i class="fas fa-house-circle-plus" style="color: var(--success);"></i><span>Add Unit</span>
+                        <i class="fas fa-building" style="color: var(--success);"></i><span>Add Unit</span>
                     </a>
-                    <a href="{{ route('society.placeholder', ['page' => 'Create Bill']) }}" class="quick-action-item">
+                    <a href="{{ route('society.billing.bills.create') }}" class="quick-action-item">
                         <i class="fas fa-file-invoice" style="color: var(--primary);"></i><span>Create Invoice</span>
                     </a>
-                    <a href="{{ route('society.placeholder', ['page' => 'Collections']) }}" class="quick-action-item">
+                    <a href="{{ route('society.collections.create') }}" class="quick-action-item">
                         <i class="fas fa-credit-card" style="color: var(--info);"></i><span>Record Payment</span>
                     </a>
-                    <a href="{{ route('society.placeholder', ['page' => 'Complaint Management']) }}" class="quick-action-item">
+                    <a href="{{ route('society.support.create') }}" class="quick-action-item">
                         <i class="fas fa-headset" style="color: var(--danger);"></i><span>Raise Complaint</span>
                     </a>
                     <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="quick-action-item">

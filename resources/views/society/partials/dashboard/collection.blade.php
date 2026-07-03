@@ -36,5 +36,5 @@
     </div>
 </div>
 <div class="card-footer" style="padding: 12px 20px;">
-    <a href="{{ route('society.placeholder', ['page' => 'Collection Report']) }}" class="btn btn-outline-primary" style="width: 100%;">View Collection Report <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
+    <a href="{{ route('society.collections.index') }}" class="btn btn-outline-primary" style="width: 100%;">View Collection Report <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
 </div>
