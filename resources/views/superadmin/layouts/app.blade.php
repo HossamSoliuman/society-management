@@ -188,6 +188,14 @@
                     <span>Support Tickets</span>
                 </a>
 
+                {{-- Notice Management --}}
+                @if(Route::has('superadmin.notices.index'))
+                <a href="{{ route('superadmin.notices.index') }}" class="nav-item {{ request()->routeIs('superadmin.notices.*') ? 'active' : '' }}">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Notice Management</span>
+                </a>
+                @endif
+
                 {{-- Activity Logs (group) --}}
                 <div class="nav-group {{ request()->routeIs('superadmin.logs.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">

@@ -229,11 +229,51 @@
                 </div>
                 @endif
 
-                {{-- Accounting --}}
-                <a href="{{ route('society.placeholder', ['page' => 'Accounting']) }}" class="nav-item">
-                    <i class="fas fa-calculator"></i>
-                    <span>Accounting</span>
-                </a>
+                {{-- Accounting (group) --}}
+                @if(Route::has('society.accounting.index'))
+                <div class="nav-group {{ request()->routeIs('society.accounting.*') ? 'open' : '' }}">
+                    <button class="nav-group-toggle">
+                        <i class="fas fa-calculator"></i>
+                        <span>Accounting</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="nav-submenu">
+                        <a href="{{ route('society.accounting.index') }}" class="nav-item {{ request()->routeIs('society.accounting.index') ? 'active' : '' }}"><i class="fas fa-gauge"></i><span>Dashboard</span></a>
+                        <a href="{{ route('society.accounting.chart-of-accounts') }}" class="nav-item {{ request()->routeIs('society.accounting.chart-of-accounts*') ? 'active' : '' }}"><i class="fas fa-sitemap"></i><span>Chart of Accounts</span></a>
+                        <a href="{{ route('society.accounting.transactions') }}" class="nav-item {{ request()->routeIs('society.accounting.transactions') ? 'active' : '' }}"><i class="fas fa-list"></i><span>Transactions</span></a>
+                        <a href="{{ route('society.accounting.receipts') }}" class="nav-item {{ request()->routeIs('society.accounting.receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i><span>Receipts</span></a>
+                        <a href="{{ route('society.accounting.payments') }}" class="nav-item {{ request()->routeIs('society.accounting.payments*') ? 'active' : '' }}"><i class="fas fa-credit-card"></i><span>Payments</span></a>
+                        <a href="{{ route('society.accounting.journal-entries') }}" class="nav-item {{ request()->routeIs('society.accounting.journal-entries*') ? 'active' : '' }}"><i class="fas fa-book"></i><span>Journal Entries</span></a>
+                        <a href="{{ route('society.accounting.bank-reconciliation') }}" class="nav-item {{ request()->routeIs('society.accounting.bank-reconciliation') ? 'active' : '' }}"><i class="fas fa-scale-balanced"></i><span>Bank Reconciliation</span></a>
+                        <a href="{{ route('society.accounting.trial-balance') }}" class="nav-item {{ request()->routeIs('society.accounting.trial-balance') ? 'active' : '' }}"><i class="fas fa-scale-unbalanced"></i><span>Trial Balance</span></a>
+                        <a href="{{ route('society.accounting.profit-loss') }}" class="nav-item {{ request()->routeIs('society.accounting.profit-loss') ? 'active' : '' }}"><i class="fas fa-chart-line"></i><span>Profit &amp; Loss</span></a>
+                        <a href="{{ route('society.accounting.balance-sheet') }}" class="nav-item {{ request()->routeIs('society.accounting.balance-sheet') ? 'active' : '' }}"><i class="fas fa-file-invoice"></i><span>Balance Sheet</span></a>
+                        <a href="{{ route('society.accounting.opening-balances') }}" class="nav-item {{ request()->routeIs('society.accounting.opening-balances') ? 'active' : '' }}"><i class="fas fa-scale-balanced"></i><span>Opening Balances</span></a>
+                    </div>
+                </div>
+                @endif
+
+                @if(Route::has('society.tenders.active'))
+                <div class="sidebar-label" style="padding-left: 8px;">TENDER MANAGEMENT</div>
+
+                {{-- Tender Management (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.tenders.*') || request()->routeIs('society.vendors.*') ? 'open' : '' }}">
+                    <button class="nav-group-toggle">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Tender Management</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="nav-submenu">
+                        <a href="{{ route('society.tenders.create') }}" class="nav-item {{ request()->routeIs('society.tenders.create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus"></i><span>Create New Tender</span></a>
+                        <a href="{{ route('society.tenders.active') }}" class="nav-item {{ request()->routeIs('society.tenders.active') ? 'active' : '' }}"><i class="fas fa-bolt"></i><span>Active Tenders</span></a>
+                        <a href="{{ route('society.tenders.draft') }}" class="nav-item {{ request()->routeIs('society.tenders.draft') ? 'active' : '' }}"><i class="fas fa-file-pen"></i><span>Draft Tenders</span></a>
+                        <a href="{{ route('society.tenders.awarded') }}" class="nav-item {{ request()->routeIs('society.tenders.awarded') ? 'active' : '' }}"><i class="fas fa-award"></i><span>Awarded Tenders</span></a>
+                        <a href="{{ route('society.tenders.closed') }}" class="nav-item {{ request()->routeIs('society.tenders.closed') ? 'active' : '' }}"><i class="fas fa-lock"></i><span>Closed Tenders</span></a>
+                        <a href="{{ route('society.vendors.index') }}" class="nav-item {{ request()->routeIs('society.vendors.*') ? 'active' : '' }}"><i class="fas fa-store"></i><span>Vendors</span></a>
+                        <a href="{{ route('society.tenders.reports') }}" class="nav-item {{ request()->routeIs('society.tenders.reports') ? 'active' : '' }}"><i class="fas fa-chart-line"></i><span>Tender Reports</span></a>
+                    </div>
+                </div>
+                @endif
 
                 {{-- Reports (group, stub) --}}
                 <div class="nav-group">
@@ -263,6 +303,24 @@
                     <i class="fas fa-folder-open"></i>
                     <span>Documents</span>
                 </a>
+                @if(Route::has('society.documents.index'))
+                <a href="{{ route('society.documents.index') }}" class="nav-item {{ request()->routeIs('society.documents.*') ? 'active' : '' }}">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Document Management</span>
+                </a>
+                @endif
+                @if(Route::has('society.amc.index'))
+                <a href="{{ route('society.amc.index') }}" class="nav-item {{ request()->routeIs('society.amc.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-signature"></i>
+                    <span>AMC &amp; Renewal Tracker</span>
+                </a>
+                @endif
+                @if(Route::has('society.vendors.index'))
+                <a href="{{ route('society.vendors.index') }}" class="nav-item {{ request()->routeIs('society.vendors.*') ? 'active' : '' }}">
+                    <i class="fas fa-store"></i>
+                    <span>Vendor Management</span>
+                </a>
+                @endif
                 <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="nav-item">
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>

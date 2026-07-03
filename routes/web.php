@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Society\AccountingController;
+use App\Http\Controllers\Society\AmcController;
 use App\Http\Controllers\Society\AssetCategoryController;
 use App\Http\Controllers\Society\AssetController;
 use App\Http\Controllers\Society\BillController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\Society\BulkUploadController;
 use App\Http\Controllers\Society\ChargeHeadController;
 use App\Http\Controllers\Society\CollectionController;
 use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
+use App\Http\Controllers\Society\DocumentController;
 use App\Http\Controllers\Society\ExpenseCategoryController;
 use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
@@ -16,8 +19,10 @@ use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
+use App\Http\Controllers\Society\ServiceVendorController;
 use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
+use App\Http\Controllers\Society\TenderController;
 use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\Society\VendorController;
 use App\Http\Controllers\SuperAdmin\AccountController;
@@ -25,6 +30,7 @@ use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BillingController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\MasterController;
+use App\Http\Controllers\SuperAdmin\NoticeController;
 use App\Http\Controllers\SuperAdmin\NotificationController;
 use App\Http\Controllers\SuperAdmin\ReportController;
 use App\Http\Controllers\SuperAdmin\RoleController;
@@ -91,6 +97,10 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
     Route::get('/notifications/announcements/create', [NotificationController::class, 'createAnnouncement'])->name('notification.announcements.create');
     Route::post('/notifications/announcements', [NotificationController::class, 'storeAnnouncement'])->name('notification.announcements.store');
     Route::get('/notifications/renewals', [NotificationController::class, 'renewalAlerts'])->name('notification.renewals');
+
+    Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
+    Route::get('/notices/create', [NoticeController::class, 'create'])->name('notices.create');
+    Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
 
     Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
@@ -259,6 +269,59 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::get('support', [SupportController::class, 'index'])->name('support.index');
     Route::post('support', [SupportController::class, 'store'])->name('support.store');
     Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');
+
+    // Accounting (Phase 3C). In-page tabs + Chart of Accounts / Opening Balances pages.
+    Route::get('accounting', [AccountingController::class, 'index'])->name('accounting.index');
+    Route::get('accounting/transactions', [AccountingController::class, 'transactions'])->name('accounting.transactions');
+    Route::get('accounting/receipts', [AccountingController::class, 'receipts'])->name('accounting.receipts');
+    Route::get('accounting/receipts/create', [AccountingController::class, 'createReceipt'])->name('accounting.receipts.create');
+    Route::post('accounting/receipts', [AccountingController::class, 'storeReceipt'])->name('accounting.receipts.store');
+    Route::get('accounting/payments', [AccountingController::class, 'payments'])->name('accounting.payments');
+    Route::get('accounting/payments/create', [AccountingController::class, 'createPayment'])->name('accounting.payments.create');
+    Route::post('accounting/payments', [AccountingController::class, 'storePayment'])->name('accounting.payments.store');
+    Route::get('accounting/journal-entries', [AccountingController::class, 'journalEntries'])->name('accounting.journal-entries');
+    Route::get('accounting/journal-entries/create', [AccountingController::class, 'createJournalEntry'])->name('accounting.journal-entries.create');
+    Route::post('accounting/journal-entries', [AccountingController::class, 'storeJournalEntry'])->name('accounting.journal-entries.store');
+    Route::get('accounting/bank-reconciliation', [AccountingController::class, 'bankReconciliation'])->name('accounting.bank-reconciliation');
+    Route::get('accounting/trial-balance', [AccountingController::class, 'trialBalance'])->name('accounting.trial-balance');
+    Route::get('accounting/profit-loss', [AccountingController::class, 'profitLoss'])->name('accounting.profit-loss');
+    Route::get('accounting/balance-sheet', [AccountingController::class, 'balanceSheet'])->name('accounting.balance-sheet');
+    Route::get('accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts'])->name('accounting.chart-of-accounts');
+    Route::get('accounting/chart-of-accounts/create', [AccountingController::class, 'createAccount'])->name('accounting.chart-of-accounts.create');
+    Route::post('accounting/chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounting.chart-of-accounts.store');
+    Route::get('accounting/opening-balances', [AccountingController::class, 'openingBalances'])->name('accounting.opening-balances');
+
+    // Vendor Management (Phase 4). Static segments precede the {vendor} wildcard.
+    Route::get('vendors', [ServiceVendorController::class, 'index'])->name('vendors.index');
+    Route::get('vendors/create', [ServiceVendorController::class, 'create'])->name('vendors.create');
+    Route::post('vendors', [ServiceVendorController::class, 'store'])->name('vendors.store');
+    Route::get('vendors/{vendor}/edit', [ServiceVendorController::class, 'edit'])->name('vendors.edit');
+    Route::put('vendors/{vendor}', [ServiceVendorController::class, 'update'])->name('vendors.update');
+    Route::delete('vendors/{vendor}', [ServiceVendorController::class, 'destroy'])->name('vendors.destroy');
+
+    // AMC & Renewal Tracker (Phase 4). Static segments precede any wildcard.
+    Route::get('amc', [AmcController::class, 'index'])->name('amc.index');
+    Route::get('amc/create', [AmcController::class, 'create'])->name('amc.create');
+    Route::post('amc', [AmcController::class, 'store'])->name('amc.store');
+    Route::get('amc/categories', [AmcController::class, 'categories'])->name('amc.categories');
+    Route::get('amc/categories/create', [AmcController::class, 'createCategory'])->name('amc.categories.create');
+    Route::post('amc/categories', [AmcController::class, 'storeCategory'])->name('amc.categories.store');
+
+    // Tender Management (Phase 4).
+    Route::get('tenders/active', [TenderController::class, 'active'])->name('tenders.active');
+    Route::get('tenders/draft', [TenderController::class, 'draft'])->name('tenders.draft');
+    Route::get('tenders/awarded', [TenderController::class, 'awarded'])->name('tenders.awarded');
+    Route::get('tenders/closed', [TenderController::class, 'closed'])->name('tenders.closed');
+    Route::get('tenders/create', [TenderController::class, 'create'])->name('tenders.create');
+    Route::post('tenders', [TenderController::class, 'store'])->name('tenders.store');
+    Route::get('tenders/reports', [TenderController::class, 'reports'])->name('tenders.reports');
+
+    // Document Management (Phase 4). Static segments precede the {document} wildcard.
+    Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::get('documents/upload', [DocumentController::class, 'create'])->name('documents.create');
+    Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('documents/categories', [DocumentController::class, 'categories'])->name('documents.categories');
+    Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
