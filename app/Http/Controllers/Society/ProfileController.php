@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Society;
 use App\Http\Controllers\Controller;
 use App\Models\Society;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -79,6 +81,24 @@ class ProfileController extends Controller
         $society->update($validated);
 
         return redirect()->route('society.profile')->with('success', 'Society profile updated successfully.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+
+        return redirect()->route('society.profile')->with('success', 'Password changed successfully.');
     }
 
     /**

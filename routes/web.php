@@ -159,6 +159,7 @@ Route::middleware(['auth'])->prefix('society')->name('society.')->group(function
     Route::get('/profile', [SocietyProfileController::class, 'show'])->name('profile');
     Route::get('/profile/edit', [SocietyProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [SocietyProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [SocietyProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Members
     Route::get('/members', [MemberController::class, 'index'])->name('members.index');

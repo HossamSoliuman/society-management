@@ -315,9 +315,10 @@
                             <div class="avatar">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=E84B1E&color=fff" alt="">
                             </div>
+                            @php($currentRole = ucwords(str_replace('_', ' ', optional(auth()->user()?->roles->first())->name ?? 'Super Admin')))
                             <div class="profile-info">
                                 <span class="profile-name">{{ auth()->user()->name ?? 'Administrator' }}</span>
-                                <span class="profile-role">Super Admin</span>
+                                <span class="profile-role">{{ $currentRole }}</span>
                             </div>
                             <i class="fas fa-chevron-down"></i>
                         </button>

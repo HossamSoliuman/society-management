@@ -410,12 +410,14 @@
 
                     <div class="profile-dropdown">
                         <button class="profile-btn">
+                            @php($currentUser = auth()->user())
+                            @php($currentRole = ucwords(str_replace('_', ' ', optional($currentUser?->roles->first())->name ?? 'Member')))
                             <div class="avatar">
-                                <img src="https://ui-avatars.com/api/?name=SA&background=E84B1E&color=fff" alt="">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($currentUser->name ?? 'User') }}&background=E84B1E&color=fff" alt="">
                             </div>
                             <div class="profile-info">
-                                <span class="profile-name">Super Admin</span>
-                                <span class="profile-role">Super Admin</span>
+                                <span class="profile-name">{{ $currentUser->name ?? 'User' }}</span>
+                                <span class="profile-role">{{ $currentRole }}</span>
                             </div>
                             <i class="fas fa-chevron-down"></i>
                         </button>

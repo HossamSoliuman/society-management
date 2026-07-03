@@ -208,4 +208,38 @@
         </div>
     </div>
 </div>
+
+{{-- Row 4 — Login & Security --}}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-lock" style="color: var(--primary);"></i> Change Login Password</div>
+    </div>
+    <div class="card-body">
+        <form action="{{ route('society.profile.password') }}" method="POST" style="max-width: 480px;">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label class="form-label">Current Password <span class="required">*</span></label>
+                <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" required>
+                @error('current_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">New Password <span class="required">*</span></label>
+                <input type="password" name="new_password" class="form-control @error('new_password') is-invalid @enderror" required>
+                @error('new_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm New Password <span class="required">*</span></label>
+                <input type="password" name="new_password_confirmation" class="form-control" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-key"></i> Change Password</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
