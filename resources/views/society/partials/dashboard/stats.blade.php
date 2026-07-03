@@ -1,0 +1,6 @@
+@php($s = $d['stats'])
+@include('society.partials.stat-card', ['icon' => 'fa-users', 'iconVariant' => 'peach', 'label' => 'Total Members', 'value' => number_format($s['total_members']), 'trend' => $s['new_members'].' new this period', 'trendType' => 'up'])
+@include('society.partials.stat-card', ['icon' => 'fa-building', 'iconVariant' => 'peach', 'label' => 'Total Units', 'value' => number_format($s['total_units']), 'trend' => $s['occupancy_pct'].'% Occupied', 'trendType' => 'success'])
+@include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'peach', 'label' => 'Collections', 'value' => '&#8377; '.$s['monthly_collections_fmt'], 'trend' => $s['collected_pct'].'% Collected', 'trendType' => 'success'])
+@include('society.partials.stat-card', ['icon' => 'fa-clipboard-list', 'iconVariant' => 'peach', 'label' => 'Pending Dues', 'value' => '&#8377; '.$s['pending_dues_fmt'], 'trend' => $s['pending_members'].' Members', 'trendType' => 'warning'])
+@include('society.partials.stat-card', ['icon' => 'fa-triangle-exclamation', 'iconVariant' => 'peach', 'label' => 'Open Complaints', 'value' => number_format($s['open_complaints']), 'trend' => $s['high_priority'].' High Priority', 'trendType' => 'danger'])

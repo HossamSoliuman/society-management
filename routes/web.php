@@ -153,6 +153,7 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
 
 Route::middleware(['auth'])->prefix('society')->name('society.')->group(function () {
     Route::get('/dashboard', [SocietyDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [SocietyDashboardController::class, 'data'])->name('dashboard.data');
 
     // Society Profile
     Route::get('/profile', [SocietyProfileController::class, 'show'])->name('profile');

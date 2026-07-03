@@ -190,4 +190,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showStep(0);
     });
+
+    // Dashboard period filter — fetch fresh figures/charts and swap fragments
+    var dashboardRange = document.getElementById('dashboardRange');
+    if (dashboardRange) {
+        var loader = document.getElementById('dashboardLoader');
+        var content = document.querySelector('.page-content');
+
+        dashboardRange.addEventListener('change', function () {
+            var url = dashboardRange.getAttribute('data-url');
+            var range = dashboardRange.value;
+
+            if (loader) { loader.style.display = 'inline-block'; }
+            if (content) { content.style.opacity = '0.6'; content.style.transition = 'opacity 0.15s ease'; }
+            dashboardRange.disabled = true;
+
+            fetch(url + '?range=' + encodeURIComponent(range), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+                .then(function (res) {
+                    if (!res.ok) { throw new Error('Request failed: ' + res.status); }
+                    return res.json();
+                })
+                .then(function (payload) {
+                    var fragments = payload.fragments || {};
+                    Object.keys(fragments).forEach(function (key) {
+                        var target = document.getElementById('dash-' + key);
+                        if (target) { target.innerHTML = fragments[key]; }
+                    });
+                })
+                .catch(function (err) {
+                    console.error('Dashboard update failed:', err);
+                    alert('Could not update the dashboard. Please try again.');
+                })
+                .finally(function () {
+                    if (loader) { loader.style.display = 'none'; }
+                    if (content) { content.style.opacity = '1'; }
+                    dashboardRange.disabled = false;
+                });
+        });
+    }
 });
