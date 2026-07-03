@@ -25,10 +25,10 @@ class LoginController extends Controller
 
             $user = Auth::user();
             if ($user->hasRole('super_admin')) {
-                return redirect()->route('superadmin.dashboard');
+                return redirect()->intended(route('superadmin.dashboard'));
             }
 
-            return redirect()->intended('/');
+            return redirect()->intended(route('society.dashboard'));
         }
 
         return back()->withErrors([
@@ -41,6 +41,7 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }
