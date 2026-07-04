@@ -39,6 +39,19 @@ class UserSeeder extends Seeder
         // the society panel scopes its data to the signed-in admin's society.
         $societyIds = Society::orderBy('id')->pluck('id')->all();
 
+        // Well-known society admin linked to the society that holds all of the
+        // demo data (the first society). Logging in with these credentials
+        // surfaces every seeded record in the society panel.
+        $demoSocietyAdmin = User::create([
+            'society_id' => $societyIds[0] ?? null,
+            'name' => 'Society Admin',
+            'email' => 'societyadmin@society.com',
+            'password' => Hash::make('password'),
+            'mobile' => '+91 90000 00000',
+            'status' => 'active',
+        ]);
+        $demoSocietyAdmin->roles()->attach($societyAdminRole->id);
+
         foreach ($societyAdmins as $index => $admin) {
             $user = User::create([
                 'society_id' => $societyIds[$index] ?? null,
