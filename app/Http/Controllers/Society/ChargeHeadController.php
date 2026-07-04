@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChargeHead;
-use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +12,7 @@ class ChargeHeadController extends Controller
 {
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $query = ChargeHead::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -44,7 +43,7 @@ class ChargeHeadController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $data = $this->validated($request);
         $data['society_id'] = $society?->id;

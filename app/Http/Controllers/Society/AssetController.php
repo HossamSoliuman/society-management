@@ -39,7 +39,7 @@ class AssetController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $assets = Asset::query()
             ->with(['category', 'images'])
@@ -72,7 +72,7 @@ class AssetController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.assets.create', $this->formData($society) + [
             'asset' => null,
@@ -84,7 +84,7 @@ class AssetController extends Controller
 
     public function store(StoreAssetRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $asset = Asset::create($this->payload($request->validated(), $society));
 
         $this->storeImages($request, $asset);
@@ -95,7 +95,7 @@ class AssetController extends Controller
 
     public function edit(Asset $asset): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.assets.edit', $this->formData($society) + [
             'asset' => $asset,
@@ -107,7 +107,7 @@ class AssetController extends Controller
 
     public function update(StoreAssetRequest $request, Asset $asset): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $asset->update($this->payload($request->validated(), $society));
 
         $this->storeImages($request, $asset);

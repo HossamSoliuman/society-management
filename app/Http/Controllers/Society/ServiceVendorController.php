@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Society;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServiceVendorRequest;
 use App\Models\ServiceVendor;
-use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,7 +30,7 @@ class ServiceVendorController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $vendors = ServiceVendor::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -74,7 +73,7 @@ class ServiceVendorController extends Controller
 
     public function store(StoreServiceVendorRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $vendor = ServiceVendor::create($data + [

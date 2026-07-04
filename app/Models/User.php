@@ -11,6 +11,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
+        'society_id',
         'name',
         'email',
         'password',
@@ -30,6 +31,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function society()
+    {
+        return $this->belongsTo(Society::class);
     }
 
     public function roles()

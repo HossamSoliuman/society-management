@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChargeHead;
-use App\Models\Society;
 use App\Models\Tax;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ class TaxController extends Controller
 {
     public function index(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $taxes = Tax::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -42,7 +41,7 @@ class TaxController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $data = $this->validated($request);
         $data['society_id'] = $society?->id;

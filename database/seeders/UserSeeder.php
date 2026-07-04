@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\Society;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -34,8 +35,13 @@ class UserSeeder extends Seeder
 
         $societyAdminRole = Role::where('name', 'society_admin')->first();
 
-        foreach ($societyAdmins as $admin) {
+        // Link each society admin to a distinct society (in creation order) so
+        // the society panel scopes its data to the signed-in admin's society.
+        $societyIds = Society::orderBy('id')->pluck('id')->all();
+
+        foreach ($societyAdmins as $index => $admin) {
             $user = User::create([
+                'society_id' => $societyIds[$index] ?? null,
                 'name' => $admin['name'],
                 'email' => $admin['email'],
                 'password' => Hash::make('password'),

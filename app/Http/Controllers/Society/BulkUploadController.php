@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
-use App\Models\Society;
 use Illuminate\Http\Request;
 use Throwable;
 use ZipArchive;
@@ -12,7 +11,7 @@ class BulkUploadController extends Controller
 {
     public function index()
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $uploads = $society->billUploads()->latest()->get();
 
@@ -21,7 +20,7 @@ class BulkUploadController extends Controller
 
     public function upload(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls|max:5120',

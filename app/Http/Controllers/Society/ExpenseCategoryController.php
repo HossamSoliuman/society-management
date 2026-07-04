@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
-use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -30,7 +29,7 @@ class ExpenseCategoryController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $categories = ExpenseCategory::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -71,7 +70,7 @@ class ExpenseCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $this->validateCategory($request);
 
         $category = ExpenseCategory::create([

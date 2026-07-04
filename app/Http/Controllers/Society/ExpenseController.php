@@ -23,7 +23,7 @@ class ExpenseController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = in_array($tab, ['paid', 'pending', 'overdue', 'cancelled'], true) ? $tab : null;
@@ -66,7 +66,7 @@ class ExpenseController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.expenses.create', [
             'society' => $society,
@@ -79,7 +79,7 @@ class ExpenseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $this->validateExpense($request);
 
         $expense = Expense::create($this->expensePayload($data, $society) + [
@@ -97,7 +97,7 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.expenses.edit', [
             'society' => $society,
@@ -111,7 +111,7 @@ class ExpenseController extends Controller
 
     public function update(Request $request, Expense $expense): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $this->validateExpense($request);
 
         $expense->update($this->expensePayload($data, $society));
@@ -131,7 +131,7 @@ class ExpenseController extends Controller
 
     public function reports(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $query = Expense::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))

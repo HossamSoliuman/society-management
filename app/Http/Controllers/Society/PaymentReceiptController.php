@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\CollectionPayment;
-use App\Models\Society;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -12,7 +11,7 @@ class PaymentReceiptController extends Controller
 {
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $query = CollectionPayment::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -34,7 +33,7 @@ class PaymentReceiptController extends Controller
 
     public function show(CollectionPayment $payment): View
     {
-        $society = $payment->society ?? Society::first();
+        $society = $payment->society ?? $this->currentSociety();
 
         return view('society.collections.receipts.show', compact('payment', 'society'));
     }

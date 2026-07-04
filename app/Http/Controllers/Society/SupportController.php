@@ -30,7 +30,7 @@ class SupportController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = in_array($tab, ['open', 'in_progress', 'resolved', 'closed'], true) ? $tab : null;
@@ -74,7 +74,7 @@ class SupportController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.support.create', [
             'society' => $society,
@@ -88,7 +88,7 @@ class SupportController extends Controller
 
     public function store(StoreSupportRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $name = $data['raised_by_name'] ?? null;

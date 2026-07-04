@@ -15,7 +15,7 @@ class VendorController extends Controller
 {
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $vendors = Vendor::query()
             ->with('category')
@@ -52,7 +52,7 @@ class VendorController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.expenses.vendors.create', [
             'categories' => $this->categories($society),
@@ -61,7 +61,7 @@ class VendorController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $this->validateVendor($request);
 
         $vendor = Vendor::create($data + ['society_id' => $society?->id]);
@@ -72,7 +72,7 @@ class VendorController extends Controller
 
     public function edit(Vendor $vendor): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.expenses.vendors.edit', [
             'vendor' => $vendor,

@@ -16,7 +16,7 @@ class BillSettingController extends Controller
 {
     public function general(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $settings = $this->settings($society);
 
         return view('society.billing.settings.general', compact('society', 'settings'));
@@ -24,7 +24,7 @@ class BillSettingController extends Controller
 
     public function updateGeneral(Request $request): RedirectResponse
     {
-        $settings = $this->settings(Society::first());
+        $settings = $this->settings($this->currentSociety());
 
         $data = $request->validate([
             'default_bill_type' => ['nullable', 'string'],
@@ -77,7 +77,7 @@ class BillSettingController extends Controller
 
     public function design(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $settings = $this->settings($society);
 
         $chargeHeads = ChargeHead::query()
@@ -92,7 +92,7 @@ class BillSettingController extends Controller
 
     public function updateDesign(Request $request): RedirectResponse
     {
-        $settings = $this->settings(Society::first());
+        $settings = $this->settings($this->currentSociety());
 
         $data = $request->validate([
             'template' => ['required', 'in:modern,classic,compact,minimal'],
@@ -125,7 +125,7 @@ class BillSettingController extends Controller
 
     public function lateFee(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $lateFee = $this->lateFeeSettings($society);
 
         $members = Member::query()
@@ -143,7 +143,7 @@ class BillSettingController extends Controller
 
     public function updateLateFee(Request $request): RedirectResponse
     {
-        $lateFee = $this->lateFeeSettings(Society::first());
+        $lateFee = $this->lateFeeSettings($this->currentSociety());
 
         $data = $request->validate([
             'enable_late_fee' => ['nullable', 'boolean'],
@@ -177,7 +177,7 @@ class BillSettingController extends Controller
 
     public function notifications(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $settings = $this->settings($society);
 
         return view('society.billing.settings.notifications', compact('society', 'settings'));

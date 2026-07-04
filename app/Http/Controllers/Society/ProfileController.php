@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
-use App\Models\Society;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,21 +15,21 @@ class ProfileController extends Controller
 {
     public function show()
     {
-        $society = Society::with('documents')->firstOrFail();
+        $society = $this->currentSociety()->load('documents');
 
         return view('society.profile.show', compact('society'));
     }
 
     public function edit()
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         return view('society.profile.edit', compact('society'));
     }
 
     public function update(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',

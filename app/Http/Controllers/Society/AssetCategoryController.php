@@ -34,7 +34,7 @@ class AssetCategoryController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $categories = AssetCategory::query()
             ->withCount('assets')
@@ -76,7 +76,7 @@ class AssetCategoryController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.assets.categories.create', [
             'category' => null,
@@ -89,7 +89,7 @@ class AssetCategoryController extends Controller
 
     public function store(StoreAssetCategoryRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $category = AssetCategory::create($this->payload($request->validated(), $society));
 
         return redirect()->route('society.assets.categories.index')
@@ -98,7 +98,7 @@ class AssetCategoryController extends Controller
 
     public function edit(AssetCategory $category): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.assets.categories.edit', [
             'category' => $category,

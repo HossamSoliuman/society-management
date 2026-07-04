@@ -35,7 +35,7 @@ class CollectionController extends Controller
      */
     private function renderList(Request $request, string $view, string $title, bool $onlineOnly = false): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = [
@@ -81,7 +81,7 @@ class CollectionController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $members = Member::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -102,7 +102,7 @@ class CollectionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $data = $request->validate([
             'member_id' => ['nullable', 'integer', 'exists:members,id'],
@@ -183,7 +183,7 @@ class CollectionController extends Controller
 
     public function pendingDues(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $rows = $this->pendingDuesRows();
         $bucket = $request->string('bucket')->toString() ?: 'all';

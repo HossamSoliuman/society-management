@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
-use App\Models\Society;
 use Illuminate\Http\Request;
 
 class MemberController extends Controller
 {
     public function index(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $query = $society->members()->latest('join_date');
 
@@ -57,14 +56,14 @@ class MemberController extends Controller
 
     public function create()
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         return view('society.members.create', compact('society'));
     }
 
     public function store(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',

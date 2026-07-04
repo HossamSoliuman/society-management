@@ -32,7 +32,7 @@ class AccountingController extends Controller
 
     public function index(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $recent = Transaction::query()
             ->with('account')
@@ -57,7 +57,7 @@ class AccountingController extends Controller
 
     public function transactions(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabType = match ($tab) {
@@ -96,7 +96,7 @@ class AccountingController extends Controller
 
     public function receipts(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $receipts = Receipt::query()
             ->with('account')
@@ -131,7 +131,7 @@ class AccountingController extends Controller
 
     public function createReceipt(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.accounting.receipts-create', [
             'active' => 'receipts',
@@ -144,7 +144,7 @@ class AccountingController extends Controller
 
     public function storeReceipt(StoreReceiptRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $receipt = Receipt::create($data + [
@@ -159,7 +159,7 @@ class AccountingController extends Controller
 
     public function payments(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $payments = AccountingPayment::query()
             ->with('account')
@@ -190,7 +190,7 @@ class AccountingController extends Controller
 
     public function createPayment(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.accounting.payments-create', [
             'active' => 'payments',
@@ -201,7 +201,7 @@ class AccountingController extends Controller
 
     public function storePayment(StoreAccountingPaymentRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $payment = AccountingPayment::create($data + [
@@ -216,7 +216,7 @@ class AccountingController extends Controller
 
     public function journalEntries(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $entries = JournalEntry::query()
             ->withCount('lines')
@@ -236,7 +236,7 @@ class AccountingController extends Controller
 
     public function createJournalEntry(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.accounting.journal-entries-create', [
             'active' => 'journal-entries',
@@ -246,7 +246,7 @@ class AccountingController extends Controller
 
     public function storeJournalEntry(StoreJournalEntryRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $lines = collect($data['lines']);
@@ -277,7 +277,7 @@ class AccountingController extends Controller
 
     public function bankReconciliation(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.accounting.bank-reconciliation', [
             'active' => 'bank-reconciliation',
@@ -299,7 +299,7 @@ class AccountingController extends Controller
         return view('society.accounting.profit-loss', [
             'active' => 'profit-loss',
             'pl' => $this->accounting->profitAndLoss(),
-            'accountsForFilter' => $this->detailAccounts(Society::first()),
+            'accountsForFilter' => $this->detailAccounts($this->currentSociety()),
         ]);
     }
 
@@ -313,7 +313,7 @@ class AccountingController extends Controller
 
     public function chartOfAccounts(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $tab = $request->string('tab')->toString() === 'groups' ? 'groups' : 'list';
 
         $accounts = Account::query()
@@ -352,7 +352,7 @@ class AccountingController extends Controller
 
     public function createAccount(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.accounting.account-create', [
             'active' => 'chart-of-accounts',
@@ -363,7 +363,7 @@ class AccountingController extends Controller
 
     public function storeAccount(StoreAccountRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $account = Account::create([
@@ -385,7 +385,7 @@ class AccountingController extends Controller
 
     public function openingBalances(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $accounts = Account::query()
             ->with('group')

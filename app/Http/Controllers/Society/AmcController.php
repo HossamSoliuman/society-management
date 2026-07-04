@@ -29,7 +29,7 @@ class AmcController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = match ($tab) {
@@ -70,7 +70,7 @@ class AmcController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.amc.create', [
             'categories' => $this->categoryOptions($society),
@@ -88,7 +88,7 @@ class AmcController extends Controller
 
     public function store(StoreAmcContractRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $vendorName = $data['vendor_name'] ?? null;
@@ -126,7 +126,7 @@ class AmcController extends Controller
 
     public function categories(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $categories = AmcCategory::query()
             ->withCount('contracts')
@@ -159,7 +159,7 @@ class AmcController extends Controller
 
     public function storeCategory(StoreAmcCategoryRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $category = AmcCategory::create([

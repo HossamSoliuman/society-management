@@ -35,7 +35,7 @@ class DashboardController extends Controller
 
     public function index(): View
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
         $range = 'this_year';
 
         return view('society.dashboard.index', [
@@ -51,7 +51,7 @@ class DashboardController extends Controller
      */
     public function data(Request $request): JsonResponse
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $range = (string) $request->query('range', 'this_year');
         if (! array_key_exists($range, $this->rangeOptions())) {

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
-use App\Models\Society;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 
@@ -11,7 +10,7 @@ class UnitController extends Controller
 {
     public function index(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $query = $society->units()->orderBy('unit_number');
 
@@ -53,14 +52,14 @@ class UnitController extends Controller
 
     public function create()
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         return view('society.units.create', compact('society'));
     }
 
     public function store(Request $request)
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         $validated = $this->validateUnit($request);
 
@@ -71,7 +70,7 @@ class UnitController extends Controller
 
     public function importForm()
     {
-        $society = Society::firstOrFail();
+        $society = $this->currentSociety();
 
         return view('society.units.import', compact('society'));
     }

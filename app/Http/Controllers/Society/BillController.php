@@ -28,7 +28,7 @@ class BillController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $query = MaintenanceBill::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -73,7 +73,7 @@ class BillController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $chargeHeads = ChargeHead::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -113,7 +113,7 @@ class BillController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $data = $request->validate([
             'bill_month' => ['required', 'string', 'max:255'],
@@ -217,7 +217,7 @@ class BillController extends Controller
 
     public function bulkUpload(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.billing.bills.bulk-upload', compact('society'));
     }

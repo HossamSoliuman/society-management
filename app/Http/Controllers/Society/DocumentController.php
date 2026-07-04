@@ -31,7 +31,7 @@ class DocumentController extends Controller
 
     public function index(Request $request): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $documents = Document::query()
             ->with('category')
@@ -65,7 +65,7 @@ class DocumentController extends Controller
 
     public function create(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return view('society.documents.upload', [
             'categories' => $this->categoryOptions($society),
@@ -77,7 +77,7 @@ class DocumentController extends Controller
 
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $tags = collect(explode(',', (string) ($data['tags'] ?? '')))
@@ -108,7 +108,7 @@ class DocumentController extends Controller
 
     public function categories(): View
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         $categories = DocumentCategory::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))

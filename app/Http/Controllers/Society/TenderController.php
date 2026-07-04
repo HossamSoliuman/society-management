@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenderRequest;
-use App\Models\Society;
 use App\Models\Tender;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -134,7 +133,7 @@ class TenderController extends Controller
 
     public function store(StoreTenderRequest $request): RedirectResponse
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
         $data = $request->validated();
 
         $isDraft = $request->input('action') === 'draft';
@@ -171,7 +170,7 @@ class TenderController extends Controller
      */
     private function baseQuery(Request $request, array $statuses): Builder
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return Tender::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -198,7 +197,7 @@ class TenderController extends Controller
      */
     private function awardedVendors(): array
     {
-        $society = Society::first();
+        $society = $this->currentSociety();
 
         return Tender::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
