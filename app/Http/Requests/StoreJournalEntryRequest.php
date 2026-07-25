@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreJournalEntryRequest extends FormRequest
@@ -22,7 +23,7 @@ class StoreJournalEntryRequest extends FormRequest
             'date' => ['required', 'date'],
             'narration' => ['nullable', 'string', 'max:500'],
             'lines' => ['required', 'array', 'min:2'],
-            'lines.*.account_id' => ['required', 'integer', 'exists:accounts,id'],
+            'lines.*.account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('society_id', $this->user()->society_id)],
             'lines.*.debit' => ['nullable', 'numeric', 'min:0'],
             'lines.*.credit' => ['nullable', 'numeric', 'min:0'],
         ];

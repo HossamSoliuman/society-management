@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSociety;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 class NumberingSeries extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToSociety, HasFactory, SoftDeletes;
 
     protected $table = 'numbering_series';
 

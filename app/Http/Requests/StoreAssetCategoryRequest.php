@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreAssetCategoryRequest extends FormRequest
@@ -32,7 +33,7 @@ class StoreAssetCategoryRequest extends FormRequest
             'display_order' => ['nullable', 'integer', 'min:0'],
             'movable' => ['nullable', 'boolean'],
             'immovable' => ['nullable', 'boolean'],
-            'parent_id' => ['nullable', 'integer', 'exists:asset_categories,id'],
+            'parent_id' => ['nullable', 'integer', Rule::exists('asset_categories', 'id')->where('society_id', $this->user()->society_id)],
             'asset_life_years' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string', 'max:255'],
         ];

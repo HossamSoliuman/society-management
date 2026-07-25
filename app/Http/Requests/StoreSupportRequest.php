@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSupportRequest extends FormRequest
 {
@@ -27,7 +28,7 @@ class StoreSupportRequest extends FormRequest
             'priority' => ['required', 'in:high,medium,low'],
             'subject' => ['required', 'string', 'max:255'],
             'raised_by_type' => ['required', 'in:member,staff_admin'],
-            'member_id' => ['nullable', 'integer', 'exists:members,id'],
+            'member_id' => ['nullable', 'integer', Rule::exists('members', 'id')->where('society_id', $this->user()->society_id)],
             'raised_by_name' => ['nullable', 'string', 'max:255'],
             'flat_no' => ['nullable', 'string', 'max:255'],
             'mobile' => ['nullable', 'string', 'max:255'],

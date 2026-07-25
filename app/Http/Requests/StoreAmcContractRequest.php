@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAmcContractRequest extends FormRequest
 {
@@ -20,8 +21,8 @@ class StoreAmcContractRequest extends FormRequest
         return [
             'item_asset' => ['required', 'string', 'max:255'],
             'item_sub' => ['nullable', 'string', 'max:255'],
-            'amc_category_id' => ['required', 'integer', 'exists:amc_categories,id'],
-            'service_vendor_id' => ['nullable', 'integer', 'exists:service_vendors,id'],
+            'amc_category_id' => ['required', 'integer', Rule::exists('amc_categories', 'id')->where('society_id', $this->user()->society_id)],
+            'service_vendor_id' => ['nullable', 'integer', Rule::exists('service_vendors', 'id')->where('society_id', $this->user()->society_id)],
             'vendor_name' => ['nullable', 'string', 'max:255'],
             'contract_no' => ['nullable', 'string', 'max:255'],
             'po_invoice_no' => ['nullable', 'string', 'max:255'],

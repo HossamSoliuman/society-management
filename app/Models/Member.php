@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSociety;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Member extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToSociety, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'society_id', 'name', 'member_type', 'flat_unit', 'tower_wing',

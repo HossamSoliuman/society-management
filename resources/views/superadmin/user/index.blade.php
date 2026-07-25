@@ -73,6 +73,7 @@
                         <th>User</th>
                         <th>Contact Details</th>
                         <th>Role</th>
+                        <th>Society</th>
                         <th>Status</th>
                         <th>Created Date</th>
                         <th>Actions</th>
@@ -102,12 +103,19 @@
                                 <span class="badge {{ ['badge-primary', 'badge-success', 'badge-warning', 'badge-info'][$loop->index % 4] }}">{{ $role->display_name }}</span>
                             @endforeach
                         </td>
+                        <td>{{ $user->society?->name ?? 'Platform-wide' }}</td>
                         <td><span class="status-badge {{ $user->status }}">{{ ucfirst($user->status) }}</span></td>
                         <td>{{ $user->created_at->format('d M Y') }}</td>
                         <td>
                             <div style="display: flex; gap: 4px;">
                                 <a href="{{ route('superadmin.users.show', $user) }}" class="action-btn view"><i class="fas fa-eye"></i></a>
                                 <a href="{{ route('superadmin.users.edit', $user) }}" class="action-btn edit"><i class="fas fa-pen"></i></a>
+                                @if($user->status === 'active')
+                                    <form action="{{ route('superadmin.users.resend-invitation', $user) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="action-btn view" title="Resend password setup link"><i class="fas fa-paper-plane"></i></button>
+                                    </form>
+                                @endif
                                 <form action="{{ route('superadmin.users.destroy', $user) }}" method="POST" style="display: inline;" data-confirm="Delete this user?">
                                     @csrf
                                     @method('DELETE')

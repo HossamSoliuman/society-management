@@ -65,24 +65,22 @@
                     </div>
                 </div>
 
-                <div class="form-row-3">
+                <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Password <span class="required">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock" style="font-size: 12px;"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="Enter password" required>
-                        </div>
+                        <label class="form-label">Society</label>
+                        <select name="society_id" class="form-control">
+                            <option value="">Platform-wide (Super Admin only)</option>
+                            @foreach($societies as $society)
+                                <option value="{{ $society->id }}" {{ old('society_id', request('society_id')) == $society->id ? 'selected' : '' }}>{{ $society->name }}</option>
+                            @endforeach
+                        </select>
+                        <small style="color:var(--text-muted);">Required for every society-level role.</small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Confirm Password <span class="required">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock" style="font-size: 12px;"></i></span>
-                            <input type="password" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+                        <label class="form-label">Account Setup</label>
+                        <div style="padding:12px 14px; border-radius:8px; background:#fff7ed; color:#9a3412; font-size:12px; line-height:1.5;">
+                            <i class="fas fa-envelope-open-text"></i> A secure, 60-minute password setup link will be emailed after creation.
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Designation (Optional)</label>
-                        <input type="text" name="designation" class="form-control" placeholder="Enter designation" value="{{ old('designation') }}">
                     </div>
                 </div>
 
@@ -102,9 +100,9 @@
                 <div class="card-body">
                     <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Permissions will be automatically assigned based on the selected role.</p>
                     <ul class="info-list">
-                        <li><i class="fas fa-check"></i> Role: Super Admin (Full Access)</li>
-                        <li><i class="fas fa-check"></i> Society: All Societies</li>
-                        <li><i class="fas fa-check"></i> Modules: All Modules</li>
+                        <li><i class="fas fa-check"></i> Role controls the accessible application area</li>
+                        <li><i class="fas fa-check"></i> Society users are isolated to the selected society</li>
+                        <li><i class="fas fa-check"></i> Super Admin is the only platform-wide role</li>
                     </ul>
                 </div>
             </div>
@@ -113,9 +111,9 @@
                 <div class="card-header"><div class="card-title"><i class="fas fa-info-circle" style="color: var(--primary);"></i> Important Information</div></div>
                 <div class="card-body">
                     <ul class="info-list">
-                        <li><i class="fas fa-check"></i> User will receive an email with login credentials</li>
-                        <li><i class="fas fa-check"></i> Password must be at least 8 characters</li>
-                        <li><i class="fas fa-check"></i> User can change their password after first login</li>
+                        <li><i class="fas fa-check"></i> Passwords are never sent by email</li>
+                        <li><i class="fas fa-check"></i> Setup links expire after 60 minutes</li>
+                        <li><i class="fas fa-check"></i> Links can be resent from User Management</li>
                     </ul>
                 </div>
             </div>

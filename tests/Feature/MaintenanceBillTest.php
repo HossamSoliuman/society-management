@@ -17,6 +17,7 @@ beforeEach(function () {
         'prefix' => 'GVR',
         'status' => 'active',
     ]);
+    linkSocietyAdmin($this->user, $this->society);
     $this->seed(Phase2SettingsSeeder::class);
 });
 

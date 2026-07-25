@@ -196,7 +196,7 @@
         <div class="login-right">
             <div class="login-header">
                 <h2>Welcome Back</h2>
-                <p>Sign in to your super admin account</p>
+                <p>Sign in to your platform or society account</p>
             </div>
 
             @if($errors->any())
@@ -226,13 +226,13 @@
                         <input type="checkbox" name="remember">
                         <label>Remember me</label>
                     </label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" class="forgot-link">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn-login">Sign In</button>
             </form>
-            <div class="login-footer">
-                <p>Default: superadmin@society.com / password</p>
-            </div>
+            @if(session('status'))
+                <div class="login-footer" style="color: #15803d;">{{ session('status') }}</div>
+            @endif
         </div>
     </div>
 </body>

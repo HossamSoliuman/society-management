@@ -33,6 +33,25 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select name="role_id" class="form-control" required>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->id }}" {{ old('role_id', $user->roles->first()?->id) == $role->id ? 'selected' : '' }}>{{ $role->display_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Society</label>
+                    <select name="society_id" class="form-control">
+                        <option value="">Platform-wide (Super Admin only)</option>
+                        @foreach($societies as $society)
+                            <option value="{{ $society->id }}" {{ old('society_id', $user->society_id) == $society->id ? 'selected' : '' }}>{{ $society->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label class="form-label">Mobile</label>
                     <input type="text" name="mobile" class="form-control" value="{{ $user->mobile }}">
                 </div>

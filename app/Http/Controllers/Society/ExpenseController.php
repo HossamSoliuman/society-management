@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
@@ -176,8 +177,8 @@ class ExpenseController extends Controller
         return $request->validate([
             'expense_date' => ['required', 'date'],
             'title' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'integer', 'exists:expense_categories,id'],
-            'vendor_id' => ['required', 'integer', 'exists:vendors,id'],
+            'category_id' => ['required', 'integer', Rule::exists('expense_categories', 'id')->where('society_id', $this->currentSociety()->id)],
+            'vendor_id' => ['required', 'integer', Rule::exists('vendors', 'id')->where('society_id', $this->currentSociety()->id)],
             'reference_no' => ['nullable', 'string', 'max:255'],
             'payment_mode' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0'],

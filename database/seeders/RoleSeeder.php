@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::updateOrCreate(['name' => $role['name']], $role);
         }
 
         $permissions = [
@@ -38,7 +38,22 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create($permission);
+            Permission::updateOrCreate(['name' => $permission['name']], $permission);
         }
+
+        $permissionIds = Permission::pluck('id', 'name');
+        Role::where('name', 'super_admin')->firstOrFail()->permissions()->sync($permissionIds->values());
+        Role::where('name', 'society_admin')->firstOrFail()->permissions()->sync($permissionIds->only([
+            'dashboard.view', 'billing.manage', 'reports.view', 'tickets.manage',
+        ])->values());
+        Role::where('name', 'manager')->firstOrFail()->permissions()->sync($permissionIds->only([
+            'dashboard.view', 'reports.view', 'tickets.manage',
+        ])->values());
+        Role::where('name', 'accountant')->firstOrFail()->permissions()->sync($permissionIds->only([
+            'dashboard.view', 'billing.manage', 'reports.view',
+        ])->values());
+        Role::where('name', 'staff')->firstOrFail()->permissions()->sync($permissionIds->only([
+            'dashboard.view', 'tickets.manage',
+        ])->values());
     }
 }

@@ -28,7 +28,7 @@ class StoreAssetRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'asset_code' => ['required', 'string', 'max:255', Rule::unique('assets', 'asset_code')->ignore($assetId)],
-            'category_id' => ['required', 'integer', 'exists:asset_categories,id'],
+            'category_id' => ['required', 'integer', Rule::exists('asset_categories', 'id')->where('society_id', $this->user()->society_id)],
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'serial_number' => ['nullable', 'string', 'max:255'],

@@ -45,7 +45,28 @@ class User extends Authenticatable
 
     public function hasRole($role)
     {
-        return $this->roles->contains('name', $role);
+        return $this->roles->where('status', 'active')->contains('name', $role);
+    }
+
+    public function hasAnyRole(array|string $roles): bool
+    {
+        $roles = is_array($roles) ? $roles : [$roles];
+
+        return $this->roles->where('status', 'active')->pluck('name')->intersect($roles)->isNotEmpty();
+    }
+
+    public function hasAnyPermission(array|string $permissions): bool
+    {
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+
+        $permissions = is_array($permissions) ? $permissions : [$permissions];
+
+        return $this->roles()
+            ->where('roles.status', 'active')
+            ->whereHas('permissions', fn ($query) => $query->whereIn('permissions.name', $permissions))
+            ->exists();
     }
 
     public function activityLogs()

@@ -14,6 +14,7 @@ use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BillController extends Controller
@@ -122,8 +123,8 @@ class BillController extends Controller
             'billing_type' => ['required', 'string', 'max:255'],
             'bill_cycle' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'member_id' => ['nullable', 'integer', 'exists:members,id'],
-            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'member_id' => ['nullable', 'integer', Rule::exists('members', 'id')->where('society_id', $society->id)],
+            'unit_id' => ['nullable', 'integer', Rule::exists('units', 'id')->where('society_id', $society->id)],
             'member_name' => ['nullable', 'string', 'max:255'],
             'flat_number' => ['nullable', 'string', 'max:255'],
             'tower_wing' => ['nullable', 'string', 'max:255'],

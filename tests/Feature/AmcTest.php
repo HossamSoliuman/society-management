@@ -15,6 +15,7 @@ beforeEach(function () {
         'prefix' => 'GMS',
         'status' => 'active',
     ]);
+    linkSocietyAdmin($this->user, $this->society);
 });
 
 it('loads the AMC tracker list', function () {

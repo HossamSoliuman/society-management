@@ -20,15 +20,23 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt($credentials + ['status' => 'active'], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             $user = Auth::user();
             if ($user->hasRole('super_admin')) {
-                return redirect()->intended(route('superadmin.dashboard'));
+                return redirect()->route('superadmin.dashboard');
             }
 
-            return redirect()->intended(route('society.dashboard'));
+            if ($user->hasAnyRole(['society_admin', 'manager', 'staff', 'accountant'])) {
+                return redirect()->route('society.dashboard');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors(['email' => 'This account does not have an active application role.'])->onlyInput('email');
         }
 
         return back()->withErrors([

@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CollectionController extends Controller
@@ -105,12 +106,12 @@ class CollectionController extends Controller
         $society = $this->currentSociety();
 
         $data = $request->validate([
-            'member_id' => ['nullable', 'integer', 'exists:members,id'],
-            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'member_id' => ['nullable', 'integer', Rule::exists('members', 'id')->where('society_id', $society->id)],
+            'unit_id' => ['nullable', 'integer', Rule::exists('units', 'id')->where('society_id', $society->id)],
             'member_name' => ['nullable', 'string', 'max:255'],
             'flat_number' => ['nullable', 'string', 'max:255'],
             'unit_label' => ['nullable', 'string', 'max:255'],
-            'maintenance_bill_id' => ['nullable', 'integer', 'exists:maintenance_bills,id'],
+            'maintenance_bill_id' => ['nullable', 'integer', Rule::exists('maintenance_bills', 'id')->where('society_id', $society->id)],
             'bill_type' => ['required', 'string', 'max:255'],
             'bill_period' => ['nullable', 'string', 'max:255'],
             'due_date' => ['nullable', 'date'],

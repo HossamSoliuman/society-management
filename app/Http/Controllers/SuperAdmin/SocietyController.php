@@ -3,16 +3,23 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Role;
 use App\Models\Society;
 use App\Models\SocietyType;
 use App\Models\SubscriptionPlan;
+use App\Notifications\SocietyAdminInvitation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Throwable;
 
 class SocietyController extends Controller
 {
     public function index()
     {
         $societies = Society::with('subscriptionPlan')->latest()->paginate(10);
+
         return view('superadmin.society.index', compact('societies'));
     }
 
@@ -20,6 +27,7 @@ class SocietyController extends Controller
     {
         $societyTypes = SocietyType::where('status', 'active')->get();
         $plans = SubscriptionPlan::where('status', 'active')->get();
+
         return view('superadmin.society.create', compact('societyTypes', 'plans'));
     }
 
@@ -63,21 +71,49 @@ class SocietyController extends Controller
             'auto_renewal' => 'boolean',
             'trial_period_days' => 'integer|min:0',
             'notes' => 'nullable|string',
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|max:255|unique:users,email',
+            'admin_mobile' => 'required|string|max:20',
         ]);
+
+        $adminData = [
+            'name' => $validated['admin_name'],
+            'email' => $validated['admin_email'],
+            'mobile' => $validated['admin_mobile'],
+        ];
+        unset($validated['admin_name'], $validated['admin_email'], $validated['admin_mobile']);
 
         $validated['auto_renewal'] = $request->boolean('auto_renewal', true);
         $validated['trial_period_days'] = $request->input('trial_period_days', 0);
         $validated['subscription_status'] = 'active';
         $validated['status'] = 'active';
 
-        Society::create($validated);
+        [$society, $admin, $token] = DB::transaction(function () use ($validated, $adminData) {
+            $society = Society::create($validated);
+            $admin = $society->users()->create($adminData + [
+                'password' => Str::random(64),
+                'status' => 'active',
+            ]);
+            $admin->roles()->attach(Role::where('name', 'society_admin')->firstOrFail());
 
-        return redirect()->route('superadmin.societies.index')->with('success', 'Society created successfully');
+            return [$society, $admin, Password::broker()->createToken($admin)];
+        });
+
+        try {
+            $admin->notify(new SocietyAdminInvitation($token, $society->name));
+            $message = 'Society created and a password setup invitation was sent to '.$admin->email.'.';
+        } catch (Throwable $exception) {
+            report($exception);
+            $message = 'Society and administrator created, but the invitation email could not be sent. Resend it from User Management.';
+        }
+
+        return redirect()->route('superadmin.societies.show', $society)->with('success', $message);
     }
 
     public function show(Society $society)
     {
-        $society->load('subscriptionPlan', 'societyType');
+        $society->load('subscriptionPlan', 'societyType', 'users.roles');
+
         return view('superadmin.society.show', compact('society'));
     }
 
@@ -85,6 +121,7 @@ class SocietyController extends Controller
     {
         $societyTypes = SocietyType::where('status', 'active')->get();
         $plans = SubscriptionPlan::where('status', 'active')->get();
+
         return view('superadmin.society.edit', compact('society', 'societyTypes', 'plans'));
     }
 
@@ -93,18 +130,26 @@ class SocietyController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'nullable|string|max:255',
-            'prefix' => 'required|string|max:10|unique:societies,prefix,' . $society->id,
+            'prefix' => 'required|string|max:10|unique:societies,prefix,'.$society->id,
             'society_type_id' => 'required|exists:society_types,id',
             'status' => 'required|in:active,inactive',
         ]);
 
         $society->update($validated);
+        if ($validated['status'] === 'inactive') {
+            $society->users()->update(['status' => 'inactive']);
+        }
+
         return redirect()->route('superadmin.societies.index')->with('success', 'Society updated successfully');
     }
 
     public function destroy(Society $society)
     {
-        $society->delete();
+        DB::transaction(function () use ($society) {
+            $society->users()->update(['status' => 'inactive']);
+            $society->delete();
+        });
+
         return redirect()->route('superadmin.societies.index')->with('success', 'Society deleted successfully');
     }
 }

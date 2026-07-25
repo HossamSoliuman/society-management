@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSociety;
 use Database\Factories\SupportRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SupportRequest extends Model
 {
     /** @use HasFactory<SupportRequestFactory> */
-    use HasFactory;
+    use BelongsToSociety, HasFactory;
 
     protected $fillable = [
         'society_id', 'request_id', 'subject', 'category', 'raised_by_type',

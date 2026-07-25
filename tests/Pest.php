@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Role;
+use App\Models\Society;
+use App\Models\User;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,7 +16,7 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
+pest()->extend(TestCase::class)
  // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
@@ -41,7 +46,24 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function linkSocietyAdmin(User $user, Society $society): void
 {
-    // ..
+    $role = Role::firstOrCreate(
+        ['name' => 'society_admin'],
+        ['display_name' => 'Society Admin', 'status' => 'active']
+    );
+
+    $user->update(['society_id' => $society->id, 'status' => 'active']);
+    $user->roles()->syncWithoutDetaching([$role->id]);
+}
+
+function linkSuperAdmin(User $user): void
+{
+    $role = Role::firstOrCreate(
+        ['name' => 'super_admin'],
+        ['display_name' => 'Super Admin', 'status' => 'active']
+    );
+
+    $user->update(['society_id' => null, 'status' => 'active']);
+    $user->roles()->syncWithoutDetaching([$role->id]);
 }

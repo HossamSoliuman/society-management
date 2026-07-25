@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAccountingPaymentRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class StoreAccountingPaymentRequest extends FormRequest
             'purpose' => ['nullable', 'string', 'max:255'],
             'mode' => ['required', 'string', 'max:50'],
             'amount' => ['required', 'numeric', 'min:0'],
-            'account_id' => ['required', 'integer', 'exists:accounts,id'],
+            'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('society_id', $this->user()->society_id)],
             'reference_no' => ['nullable', 'string', 'max:255'],
         ];
     }

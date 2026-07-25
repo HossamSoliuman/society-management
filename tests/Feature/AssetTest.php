@@ -17,6 +17,7 @@ beforeEach(function () {
         'prefix' => 'GMS',
         'status' => 'active',
     ]);
+    linkSocietyAdmin($this->user, $this->society);
 });
 
 function seedAssetDemo(): void

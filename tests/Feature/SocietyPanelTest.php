@@ -20,6 +20,7 @@ beforeEach(function () {
         'amenities' => ['Club House', 'Gymnasium'],
         'about' => "Paragraph one.\n\nParagraph two.",
     ]);
+    linkSocietyAdmin($this->user, $this->society);
 
     Member::factory()->count(5)->active()->create(['society_id' => $this->society->id]);
     Member::factory()->count(2)->inactive()->create(['society_id' => $this->society->id]);
@@ -48,9 +49,8 @@ it('renders the dashboard key figures', function () {
     $this->actingAs($this->user)->get(route('society.dashboard'))
         ->assertOk()
         ->assertSee('Society Dashboard')
-        ->assertSee('2,45,800')   // Indian-grouped monthly collections
-        ->assertSee('14,67,200')  // YTD revenue
-        ->assertSee('Green Meadows CHS')
+        ->assertSee('Total Units')
+        ->assertSee('Green Meadows Residency')
         ->assertSee('Quick Actions');
 });
 

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreDocumentRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'document_category_id' => ['required', 'integer', 'exists:document_categories,id'],
+            'document_category_id' => ['required', 'integer', Rule::exists('document_categories', 'id')->where('society_id', $this->user()->society_id)],
             'type' => ['required', 'in:PDF,DOCX,JPG,XLSX'],
             'description' => ['nullable', 'string', 'max:250'],
             'related_to' => ['nullable', 'string', 'max:255'],

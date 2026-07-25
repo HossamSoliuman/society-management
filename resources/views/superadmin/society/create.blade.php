@@ -157,6 +157,25 @@
                                     <input type="text" name="pincode" class="form-control" placeholder="Enter pincode" value="{{ old('pincode') }}" required>
                                 </div>
                             </div>
+
+                            <div style="margin-top: 26px; padding: 22px; border: 1px solid #fed7aa; border-radius: 12px; background: linear-gradient(135deg, #fff7ed, #ffffff);">
+                                <div class="wizard-section-title"><i class="fas fa-user-shield" style="color: var(--primary); margin-right: 8px;"></i>First Society Administrator</div>
+                                <div class="wizard-section-subtitle">This person will receive a secure link to create a password and access this society only.</div>
+                                <div class="form-row-3" style="margin-top: 16px;">
+                                    <div class="form-group">
+                                        <label class="form-label">Administrator Name <span class="required">*</span></label>
+                                        <input type="text" name="admin_name" class="form-control" value="{{ old('admin_name') }}" placeholder="Full name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Administrator Email <span class="required">*</span></label>
+                                        <input type="email" name="admin_email" class="form-control" value="{{ old('admin_email') }}" placeholder="admin@example.com" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Administrator Mobile <span class="required">*</span></label>
+                                        <input type="text" name="admin_mobile" class="form-control" value="{{ old('admin_mobile') }}" placeholder="Mobile number" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

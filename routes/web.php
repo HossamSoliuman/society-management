@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\AmcController;
 use App\Http\Controllers\Society\AssetCategoryController;
@@ -47,10 +48,16 @@ Route::get('/', function () {
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password', [PasswordController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordController::class, 'reset'])->name('password.reset');
+    Route::post('/reset-password', [PasswordController::class, 'update'])->name('password.update');
+});
 
-Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -86,6 +93,7 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])->name('users.resend-invitation');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/society', [ReportController::class, 'societyReport'])->name('reports.society');
@@ -151,7 +159,7 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
     Route::put('/settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
 });
 
-Route::middleware(['auth'])->prefix('society')->name('society.')->group(function () {
+Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountant', 'society.access'])->prefix('society')->name('society.')->group(function () {
     Route::get('/dashboard', [SocietyDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [SocietyDashboardController::class, 'data'])->name('dashboard.data');
 

@@ -8,6 +8,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
+    linkSuperAdmin($this->user);
 });
 
 it('loads the notice management list', function () {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSociety;
 use Database\Factories\AmcCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AmcCategory extends Model
 {
     /** @use HasFactory<AmcCategoryFactory> */
-    use HasFactory;
+    use BelongsToSociety, HasFactory;
 
     protected $fillable = [
         'society_id', 'name', 'description', 'icon', 'assets_covered',

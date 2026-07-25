@@ -9,6 +9,7 @@ use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VendorController extends Controller
@@ -109,7 +110,7 @@ class VendorController extends Controller
             'phone' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'gst_number' => ['nullable', 'string', 'max:255'],
-            'category_id' => ['nullable', 'integer', 'exists:expense_categories,id'],
+            'category_id' => ['nullable', 'integer', Rule::exists('expense_categories', 'id')->where('society_id', $this->currentSociety()->id)],
             'address' => ['nullable', 'string', 'max:500'],
             'status' => ['required', 'in:active,inactive'],
             'notes' => ['nullable', 'string', 'max:500'],

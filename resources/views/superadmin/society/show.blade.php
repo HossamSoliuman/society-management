@@ -78,4 +78,33 @@
         </div>
     </div>
 </div>
+
+<div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-user-shield" style="color: var(--primary); margin-right: 8px;"></i>Society Administrators</div>
+        <a href="{{ route('superadmin.users.create', ['society_id' => $society->id]) }}" class="btn btn-secondary"><i class="fas fa-plus"></i> Add user</a>
+    </div>
+    <div class="card-body">
+        @forelse($society->users as $user)
+            <div class="review-row">
+                <span class="review-label">
+                    {{ $user->name }}
+                    <small style="display:block; color:var(--text-muted); margin-top:3px;">{{ $user->email }}</small>
+                </span>
+                <span class="review-value" style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                    @foreach($user->roles as $role)<span class="badge badge-primary">{{ $role->display_name }}</span>@endforeach
+                    <span class="status-badge {{ $user->status }}">{{ ucfirst($user->status) }}</span>
+                    @if($user->status === 'active')
+                        <form method="POST" action="{{ route('superadmin.users.resend-invitation', $user) }}">
+                            @csrf
+                            <button class="btn btn-secondary" type="submit"><i class="fas fa-paper-plane"></i> Resend setup link</button>
+                        </form>
+                    @endif
+                </span>
+            </div>
+        @empty
+            <p style="color: var(--text-muted);">No users are linked to this society.</p>
+        @endforelse
+    </div>
+</div>
 @endsection

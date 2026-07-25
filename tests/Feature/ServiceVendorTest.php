@@ -14,6 +14,7 @@ beforeEach(function () {
         'prefix' => 'GMS',
         'status' => 'active',
     ]);
+    linkSocietyAdmin($this->user, $this->society);
 });
 
 it('loads the vendor management list with stats and filters', function () {
