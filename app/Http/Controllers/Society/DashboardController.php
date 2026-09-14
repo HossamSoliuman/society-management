@@ -10,6 +10,7 @@ use App\Models\Notice;
 use App\Models\Society;
 use App\Models\SupportTicket;
 use App\Models\Unit;
+use App\Support\DateSql;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -158,10 +159,11 @@ class DashboardController extends Controller
         $pendingMembers = (int) $billBase()->where('outstanding_amount', '>', 0)->distinct()->count('member_id');
 
         // --- 12-month revenue trend for the reference year ---
+        $monthExpr = DateSql::month('bill_date');
         $monthly = MaintenanceBill::where('society_id', $sid)
-            ->whereRaw("strftime('%Y', bill_date) = ?", [(string) $window['refYear']])
-            ->selectRaw("CAST(strftime('%m', bill_date) AS INTEGER) as m, COALESCE(SUM(collected_amount),0) as v")
-            ->groupBy('m')
+            ->whereYear('bill_date', $window['refYear'])
+            ->selectRaw("{$monthExpr} as m, COALESCE(SUM(collected_amount),0) as v")
+            ->groupByRaw($monthExpr)
             ->pluck('v', 'm');
 
         $points = [];
@@ -174,7 +176,7 @@ class DashboardController extends Controller
 
         // Compare against the same year prior.
         $prevYtd = (float) MaintenanceBill::where('society_id', $sid)
-            ->whereRaw("strftime('%Y', bill_date) = ?", [(string) ($window['refYear'] - 1)])
+            ->whereYear('bill_date', $window['refYear'] - 1)
             ->sum('collected_amount');
         $vsLastYear = $prevYtd > 0 ? round(($ytd - $prevYtd) / $prevYtd * 100, 1) : null;
 
