@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
             ExpenseSeeder::class,
             AssetCategorySeeder::class,
             AssetSeeder::class,
-            SupportRequestSeeder::class,
             AccountGroupSeeder::class,
             AccountSeeder::class,
             TransactionSeeder::class,

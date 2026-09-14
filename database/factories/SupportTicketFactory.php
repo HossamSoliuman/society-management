@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\SupportRequest;
+use App\Models\SupportTicket;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<SupportRequest>
+ * @extends Factory<SupportTicket>
  */
-class SupportRequestFactory extends Factory
+class SupportTicketFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -21,11 +21,12 @@ class SupportRequestFactory extends Factory
 
         return [
             'society_id' => null,
-            'request_id' => 'PS-'.$raisedAt->format('Y').'-'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
+            'ticket_number' => 'TKT-'.$raisedAt->format('Y').'-'.str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'subject' => fake()->sentence(4),
             'category' => fake()->randomElement(['Maintenance', 'Lift', 'Electrical', 'Housekeeping', 'Security', 'Garden', 'Access Control', 'Others']),
             'raised_by_type' => fake()->randomElement(['member', 'staff_admin']),
             'member_id' => null,
+            'created_by' => null,
             'raised_by_name' => fake()->name(),
             'flat_no' => fake()->randomElement(['A-101', 'B-204', 'C-305', 'A-402']),
             'mobile' => fake()->numerify('+91 98### #####'),
@@ -39,5 +40,10 @@ class SupportRequestFactory extends Factory
             'notes' => null,
             'raised_at' => $raisedAt,
         ];
+    }
+
+    public function open(): static
+    {
+        return $this->state(fn () => ['status' => 'open']);
     }
 }

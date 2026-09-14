@@ -14,7 +14,7 @@ use App\Models\Member;
 use App\Models\NumberingSeries;
 use App\Models\ServiceVendor;
 use App\Models\Society;
-use App\Models\SupportRequest;
+use App\Models\SupportTicket;
 use App\Models\Tax;
 use App\Models\Unit;
 use App\Models\User;
@@ -63,7 +63,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
             'vendor_id' => null,
         ]),
         'asset' => Asset::factory()->create($sid + ['category_id' => AssetCategory::factory()->create($sid)->id]),
-        'request' => SupportRequest::factory()->create($sid),
+        'request' => SupportTicket::factory()->create($sid),
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
         'teamUser' => tap(User::factory()->create($sid), fn (User $u) => $u->roles()->sync([seededRole('staff')->id])),
         default => throw new RuntimeException("No fixture for route parameter {{$param}} on {$routeName}; add one to SocietyIsolationTest."),

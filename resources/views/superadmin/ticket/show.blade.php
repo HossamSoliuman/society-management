@@ -46,9 +46,20 @@
                 <span class="review-value">{{ $ticket->society->name ?? 'N/A' }}</span>
             </div>
             <div class="review-row">
-                <span class="review-label">Created</span>
-                <span class="review-value">{{ $ticket->created_at->format('d M Y H:i') }}</span>
+                <span class="review-label">Raised By</span>
+                <span class="review-value">{{ $ticket->raised_by_name ?? $ticket->creator?->name ?? 'N/A' }} ({{ $ticket->raisedByLabel() }}){{ $ticket->flat_no ? ' · '.$ticket->flat_no : '' }}</span>
             </div>
+            <div class="review-row">
+                <span class="review-label">Contact</span>
+                <span class="review-value">{{ $ticket->mobile ?? '—' }} {{ $ticket->email ? ' · '.$ticket->email : '' }}</span>
+            </div>
+            <div class="review-row">
+                <span class="review-label">Created</span>
+                <span class="review-value">{{ ($ticket->raised_at ?? $ticket->created_at)->format('d M Y H:i') }}</span>
+            </div>
+            @if($ticket->attachment_path)
+                <div style="margin-top: 12px;"><a href="{{ asset('storage/'.$ticket->attachment_path) }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-paperclip"></i> View attachment</a></div>
+            @endif
         </div>
     </div>
 
@@ -71,5 +82,13 @@
             </form>
         </div>
     </div>
+</div>
+
+<div style="margin-top: 20px;">
+    @include('society.support._thread', [
+        'ticket' => $ticket,
+        'action' => route('superadmin.tickets.reply', $ticket),
+        'statuses' => \App\Models\SupportTicket::STATUSES,
+    ])
 </div>
 @endsection

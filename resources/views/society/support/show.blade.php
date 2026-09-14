@@ -48,8 +48,20 @@
                         <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">{{ $request->notes }}</p>
                     </div>
                 @endif
+
+                @if($request->attachment_path)
+                    <div style="margin-top: 16px;">
+                        <a href="{{ asset('storage/'.$request->attachment_path) }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-paperclip"></i> View attachment</a>
+                    </div>
+                @endif
             </div>
         </div>
+
+        @include('society.support._thread', [
+            'ticket' => $request,
+            'action' => route('society.support.reply', $request),
+            'statuses' => $statuses,
+        ])
     </div>
 
     <div>

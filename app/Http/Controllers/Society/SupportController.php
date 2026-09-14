@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSupportRequest;
+use App\Http\Requests\StoreTicketReplyRequest;
 use App\Models\Member;
 use App\Models\Society;
-use App\Models\SupportRequest;
+use App\Models\SupportTicket;
 use App\Models\Unit;
+use App\Services\TicketService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -19,24 +21,31 @@ class SupportController extends Controller
     /** Request categories for the filter and the Raise New Request form. */
     private const CATEGORIES = [
         'Maintenance', 'Lift', 'Electrical', 'Housekeeping',
-        'Security', 'Garden', 'Access Control', 'Others',
+        'Security', 'Garden', 'Access Control', 'Billing', 'Technical', 'Others',
     ];
 
     private const PRIORITIES = ['high' => 'High', 'medium' => 'Medium', 'low' => 'Low'];
 
-    private const STATUSES = ['open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'];
-
     private const CONTACT_METHODS = ['Phone', 'Email', 'WhatsApp', 'SMS'];
+
+    /** Colours for the category donut, keyed by category. */
+    private const CATEGORY_COLORS = [
+        'Maintenance' => '#F97316', 'Lift' => '#8B5CF6', 'Electrical' => '#10B981', 'Housekeeping' => '#EC4899',
+        'Security' => '#EF4444', 'Garden' => '#22C55E', 'Access Control' => '#14B8A6', 'Billing' => '#3B82F6',
+        'Technical' => '#6366F1', 'Others' => '#94a3b8',
+    ];
+
+    public function __construct(private readonly TicketService $tickets) {}
 
     public function index(Request $request): View
     {
         $society = $this->currentSociety();
 
         $tab = $request->string('tab')->toString() ?: 'all';
-        $tabStatus = in_array($tab, ['open', 'in_progress', 'resolved', 'closed'], true) ? $tab : null;
+        $tabStatus = array_key_exists($tab, SupportTicket::STATUSES) ? $tab : null;
 
-        $requests = SupportRequest::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+        $requests = SupportTicket::query()
+            ->forSociety($society)
             ->when($tabStatus, fn ($q) => $q->where('status', $tabStatus))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->when($request->filled('priority'), fn ($q) => $q->where('priority', $request->string('priority')))
@@ -47,7 +56,7 @@ class SupportController extends Controller
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
                 $q->where(function ($sub) use ($term) {
-                    $sub->where('request_id', 'like', "%{$term}%")
+                    $sub->where('ticket_number', 'like', "%{$term}%")
                         ->orWhere('subject', 'like', "%{$term}%")
                         ->orWhere('raised_by_name', 'like', "%{$term}%")
                         ->orWhere('mobile', 'like', "%{$term}%");
@@ -62,13 +71,13 @@ class SupportController extends Controller
             'society' => $society,
             'requests' => $requests,
             'tab' => $tab,
-            'tabs' => ['all' => 'All Requests'] + self::STATUSES,
-            'stats' => $this->stats(),
-            'categoryDonut' => $this->categoryDonut(),
-            'priorityBars' => $this->priorityBars(),
+            'tabs' => ['all' => 'All Requests'] + SupportTicket::STATUSES,
+            'stats' => $this->stats($society),
+            'categoryDonut' => $this->categoryDonut($society),
+            'priorityBars' => $this->priorityBars($society),
             'categories' => self::CATEGORIES,
             'priorities' => self::PRIORITIES,
-            'statuses' => self::STATUSES,
+            'statuses' => SupportTicket::STATUSES,
         ]);
     }
 
@@ -97,48 +106,49 @@ class SupportController extends Controller
         }
 
         $payload = [
-            'society_id' => $society?->id,
-            'request_id' => $this->nextRequestId(),
             'subject' => $data['subject'],
             'category' => $data['category'],
             'raised_by_type' => $data['raised_by_type'],
             'member_id' => $data['member_id'] ?? null,
-            'raised_by_name' => $name ?? 'Society Admin',
+            'raised_by_name' => $name ?? $request->user()->name,
             'flat_no' => $data['flat_no'] ?? null,
             'mobile' => $data['mobile'] ?? null,
             'email' => $data['email'] ?? null,
             'preferred_contact' => $data['preferred_contact'] ?? null,
             'priority' => $data['priority'],
-            'status' => 'open',
             'description' => $data['description'],
             'location' => $data['location'] ?? null,
             'notes' => $data['notes'] ?? null,
-            'raised_at' => now(),
         ];
 
         if ($request->hasFile('attachment')) {
             $payload['attachment_path'] = $request->file('attachment')->store('support-attachments', 'public');
         }
 
-        $supportRequest = SupportRequest::create($payload);
+        $ticket = $this->tickets->create($society, $payload, $request->user());
 
         return redirect()->route('society.support.index')
-            ->with('success', "Request {$supportRequest->request_id} submitted successfully.");
+            ->with('success', "Request {$ticket->ticket_number} submitted successfully.");
     }
 
-    public function show(SupportRequest $request): View
+    public function show(SupportTicket $request): View
     {
         return view('society.support.show', [
-            'request' => $request->load('member'),
+            'request' => $request->load(['member', 'replies.user']),
+            'statuses' => SupportTicket::STATUSES,
         ]);
     }
 
-    private function nextRequestId(): string
+    public function reply(StoreTicketReplyRequest $form, SupportTicket $request): RedirectResponse
     {
-        $year = now()->format('Y');
-        $next = (SupportRequest::max('id') ?? 0) + 1;
+        $data = $form->validated();
+        $attachment = $form->hasFile('attachment')
+            ? $form->file('attachment')->store('support-attachments', 'public')
+            : null;
 
-        return 'PS-'.$year.'-'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+        $this->tickets->reply($request, $form->user(), $data['message'], $data['status'] ?? null, $attachment);
+
+        return redirect()->route('society.support.show', $request)->with('success', 'Reply posted.');
     }
 
     /**
@@ -164,23 +174,45 @@ class SupportController extends Controller
     }
 
     /**
-     * Demo stat-card figures matching "Priority support.png".
+     * Stat-card figures: totals by status plus month-over-month trend.
      *
      * @return array<string, mixed>
      */
-    private function stats(): array
+    private function stats(Society $society): array
     {
+        $byStatus = SupportTicket::query()
+            ->forSociety($society)
+            ->selectRaw('status, COUNT(*) as c')
+            ->groupBy('status')
+            ->pluck('c', 'status');
+
+        $total = (int) $byStatus->sum();
+        $pct = fn (int $n) => $total > 0 ? round($n / $total * 100, 1).'% of total' : '0% of total';
+
+        $thisMonth = SupportTicket::query()->forSociety($society)
+            ->whereBetween('raised_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
+        $lastMonth = SupportTicket::query()->forSociety($society)
+            ->whereBetween('raised_at', [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth()])->count();
+        $trend = $lastMonth > 0
+            ? round(($thisMonth - $lastMonth) / $lastMonth * 100).'% vs last month'
+            : "{$thisMonth} this month";
+
+        $open = (int) (($byStatus['open'] ?? 0) + ($byStatus['reopened'] ?? 0));
+        $inProgress = (int) ($byStatus['in_progress'] ?? 0);
+        $resolved = (int) ($byStatus['resolved'] ?? 0);
+        $closed = (int) ($byStatus['closed'] ?? 0);
+
         return [
-            'total' => 48,
-            'total_trend' => '12% vs last month',
-            'open' => 12,
-            'open_pct' => '25% of total',
-            'in_progress' => 8,
-            'in_progress_pct' => '16.7% of total',
-            'resolved' => 25,
-            'resolved_pct' => '52% of total',
-            'closed' => 3,
-            'closed_pct' => '6.3% of total',
+            'total' => $total,
+            'total_trend' => $trend,
+            'open' => $open,
+            'open_pct' => $pct($open),
+            'in_progress' => $inProgress,
+            'in_progress_pct' => $pct($inProgress),
+            'resolved' => $resolved,
+            'resolved_pct' => $pct($resolved),
+            'closed' => $closed,
+            'closed_pct' => $pct($closed),
         ];
     }
 
@@ -189,19 +221,40 @@ class SupportController extends Controller
      *
      * @return array<string, mixed>
      */
-    private function categoryDonut(): array
+    private function categoryDonut(Society $society): array
     {
+        $rows = SupportTicket::query()
+            ->forSociety($society)
+            ->whereBetween('raised_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->selectRaw('category, COUNT(*) as c')
+            ->groupBy('category')
+            ->orderByDesc('c')
+            ->pluck('c', 'category');
+
+        if ($rows->isEmpty()) {
+            $rows = SupportTicket::query()
+                ->forSociety($society)
+                ->selectRaw('category, COUNT(*) as c')
+                ->groupBy('category')
+                ->orderByDesc('c')
+                ->pluck('c', 'category');
+        }
+
+        $total = (int) $rows->sum();
+        $segments = [];
+        foreach ($rows as $category => $count) {
+            $segments[] = [
+                'label' => $category ?: 'Others',
+                'value' => (int) $count,
+                'pct' => $total > 0 ? round($count / $total * 100, 1).'%' : '0%',
+                'color' => self::CATEGORY_COLORS[$category] ?? '#94a3b8',
+            ];
+        }
+
         return [
-            'center_value' => '48',
+            'center_value' => (string) $total,
             'center_label' => 'Total',
-            'segments' => [
-                ['label' => 'Maintenance', 'value' => 16, 'pct' => '33.3%', 'color' => '#F97316'],
-                ['label' => 'Lift', 'value' => 8, 'pct' => '16.7%', 'color' => '#8B5CF6'],
-                ['label' => 'Electrical', 'value' => 6, 'pct' => '12.5%', 'color' => '#10B981'],
-                ['label' => 'Housekeeping', 'value' => 6, 'pct' => '12.5%', 'color' => '#EC4899'],
-                ['label' => 'Security', 'value' => 5, 'pct' => '10.4%', 'color' => '#EF4444'],
-                ['label' => 'Others', 'value' => 7, 'pct' => '14.6%', 'color' => '#94a3b8'],
-            ],
+            'segments' => $segments,
         ];
     }
 
@@ -210,12 +263,28 @@ class SupportController extends Controller
      *
      * @return array<int, array<string, mixed>>
      */
-    private function priorityBars(): array
+    private function priorityBars(Society $society): array
     {
-        return [
-            ['label' => 'High', 'value' => 20, 'pct' => '41.7%', 'width' => 42, 'color' => 'var(--danger)'],
-            ['label' => 'Medium', 'value' => 18, 'pct' => '37.5%', 'width' => 38, 'color' => 'var(--orange)'],
-            ['label' => 'Low', 'value' => 10, 'pct' => '20.8%', 'width' => 21, 'color' => 'var(--success)'],
-        ];
+        $rows = SupportTicket::query()
+            ->forSociety($society)
+            ->selectRaw('priority, COUNT(*) as c')
+            ->groupBy('priority')
+            ->pluck('c', 'priority');
+        $total = (int) $rows->sum();
+
+        $bars = [];
+        foreach ([['high', 'High', 'var(--danger)'], ['medium', 'Medium', 'var(--orange)'], ['low', 'Low', 'var(--success)']] as [$key, $label, $color]) {
+            $count = (int) ($rows[$key] ?? 0) + ($key === 'high' ? (int) ($rows['urgent'] ?? 0) : 0);
+            $width = $total > 0 ? (int) round($count / $total * 100) : 0;
+            $bars[] = [
+                'label' => $label,
+                'value' => $count,
+                'pct' => ($total > 0 ? round($count / $total * 100, 1) : 0).'%',
+                'width' => $width,
+                'color' => $color,
+            ];
+        }
+
+        return $bars;
     }
 }

@@ -124,6 +124,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
     Route::put('/tickets/{ticket}/status', [SupportTicketController::class, 'updateStatus'])->name('tickets.status');
+    Route::post('/tickets/{ticket}/reply', [SupportTicketController::class, 'reply'])->name('tickets.reply');
 
     Route::get('/logs/user-activities', [ActivityLogController::class, 'userActivities'])->name('logs.user-activities');
     Route::get('/logs/system-logs', [ActivityLogController::class, 'systemLogs'])->name('logs.system-logs');
@@ -300,6 +301,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('support', [SupportController::class, 'index'])->name('support.index');
         Route::post('support', [SupportController::class, 'store'])->name('support.store');
         Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');
+        Route::post('support/{request}/reply', [SupportController::class, 'reply'])->name('support.reply');
     });
 
     // Accounting. In-page tabs + Chart of Accounts / Opening Balances pages.
