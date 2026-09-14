@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MaintenanceBill extends Model
 {
-    use BelongsToSociety, HasFactory, SoftDeletes;
+    use BelongsToSociety, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'society_id', 'bill_number', 'member_id', 'unit_id',

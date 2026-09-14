@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Contracts\SmsGateway;
 use App\Models\SmtpSetting;
 use App\Models\User;
+use App\Notifications\Channels\SmsChannel;
+use App\Services\Sms\FakeSmsGateway;
+use App\Services\Sms\LogSmsGateway;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -15,7 +21,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(SmsGateway::class, function () {
+            return match (config('services.sms.driver', 'log')) {
+                'fake' => new FakeSmsGateway,
+                default => new LogSmsGateway,
+            };
+        });
     }
 
     public function boot(): void
@@ -28,6 +39,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->applySmtpSettings();
         $this->registerRouteBindings();
+
+        Notification::resolved(function (ChannelManager $manager) {
+            $manager->extend('sms', fn ($app) => new SmsChannel($app->make(SmsGateway::class)));
+        });
     }
 
     /**

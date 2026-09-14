@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Notice;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreNoticeRequest extends FormRequest
 {
@@ -18,6 +20,9 @@ class StoreNoticeRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'society_id' => ['nullable', Rule::exists('societies', 'id')->whereNull('deleted_at')],
+            'target_roles' => ['nullable', 'array'],
+            'target_roles.*' => [Rule::in(Notice::$audienceRoles)],
             'notice_type' => ['required', 'in:general,maintenance,billing,event'],
             'priority' => ['required', 'in:high,medium,low'],
             'short_description' => ['nullable', 'string', 'max:500'],

@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('subscriptions:refresh-status')->dailyAt('00:15');
 Schedule::command('subscriptions:send-renewal-alerts')->dailyAt('08:00');
 Schedule::command('invoices:mark-overdue')->dailyAt('00:30');
+Schedule::command('announcements:dispatch-scheduled')->everyMinute();

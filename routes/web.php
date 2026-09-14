@@ -16,6 +16,7 @@ use App\Http\Controllers\Society\DocumentController;
 use App\Http\Controllers\Society\ExpenseCategoryController;
 use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
+use App\Http\Controllers\Society\NoticeController as SocietyNoticeController;
 use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
@@ -115,6 +116,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/notifications/announcements', [NotificationController::class, 'announcements'])->name('notification.announcements');
     Route::get('/notifications/announcements/create', [NotificationController::class, 'createAnnouncement'])->name('notification.announcements.create');
     Route::post('/notifications/announcements', [NotificationController::class, 'storeAnnouncement'])->name('notification.announcements.store');
+    Route::get('/notifications/announcements/estimate', [NotificationController::class, 'estimateRecipients'])->name('notification.announcements.estimate');
     Route::get('/notifications/renewals', [NotificationController::class, 'renewalAlerts'])->name('notification.renewals');
 
     Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
@@ -183,6 +185,11 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
 
     // My Subscription (read-only, every society role)
     Route::get('/subscription', [SocietySubscriptionController::class, 'index'])->name('subscription.index');
+
+    // Notices targeted at this society (every society role)
+    Route::get('/notices', [SocietyNoticeController::class, 'index'])->name('notices.index');
+    Route::get('/notices/{notice}', [SocietyNoticeController::class, 'show'])->name('notices.show');
+    Route::post('/notices/{notice}/acknowledge', [SocietyNoticeController::class, 'acknowledge'])->name('notices.acknowledge');
 
     // Members & Units
     Route::middleware('permission:members.manage')->group(function () {

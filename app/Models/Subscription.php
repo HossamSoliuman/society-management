@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Observers\SubscriptionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ use Illuminate\Support\Carbon;
 #[ObservedBy(SubscriptionObserver::class)]
 class Subscription extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     /** Days before end_date at which a subscription is flagged as expiring. */
     public const EXPIRING_SOON_DAYS = 30;

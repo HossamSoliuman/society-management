@@ -207,7 +207,11 @@ class DashboardController extends Controller
                 'amount' => $p->paid_amount ? $this->inr($p->paid_amount) : null,
             ])->all();
 
-        $notices = Notice::orderByDesc('publish_at')
+        $notices = Notice::query()
+            ->live()
+            ->forUser(auth()->user())
+            ->orderByDesc('pin_to_dashboard')
+            ->orderByDesc('publish_at')
             ->limit(3)
             ->get()
             ->map(fn ($n) => [

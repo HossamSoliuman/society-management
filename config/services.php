@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    /*
+     * Outbound SMS. "log" writes messages to the log; "fake" records them in
+     * memory (tests). Real providers implement App\Contracts\SmsGateway.
+     */
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'log_channel' => env('SMS_LOG_CHANNEL'),
+    ],
+
 ];

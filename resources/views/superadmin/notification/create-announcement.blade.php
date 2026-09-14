@@ -67,16 +67,17 @@
                     <div class="form-group">
                         <label class="form-label">Recipient Type <span class="required">*</span></label>
                         <select name="recipient_type" class="form-control" required>
-                            <option value="all_members" selected>All Members</option>
-                            <option value="all_residents">All Residents</option>
-                            <option value="all_staff">All Staff</option>
-                            <option value="custom">Custom</option>
+                            <option value="all_staff" {{ old('recipient_type', 'all_staff') === 'all_staff' ? 'selected' : '' }}>Society Admins & Staff</option>
+                            <option value="all_members" {{ old('recipient_type') === 'all_members' ? 'selected' : '' }}>All Members (portal users)</option>
+                            <option value="all_residents" {{ old('recipient_type') === 'all_residents' ? 'selected' : '' }}>All Residents</option>
+                            <option value="custom" {{ old('recipient_type') === 'custom' ? 'selected' : '' }}>Custom roles</option>
                         </select>
                     </div>
-                    <div class="info-box">
-                        <i class="fas fa-info-circle"></i>
-                        <span>This announcement will be sent to approximately <strong>320 recipients</strong>.</span>
-                    </div>
+                    @include('superadmin.components.audience-picker', [
+                        'societies' => $societies,
+                        'roles' => $roles,
+                        'estimateUrl' => route('superadmin.notification.announcements.estimate'),
+                    ])
                 </div>
             </div>
 

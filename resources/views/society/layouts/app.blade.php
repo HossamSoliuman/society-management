@@ -327,6 +327,10 @@
                     <span>Vendor Management</span>
                 </a>
                 @endif
+                <a href="{{ route('society.notices.index') }}" class="nav-item {{ request()->routeIs('society.notices.*') ? 'active' : '' }}">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Notices</span>
+                </a>
                 <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="nav-item">
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>

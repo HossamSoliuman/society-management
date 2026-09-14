@@ -178,11 +178,11 @@
                             </label>
                         @endforeach
                     </div>
-                    <input type="hidden" name="estimated_recipients" value="245">
-                    <div class="info-box">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Notice will be sent to all registered members across all societies.</span>
-                    </div>
+                    @include('superadmin.components.audience-picker', [
+                        'societies' => $societies,
+                        'roles' => $roles,
+                        'estimateUrl' => route('superadmin.notification.announcements.estimate'),
+                    ])
                 </div>
             </div>
         </div>
