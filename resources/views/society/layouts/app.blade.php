@@ -350,7 +350,7 @@
                     </button>
                     <div class="nav-submenu">
                         <a href="{{ route('society.placeholder', ['page' => 'General Settings']) }}" class="nav-item"><i class="fas fa-sliders"></i><span>General Settings</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Roles & Permissions']) }}" class="nav-item"><i class="fas fa-user-shield"></i><span>Roles &amp; Permissions</span></a>
+                        <a href="{{ route('society.settings.users.index') }}" class="nav-item {{ request()->routeIs('society.settings.users.*') ? 'active' : '' }}"><i class="fas fa-user-shield"></i><span>Roles &amp; Permissions</span></a>
                     </div>
                 </div>
             </nav>

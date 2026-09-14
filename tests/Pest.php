@@ -3,6 +3,7 @@
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
 
 /*
@@ -27,7 +28,7 @@ pest()->extend(TestCase::class)
 |
 | When you're writing tests, you often need to check that values meet certain conditions. The
 | "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
+| to assert various things. Of course, you may extend the Expectation API at any time.
 |
 */
 
@@ -46,24 +47,35 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+/**
+ * Seed roles and their permission grants (idempotent) and return the role.
+ */
+function seededRole(string $name): Role
+{
+    if (! Role::where('name', $name)->whereHas('permissions')->exists() && $name !== 'member') {
+        (new RoleSeeder)->run();
+    }
+
+    return Role::where('name', $name)->firstOrFail();
+}
+
+/**
+ * Attach the user to the society with a society-panel role and the
+ * permissions that role receives from RoleSeeder.
+ */
+function linkSocietyUser(User $user, Society $society, string $role = 'society_admin'): void
+{
+    $user->update(['society_id' => $society->id, 'status' => 'active']);
+    $user->roles()->sync([seededRole($role)->id]);
+}
+
 function linkSocietyAdmin(User $user, Society $society): void
 {
-    $role = Role::firstOrCreate(
-        ['name' => 'society_admin'],
-        ['display_name' => 'Society Admin', 'status' => 'active']
-    );
-
-    $user->update(['society_id' => $society->id, 'status' => 'active']);
-    $user->roles()->syncWithoutDetaching([$role->id]);
+    linkSocietyUser($user, $society, 'society_admin');
 }
 
 function linkSuperAdmin(User $user): void
 {
-    $role = Role::firstOrCreate(
-        ['name' => 'super_admin'],
-        ['display_name' => 'Super Admin', 'status' => 'active']
-    );
-
     $user->update(['society_id' => null, 'status' => 'active']);
-    $user->roles()->syncWithoutDetaching([$role->id]);
+    $user->roles()->syncWithoutDetaching([seededRole('super_admin')->id]);
 }

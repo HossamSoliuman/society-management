@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\Society;
 
 /**
  * Derives the accounting statements (Trial Balance, P&L, Balance Sheet, cash-flow,
@@ -72,9 +73,10 @@ class AccountingService
      *
      * @return array{rows: array<int, array{code: string, name: string, debit: float, credit: float}>, total_debit: float, total_credit: float}
      */
-    public function trialBalance(): array
+    public function trialBalance(Society $society): array
     {
         $accounts = Account::query()
+            ->forSociety($society)
             ->where('type', 'detail')
             ->with('group')
             ->orderBy('code')

@@ -290,7 +290,7 @@ class AccountingController extends Controller
     {
         return view('society.accounting.trial-balance', [
             'active' => 'trial-balance',
-            'trialBalance' => $this->accounting->trialBalance(),
+            'trialBalance' => $this->accounting->trialBalance($this->currentSociety()),
         ]);
     }
 

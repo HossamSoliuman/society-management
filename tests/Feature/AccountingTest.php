@@ -207,7 +207,7 @@ it('validates journal entries require at least two lines', function () {
 it('computes trial balance debit and credit columns from seeded accounts', function () {
     seedAccountingDemo();
 
-    $tb = app(AccountingService::class)->trialBalance();
+    $tb = app(AccountingService::class)->trialBalance($this->society);
 
     expect($tb['rows'])->not->toBeEmpty()
         ->and($tb['total_debit'])->toBeGreaterThan(0)

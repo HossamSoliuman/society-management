@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\SmtpSetting;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +27,21 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->applySmtpSettings();
+        $this->registerRouteBindings();
+    }
+
+    /**
+     * {teamUser}: a user of the signed-in admin's own society (404 otherwise),
+     * resolved before form-request validation runs.
+     */
+    private function registerRouteBindings(): void
+    {
+        Route::bind('teamUser', function (string $value): User {
+            return User::query()
+                ->whereKey($value)
+                ->where('society_id', Auth::user()?->society_id ?? -1)
+                ->firstOrFail();
+        });
     }
 
     /**

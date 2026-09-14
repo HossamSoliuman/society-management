@@ -25,6 +25,7 @@ use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
 use App\Http\Controllers\Society\TenderController;
 use App\Http\Controllers\Society\UnitController;
+use App\Http\Controllers\Society\UserController as SocietyUserController;
 use App\Http\Controllers\Society\VendorController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
@@ -163,175 +164,198 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::get('/dashboard', [SocietyDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [SocietyDashboardController::class, 'data'])->name('dashboard.data');
 
-    // Society Profile
+    // Society Profile (every society role)
     Route::get('/profile', [SocietyProfileController::class, 'show'])->name('profile');
     Route::get('/profile/edit', [SocietyProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [SocietyProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [SocietyProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Members
-    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
-    Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
-    Route::post('/members', [MemberController::class, 'store'])->name('members.store');
-    Route::get('/members/{member}', [MemberController::class, 'show'])->name('members.show');
-    Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
-    Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
-    Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
+    // Members & Units
+    Route::middleware('permission:members.manage')->group(function () {
+        Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+        Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
+        Route::post('/members', [MemberController::class, 'store'])->name('members.store');
+        Route::get('/members/{member}', [MemberController::class, 'show'])->name('members.show');
+        Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
+        Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
+        Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
 
-    // Units
-    Route::get('/units', [UnitController::class, 'index'])->name('units.index');
-    Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
-    Route::post('/units', [UnitController::class, 'store'])->name('units.store');
-    Route::get('/units/import', [UnitController::class, 'importForm'])->name('units.import');
-    Route::post('/units/import', [UnitController::class, 'import'])->name('units.import.store');
-    Route::get('/units/{unit}', [UnitController::class, 'show'])->name('units.show');
-    Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
-    Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
-    Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+        Route::get('/units', [UnitController::class, 'index'])->name('units.index');
+        Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
+        Route::post('/units', [UnitController::class, 'store'])->name('units.store');
+        Route::get('/units/import', [UnitController::class, 'importForm'])->name('units.import');
+        Route::post('/units/import', [UnitController::class, 'import'])->name('units.import.store');
+        Route::get('/units/{unit}', [UnitController::class, 'show'])->name('units.show');
+        Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
+        Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
+        Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+    });
 
-    // Maintenance Billing -> Bulk Upload (Phase 1: step 1 + upload)
-    Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
-    Route::post('/billing/bulk-upload', [BulkUploadController::class, 'upload'])->name('billing.bulk-upload.store');
-    Route::get('/billing/bulk-upload/sample', [BulkUploadController::class, 'sample'])->name('billing.bulk-upload.sample');
+    // Maintenance Billing & Collections
+    Route::middleware('permission:billing.manage')->group(function () {
+        Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
+        Route::post('/billing/bulk-upload', [BulkUploadController::class, 'upload'])->name('billing.bulk-upload.store');
+        Route::get('/billing/bulk-upload/sample', [BulkUploadController::class, 'sample'])->name('billing.bulk-upload.sample');
 
-    // Maintenance Billing -> Bills (Phase 2B). Static routes precede the {bill} wildcard.
-    Route::get('billing/bills', [BillController::class, 'index'])->name('billing.bills.index');
-    Route::get('billing/bills/create', [BillController::class, 'create'])->name('billing.bills.create');
-    Route::post('billing/bills', [BillController::class, 'store'])->name('billing.bills.store');
-    Route::get('billing/bills/bulk-upload', [BillController::class, 'bulkUpload'])->name('billing.bills.bulk');
-    Route::post('billing/bills/bulk-upload', [BillController::class, 'bulkStore'])->name('billing.bills.bulk.store');
-    Route::get('billing/bills/{bill}', [BillController::class, 'show'])->name('billing.bills.show');
-    Route::get('billing/bills/{bill}/print', [BillController::class, 'print'])->name('billing.bills.print');
+        // Static routes precede the {bill} wildcard.
+        Route::get('billing/bills', [BillController::class, 'index'])->name('billing.bills.index');
+        Route::get('billing/bills/create', [BillController::class, 'create'])->name('billing.bills.create');
+        Route::post('billing/bills', [BillController::class, 'store'])->name('billing.bills.store');
+        Route::get('billing/bills/bulk-upload', [BillController::class, 'bulkUpload'])->name('billing.bills.bulk');
+        Route::post('billing/bills/bulk-upload', [BillController::class, 'bulkStore'])->name('billing.bills.bulk.store');
+        Route::get('billing/bills/{bill}', [BillController::class, 'show'])->name('billing.bills.show');
+        Route::get('billing/bills/{bill}/print', [BillController::class, 'print'])->name('billing.bills.print');
 
-    // Maintenance Billing -> Bill Settings (Phase 2A)
-    Route::get('billing/settings/general', [BillSettingController::class, 'general'])->name('billing.settings.general');
-    Route::put('billing/settings/general', [BillSettingController::class, 'updateGeneral'])->name('billing.settings.general.update');
-    Route::get('billing/settings/charge-heads', [ChargeHeadController::class, 'index'])->name('billing.settings.charge-heads');
-    Route::post('billing/settings/charge-heads', [ChargeHeadController::class, 'store'])->name('billing.settings.charge-heads.store');
-    Route::put('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'update'])->name('billing.settings.charge-heads.update');
-    Route::delete('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'destroy'])->name('billing.settings.charge-heads.destroy');
-    Route::get('billing/settings/design', [BillSettingController::class, 'design'])->name('billing.settings.design');
-    Route::put('billing/settings/design', [BillSettingController::class, 'updateDesign'])->name('billing.settings.design.update');
-    Route::get('billing/settings/late-fee', [BillSettingController::class, 'lateFee'])->name('billing.settings.late-fee');
-    Route::put('billing/settings/late-fee', [BillSettingController::class, 'updateLateFee'])->name('billing.settings.late-fee.update');
-    Route::get('billing/settings/taxes', [TaxController::class, 'index'])->name('billing.settings.taxes');
-    Route::post('billing/settings/taxes', [TaxController::class, 'store'])->name('billing.settings.taxes.store');
-    Route::put('billing/settings/taxes/{tax}', [TaxController::class, 'update'])->name('billing.settings.taxes.update');
-    Route::delete('billing/settings/taxes/{tax}', [TaxController::class, 'destroy'])->name('billing.settings.taxes.destroy');
-    Route::get('billing/settings/notifications', [BillSettingController::class, 'notifications'])->name('billing.settings.notifications');
-    Route::get('billing/settings/numbering', [NumberingSeriesController::class, 'index'])->name('billing.settings.numbering');
-    Route::post('billing/settings/numbering', [NumberingSeriesController::class, 'store'])->name('billing.settings.numbering.store');
-    Route::put('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'update'])->name('billing.settings.numbering.update');
-    Route::delete('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'destroy'])->name('billing.settings.numbering.destroy');
+        Route::get('billing/settings/general', [BillSettingController::class, 'general'])->name('billing.settings.general');
+        Route::put('billing/settings/general', [BillSettingController::class, 'updateGeneral'])->name('billing.settings.general.update');
+        Route::get('billing/settings/charge-heads', [ChargeHeadController::class, 'index'])->name('billing.settings.charge-heads');
+        Route::post('billing/settings/charge-heads', [ChargeHeadController::class, 'store'])->name('billing.settings.charge-heads.store');
+        Route::put('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'update'])->name('billing.settings.charge-heads.update');
+        Route::delete('billing/settings/charge-heads/{chargeHead}', [ChargeHeadController::class, 'destroy'])->name('billing.settings.charge-heads.destroy');
+        Route::get('billing/settings/design', [BillSettingController::class, 'design'])->name('billing.settings.design');
+        Route::put('billing/settings/design', [BillSettingController::class, 'updateDesign'])->name('billing.settings.design.update');
+        Route::get('billing/settings/late-fee', [BillSettingController::class, 'lateFee'])->name('billing.settings.late-fee');
+        Route::put('billing/settings/late-fee', [BillSettingController::class, 'updateLateFee'])->name('billing.settings.late-fee.update');
+        Route::get('billing/settings/taxes', [TaxController::class, 'index'])->name('billing.settings.taxes');
+        Route::post('billing/settings/taxes', [TaxController::class, 'store'])->name('billing.settings.taxes.store');
+        Route::put('billing/settings/taxes/{tax}', [TaxController::class, 'update'])->name('billing.settings.taxes.update');
+        Route::delete('billing/settings/taxes/{tax}', [TaxController::class, 'destroy'])->name('billing.settings.taxes.destroy');
+        Route::get('billing/settings/notifications', [BillSettingController::class, 'notifications'])->name('billing.settings.notifications');
+        Route::get('billing/settings/numbering', [NumberingSeriesController::class, 'index'])->name('billing.settings.numbering');
+        Route::post('billing/settings/numbering', [NumberingSeriesController::class, 'store'])->name('billing.settings.numbering.store');
+        Route::put('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'update'])->name('billing.settings.numbering.update');
+        Route::delete('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'destroy'])->name('billing.settings.numbering.destroy');
 
-    // Collections (Phase 2C). Static routes precede the {payment} wildcard.
-    Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
-    Route::get('collections/online', [CollectionController::class, 'online'])->name('collections.online');
-    Route::get('collections/pending-dues', [CollectionController::class, 'pendingDues'])->name('collections.pending-dues');
-    Route::get('collections/record', [CollectionController::class, 'create'])->name('collections.create');
-    Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
-    Route::get('collections/receipts', [PaymentReceiptController::class, 'index'])->name('collections.receipts.index');
-    Route::get('collections/receipts/{payment}', [PaymentReceiptController::class, 'show'])->name('collections.receipts.show');
+        // Collections. Static routes precede the {payment} wildcard.
+        Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+        Route::get('collections/online', [CollectionController::class, 'online'])->name('collections.online');
+        Route::get('collections/pending-dues', [CollectionController::class, 'pendingDues'])->name('collections.pending-dues');
+        Route::get('collections/record', [CollectionController::class, 'create'])->name('collections.create');
+        Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
+        Route::get('collections/receipts', [PaymentReceiptController::class, 'index'])->name('collections.receipts.index');
+        Route::get('collections/receipts/{payment}', [PaymentReceiptController::class, 'show'])->name('collections.receipts.show');
+    });
 
-    // Expenses (Phase 3A). Static segments precede the {expense} wildcard so they aren't captured by binding.
-    Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
-    Route::get('expenses/reports', [ExpenseController::class, 'reports'])->name('expenses.reports');
+    // Expenses. Static segments precede the {expense} wildcard so they aren't captured by binding.
+    Route::middleware('permission:expenses.manage')->group(function () {
+        Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+        Route::get('expenses/reports', [ExpenseController::class, 'reports'])->name('expenses.reports');
 
-    Route::get('expenses/categories', [ExpenseCategoryController::class, 'index'])->name('expenses.categories.index');
-    Route::get('expenses/categories/create', [ExpenseCategoryController::class, 'create'])->name('expenses.categories.create');
-    Route::post('expenses/categories', [ExpenseCategoryController::class, 'store'])->name('expenses.categories.store');
-    Route::get('expenses/categories/{category}/edit', [ExpenseCategoryController::class, 'edit'])->name('expenses.categories.edit');
-    Route::put('expenses/categories/{category}', [ExpenseCategoryController::class, 'update'])->name('expenses.categories.update');
-    Route::delete('expenses/categories/{category}', [ExpenseCategoryController::class, 'destroy'])->name('expenses.categories.destroy');
+        Route::get('expenses/categories', [ExpenseCategoryController::class, 'index'])->name('expenses.categories.index');
+        Route::get('expenses/categories/create', [ExpenseCategoryController::class, 'create'])->name('expenses.categories.create');
+        Route::post('expenses/categories', [ExpenseCategoryController::class, 'store'])->name('expenses.categories.store');
+        Route::get('expenses/categories/{category}/edit', [ExpenseCategoryController::class, 'edit'])->name('expenses.categories.edit');
+        Route::put('expenses/categories/{category}', [ExpenseCategoryController::class, 'update'])->name('expenses.categories.update');
+        Route::delete('expenses/categories/{category}', [ExpenseCategoryController::class, 'destroy'])->name('expenses.categories.destroy');
 
-    Route::get('expenses/vendors', [VendorController::class, 'index'])->name('expenses.vendors.index');
-    Route::get('expenses/vendors/create', [VendorController::class, 'create'])->name('expenses.vendors.create');
-    Route::post('expenses/vendors', [VendorController::class, 'store'])->name('expenses.vendors.store');
-    Route::get('expenses/vendors/{vendor}/edit', [VendorController::class, 'edit'])->name('expenses.vendors.edit');
-    Route::put('expenses/vendors/{vendor}', [VendorController::class, 'update'])->name('expenses.vendors.update');
-    Route::delete('expenses/vendors/{vendor}', [VendorController::class, 'destroy'])->name('expenses.vendors.destroy');
+        Route::get('expenses/vendors', [VendorController::class, 'index'])->name('expenses.vendors.index');
+        Route::get('expenses/vendors/create', [VendorController::class, 'create'])->name('expenses.vendors.create');
+        Route::post('expenses/vendors', [VendorController::class, 'store'])->name('expenses.vendors.store');
+        Route::get('expenses/vendors/{vendor}/edit', [VendorController::class, 'edit'])->name('expenses.vendors.edit');
+        Route::put('expenses/vendors/{vendor}', [VendorController::class, 'update'])->name('expenses.vendors.update');
+        Route::delete('expenses/vendors/{vendor}', [VendorController::class, 'destroy'])->name('expenses.vendors.destroy');
 
-    Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
-    Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
-    Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
-    Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
-    Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+        Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    });
 
-    // Assets (Phase 3B). Static segments precede the {asset} wildcard so they aren't captured by binding.
-    Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
-    Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
+    // Assets. Static segments precede the {asset} wildcard so they aren't captured by binding.
+    Route::middleware('permission:assets.manage')->group(function () {
+        Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
+        Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
 
-    Route::get('assets/categories', [AssetCategoryController::class, 'index'])->name('assets.categories.index');
-    Route::get('assets/categories/create', [AssetCategoryController::class, 'create'])->name('assets.categories.create');
-    Route::post('assets/categories', [AssetCategoryController::class, 'store'])->name('assets.categories.store');
-    Route::get('assets/categories/{category}/edit', [AssetCategoryController::class, 'edit'])->name('assets.categories.edit');
-    Route::put('assets/categories/{category}', [AssetCategoryController::class, 'update'])->name('assets.categories.update');
-    Route::delete('assets/categories/{category}', [AssetCategoryController::class, 'destroy'])->name('assets.categories.destroy');
+        Route::get('assets/categories', [AssetCategoryController::class, 'index'])->name('assets.categories.index');
+        Route::get('assets/categories/create', [AssetCategoryController::class, 'create'])->name('assets.categories.create');
+        Route::post('assets/categories', [AssetCategoryController::class, 'store'])->name('assets.categories.store');
+        Route::get('assets/categories/{category}/edit', [AssetCategoryController::class, 'edit'])->name('assets.categories.edit');
+        Route::put('assets/categories/{category}', [AssetCategoryController::class, 'update'])->name('assets.categories.update');
+        Route::delete('assets/categories/{category}', [AssetCategoryController::class, 'destroy'])->name('assets.categories.destroy');
 
-    Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
-    Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
-    Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
-    Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
-    Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
+        Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
+        Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
+        Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
+        Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
+        Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
+    });
 
-    // Priority Support (Phase 3B). Static segment precedes the {request} wildcard.
-    Route::get('support/create', [SupportController::class, 'create'])->name('support.create');
-    Route::get('support', [SupportController::class, 'index'])->name('support.index');
-    Route::post('support', [SupportController::class, 'store'])->name('support.store');
-    Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');
+    // Priority Support. Static segment precedes the {request} wildcard.
+    Route::middleware('permission:support.manage')->group(function () {
+        Route::get('support/create', [SupportController::class, 'create'])->name('support.create');
+        Route::get('support', [SupportController::class, 'index'])->name('support.index');
+        Route::post('support', [SupportController::class, 'store'])->name('support.store');
+        Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');
+    });
 
-    // Accounting (Phase 3C). In-page tabs + Chart of Accounts / Opening Balances pages.
-    Route::get('accounting', [AccountingController::class, 'index'])->name('accounting.index');
-    Route::get('accounting/transactions', [AccountingController::class, 'transactions'])->name('accounting.transactions');
-    Route::get('accounting/receipts', [AccountingController::class, 'receipts'])->name('accounting.receipts');
-    Route::get('accounting/receipts/create', [AccountingController::class, 'createReceipt'])->name('accounting.receipts.create');
-    Route::post('accounting/receipts', [AccountingController::class, 'storeReceipt'])->name('accounting.receipts.store');
-    Route::get('accounting/payments', [AccountingController::class, 'payments'])->name('accounting.payments');
-    Route::get('accounting/payments/create', [AccountingController::class, 'createPayment'])->name('accounting.payments.create');
-    Route::post('accounting/payments', [AccountingController::class, 'storePayment'])->name('accounting.payments.store');
-    Route::get('accounting/journal-entries', [AccountingController::class, 'journalEntries'])->name('accounting.journal-entries');
-    Route::get('accounting/journal-entries/create', [AccountingController::class, 'createJournalEntry'])->name('accounting.journal-entries.create');
-    Route::post('accounting/journal-entries', [AccountingController::class, 'storeJournalEntry'])->name('accounting.journal-entries.store');
-    Route::get('accounting/bank-reconciliation', [AccountingController::class, 'bankReconciliation'])->name('accounting.bank-reconciliation');
-    Route::get('accounting/trial-balance', [AccountingController::class, 'trialBalance'])->name('accounting.trial-balance');
-    Route::get('accounting/profit-loss', [AccountingController::class, 'profitLoss'])->name('accounting.profit-loss');
-    Route::get('accounting/balance-sheet', [AccountingController::class, 'balanceSheet'])->name('accounting.balance-sheet');
-    Route::get('accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts'])->name('accounting.chart-of-accounts');
-    Route::get('accounting/chart-of-accounts/create', [AccountingController::class, 'createAccount'])->name('accounting.chart-of-accounts.create');
-    Route::post('accounting/chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounting.chart-of-accounts.store');
-    Route::get('accounting/opening-balances', [AccountingController::class, 'openingBalances'])->name('accounting.opening-balances');
+    // Accounting. In-page tabs + Chart of Accounts / Opening Balances pages.
+    Route::middleware('permission:accounting.manage')->group(function () {
+        Route::get('accounting', [AccountingController::class, 'index'])->name('accounting.index');
+        Route::get('accounting/transactions', [AccountingController::class, 'transactions'])->name('accounting.transactions');
+        Route::get('accounting/receipts', [AccountingController::class, 'receipts'])->name('accounting.receipts');
+        Route::get('accounting/receipts/create', [AccountingController::class, 'createReceipt'])->name('accounting.receipts.create');
+        Route::post('accounting/receipts', [AccountingController::class, 'storeReceipt'])->name('accounting.receipts.store');
+        Route::get('accounting/payments', [AccountingController::class, 'payments'])->name('accounting.payments');
+        Route::get('accounting/payments/create', [AccountingController::class, 'createPayment'])->name('accounting.payments.create');
+        Route::post('accounting/payments', [AccountingController::class, 'storePayment'])->name('accounting.payments.store');
+        Route::get('accounting/journal-entries', [AccountingController::class, 'journalEntries'])->name('accounting.journal-entries');
+        Route::get('accounting/journal-entries/create', [AccountingController::class, 'createJournalEntry'])->name('accounting.journal-entries.create');
+        Route::post('accounting/journal-entries', [AccountingController::class, 'storeJournalEntry'])->name('accounting.journal-entries.store');
+        Route::get('accounting/bank-reconciliation', [AccountingController::class, 'bankReconciliation'])->name('accounting.bank-reconciliation');
+        Route::get('accounting/trial-balance', [AccountingController::class, 'trialBalance'])->name('accounting.trial-balance');
+        Route::get('accounting/profit-loss', [AccountingController::class, 'profitLoss'])->name('accounting.profit-loss');
+        Route::get('accounting/balance-sheet', [AccountingController::class, 'balanceSheet'])->name('accounting.balance-sheet');
+        Route::get('accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts'])->name('accounting.chart-of-accounts');
+        Route::get('accounting/chart-of-accounts/create', [AccountingController::class, 'createAccount'])->name('accounting.chart-of-accounts.create');
+        Route::post('accounting/chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounting.chart-of-accounts.store');
+        Route::get('accounting/opening-balances', [AccountingController::class, 'openingBalances'])->name('accounting.opening-balances');
+    });
 
-    // Vendor Management (Phase 4). Static segments precede the {vendor} wildcard.
-    Route::get('vendors', [ServiceVendorController::class, 'index'])->name('vendors.index');
-    Route::get('vendors/create', [ServiceVendorController::class, 'create'])->name('vendors.create');
-    Route::post('vendors', [ServiceVendorController::class, 'store'])->name('vendors.store');
-    Route::get('vendors/{vendor}/edit', [ServiceVendorController::class, 'edit'])->name('vendors.edit');
-    Route::put('vendors/{vendor}', [ServiceVendorController::class, 'update'])->name('vendors.update');
-    Route::delete('vendors/{vendor}', [ServiceVendorController::class, 'destroy'])->name('vendors.destroy');
+    // Vendor Management, AMC & Tenders
+    Route::middleware('permission:vendors.manage')->group(function () {
+        Route::get('vendors', [ServiceVendorController::class, 'index'])->name('vendors.index');
+        Route::get('vendors/create', [ServiceVendorController::class, 'create'])->name('vendors.create');
+        Route::post('vendors', [ServiceVendorController::class, 'store'])->name('vendors.store');
+        Route::get('vendors/{vendor}/edit', [ServiceVendorController::class, 'edit'])->name('vendors.edit');
+        Route::put('vendors/{vendor}', [ServiceVendorController::class, 'update'])->name('vendors.update');
+        Route::delete('vendors/{vendor}', [ServiceVendorController::class, 'destroy'])->name('vendors.destroy');
 
-    // AMC & Renewal Tracker (Phase 4). Static segments precede any wildcard.
-    Route::get('amc', [AmcController::class, 'index'])->name('amc.index');
-    Route::get('amc/create', [AmcController::class, 'create'])->name('amc.create');
-    Route::post('amc', [AmcController::class, 'store'])->name('amc.store');
-    Route::get('amc/categories', [AmcController::class, 'categories'])->name('amc.categories');
-    Route::get('amc/categories/create', [AmcController::class, 'createCategory'])->name('amc.categories.create');
-    Route::post('amc/categories', [AmcController::class, 'storeCategory'])->name('amc.categories.store');
+        Route::get('amc', [AmcController::class, 'index'])->name('amc.index');
+        Route::get('amc/create', [AmcController::class, 'create'])->name('amc.create');
+        Route::post('amc', [AmcController::class, 'store'])->name('amc.store');
+        Route::get('amc/categories', [AmcController::class, 'categories'])->name('amc.categories');
+        Route::get('amc/categories/create', [AmcController::class, 'createCategory'])->name('amc.categories.create');
+        Route::post('amc/categories', [AmcController::class, 'storeCategory'])->name('amc.categories.store');
 
-    // Tender Management (Phase 4).
-    Route::get('tenders/active', [TenderController::class, 'active'])->name('tenders.active');
-    Route::get('tenders/draft', [TenderController::class, 'draft'])->name('tenders.draft');
-    Route::get('tenders/awarded', [TenderController::class, 'awarded'])->name('tenders.awarded');
-    Route::get('tenders/closed', [TenderController::class, 'closed'])->name('tenders.closed');
-    Route::get('tenders/create', [TenderController::class, 'create'])->name('tenders.create');
-    Route::post('tenders', [TenderController::class, 'store'])->name('tenders.store');
-    Route::get('tenders/reports', [TenderController::class, 'reports'])->name('tenders.reports');
+        Route::get('tenders/active', [TenderController::class, 'active'])->name('tenders.active');
+        Route::get('tenders/draft', [TenderController::class, 'draft'])->name('tenders.draft');
+        Route::get('tenders/awarded', [TenderController::class, 'awarded'])->name('tenders.awarded');
+        Route::get('tenders/closed', [TenderController::class, 'closed'])->name('tenders.closed');
+        Route::get('tenders/create', [TenderController::class, 'create'])->name('tenders.create');
+        Route::post('tenders', [TenderController::class, 'store'])->name('tenders.store');
+        Route::get('tenders/reports', [TenderController::class, 'reports'])->name('tenders.reports');
+    });
 
-    // Document Management (Phase 4). Static segments precede the {document} wildcard.
-    Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
-    Route::get('documents/upload', [DocumentController::class, 'create'])->name('documents.create');
-    Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
-    Route::get('documents/categories', [DocumentController::class, 'categories'])->name('documents.categories');
-    Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    // Document Management. Static segments precede the {document} wildcard.
+    Route::middleware('permission:documents.manage')->group(function () {
+        Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::get('documents/upload', [DocumentController::class, 'create'])->name('documents.create');
+        Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::get('documents/categories', [DocumentController::class, 'categories'])->name('documents.categories');
+        Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    });
+
+    // Settings -> Users & Roles (society team)
+    Route::middleware('permission:team.manage')->group(function () {
+        Route::get('settings/users', [SocietyUserController::class, 'index'])->name('settings.users.index');
+        Route::get('settings/users/create', [SocietyUserController::class, 'create'])->name('settings.users.create');
+        Route::post('settings/users', [SocietyUserController::class, 'store'])->name('settings.users.store');
+        Route::get('settings/users/{teamUser}/edit', [SocietyUserController::class, 'edit'])->name('settings.users.edit');
+        Route::put('settings/users/{teamUser}', [SocietyUserController::class, 'update'])->name('settings.users.update');
+        Route::put('settings/users/{teamUser}/status', [SocietyUserController::class, 'toggleStatus'])->name('settings.users.status');
+        Route::post('settings/users/{teamUser}/resend-invitation', [SocietyUserController::class, 'resendInvitation'])->name('settings.users.resend-invitation');
+    });
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
