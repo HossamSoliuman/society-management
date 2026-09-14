@@ -43,6 +43,12 @@
                     <span>Society Profile</span>
                 </a>
 
+                {{-- My Subscription --}}
+                <a href="{{ route('society.subscription.index') }}" class="nav-item {{ request()->routeIs('society.subscription.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-contract"></i>
+                    <span>My Subscription</span>
+                </a>
+
                 {{-- Member Management (group) --}}
                 <div class="nav-group {{ request()->routeIs('society.members.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">

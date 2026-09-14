@@ -10,7 +10,7 @@
         </div>
         <div class="action-toolbar-right">
             <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
-            <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment</a>
+            <a href="{{ route('superadmin.billing.payments.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment</a>
         </div>
     </div>
     <div class="breadcrumb">
@@ -106,7 +106,7 @@
                                 <span class="payment-method"><i class="fas {{ $methodIcons[$payment->payment_method] ?? 'fa-money-bill' }}"></i> {{ $payment->payment_method }}</span>
                             </td>
                             <td><span class="status-badge {{ $payment->status }}">{{ ucfirst($payment->status) }}</span></td>
-                            <td><div style="display: flex; gap: 4px;"><button class="action-btn view"><i class="fas fa-eye"></i></button><button class="action-btn"><i class="fas fa-ellipsis-h"></i></button></div></td>
+                            <td><div style="display: flex; gap: 4px;">@if($payment->status === 'success' && $payment->refundableAmount() > 0)<a href="{{ route('superadmin.billing.refunds.create', ['payment' => $payment->id]) }}" class="action-btn" title="Refund"><i class="fas fa-rotate-left"></i></a>@endif</div></td>
                         </tr>
                         @endforeach
                     </tbody>

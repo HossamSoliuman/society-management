@@ -8,6 +8,7 @@ use App\Models\Society;
 use App\Models\SocietyType;
 use App\Models\SubscriptionPlan;
 use App\Notifications\SocietyAdminInvitation;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -16,6 +17,8 @@ use Throwable;
 
 class SocietyController extends Controller
 {
+    public function __construct(private readonly SubscriptionService $subscriptions) {}
+
     public function index()
     {
         $societies = Society::with('subscriptionPlan')->latest()->paginate(10);
@@ -96,6 +99,15 @@ class SocietyController extends Controller
             ]);
             $admin->roles()->attach(Role::where('name', 'society_admin')->firstOrFail());
 
+            $plan = SubscriptionPlan::findOrFail($validated['subscription_plan_id']);
+            $this->subscriptions->createForSociety($society, $plan, [
+                'start_date' => $validated['subscription_start_date'],
+                'end_date' => $validated['subscription_end_date'],
+                'billing_cycle' => $validated['billing_cycle'],
+                'additional_free_days' => (int) ($validated['trial_period_days'] ?? 0),
+                'notes' => 'Initial subscription created with the society.',
+            ]);
+
             return [$society, $admin, Password::broker()->createToken($admin)];
         });
 
@@ -112,7 +124,7 @@ class SocietyController extends Controller
 
     public function show(Society $society)
     {
-        $society->load('subscriptionPlan', 'societyType', 'users.roles');
+        $society->load('subscriptionPlan', 'societyType', 'users.roles', 'subscriptions.plan', 'invoices');
 
         return view('superadmin.society.show', compact('society'));
     }
@@ -121,6 +133,7 @@ class SocietyController extends Controller
     {
         $societyTypes = SocietyType::where('status', 'active')->get();
         $plans = SubscriptionPlan::where('status', 'active')->get();
+        $society->load('subscriptions.plan');
 
         return view('superadmin.society.edit', compact('society', 'societyTypes', 'plans'));
     }
@@ -132,15 +145,51 @@ class SocietyController extends Controller
             'registration_number' => 'nullable|string|max:255',
             'prefix' => 'required|string|max:10|unique:societies,prefix,'.$society->id,
             'society_type_id' => 'required|exists:society_types,id',
+            'registration_date' => 'nullable|date',
+            'pan_number' => 'nullable|string|max:20',
+            'flats_count' => 'nullable|integer|min:0',
+            'shops_count' => 'nullable|integer|min:0',
+            'offices_count' => 'nullable|integer|min:0',
+            'address_line_1' => 'nullable|string|max:255',
+            'address_line_2' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'pincode' => 'nullable|string|max:10',
+            'primary_email' => 'nullable|email|max:255',
+            'secondary_email' => 'nullable|email|max:255',
+            'primary_mobile' => 'nullable|string|max:20',
+            'alternate_mobile' => 'nullable|string|max:20',
+            'landline' => 'nullable|string|max:20',
+            'website' => 'nullable|url|max:255',
+            'chairman_name' => 'nullable|string|max:255',
+            'chairman_mobile' => 'nullable|string|max:20',
+            'chairman_email' => 'nullable|email|max:255',
+            'secretary_name' => 'nullable|string|max:255',
+            'secretary_mobile' => 'nullable|string|max:20',
+            'secretary_email' => 'nullable|email|max:255',
+            'treasurer_name' => 'nullable|string|max:255',
+            'treasurer_mobile' => 'nullable|string|max:20',
+            'treasurer_email' => 'nullable|email|max:255',
+            'grace_period_days' => 'nullable|integer|min:0',
+            'auto_renewal' => 'boolean',
+            'notes' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
 
-        $society->update($validated);
-        if ($validated['status'] === 'inactive') {
-            $society->users()->update(['status' => 'inactive']);
-        }
+        $validated['auto_renewal'] = $request->boolean('auto_renewal', (bool) $society->auto_renewal);
+        $wasInactive = $society->status === 'inactive';
 
-        return redirect()->route('superadmin.societies.index')->with('success', 'Society updated successfully');
+        DB::transaction(function () use ($society, $validated, $wasInactive) {
+            $society->update($validated);
+
+            if ($validated['status'] === 'inactive') {
+                $society->users()->update(['status' => 'inactive']);
+            } elseif ($wasInactive) {
+                $society->users()->where('status', 'inactive')->update(['status' => 'active']);
+            }
+        });
+
+        return redirect()->route('superadmin.societies.show', $society)->with('success', 'Society updated successfully');
     }
 
     public function destroy(Society $society)

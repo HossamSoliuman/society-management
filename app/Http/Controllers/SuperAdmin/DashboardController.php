@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Payment;
 use App\Models\Society;
 use App\Models\Subscription;
-use App\Models\Invoice;
-use App\Models\Payment;
-use App\Models\User;
 use App\Models\SupportTicket;
+use App\Models\User;
+use App\Services\PlatformBillingService;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(PlatformBillingService $billing)
     {
         $totalSocieties = Society::count();
         $activeSocieties = Society::where('status', 'active')->count();
@@ -51,11 +50,7 @@ class DashboardController extends Controller
             'expired' => Subscription::where('status', 'expired')->count(),
         ];
 
-        $revenueByPlan = [
-            ['name' => 'Premium Plan', 'amount' => 785120, 'percentage' => 62.9],
-            ['name' => 'Standard Plan', 'amount' => 345780, 'percentage' => 27.7],
-            ['name' => 'Basic Plan', 'amount' => 114960, 'percentage' => 9.2],
-        ];
+        $revenueByPlan = $billing->revenueByPlan();
 
         $recentSocieties = Society::with('subscriptionPlan')->latest()->take(5)->get();
         $recentPayments = Payment::with('society')->latest()->take(5)->get();

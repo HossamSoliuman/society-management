@@ -10,9 +10,15 @@ class EnsureSocietyAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $society = $request->user()?->society;
+        $user = $request->user();
+        // Always read the society fresh: subscription status/dates change
+        // out-of-band (scheduler, super-admin renewals) and must apply
+        // immediately, even if the relation was previously loaded.
+        $society = $user?->society()->first();
 
         abort_unless($society, 403, 'Your account is not linked to a society.');
+        $user->setRelation('society', $society);
+
         abort_unless($society->status === 'active', 403, 'This society is inactive.');
         abort_unless(
             in_array($society->subscription_status, ['active', 'expiring_soon'], true),

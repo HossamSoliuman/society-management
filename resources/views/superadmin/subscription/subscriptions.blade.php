@@ -26,69 +26,60 @@
         <div class="stat-icon blue"><i class="fas fa-cube"></i></div>
         <div class="stat-info">
             <div class="stat-label">Total Subscriptions</div>
-            <div class="stat-value">128</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 8.2% from last month</div>
+            <div class="stat-value">{{ $statusCounts->sum() }}</div>
+            <div class="stat-trend" style="color: var(--text-muted);">All time</div>
         </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
         <div class="stat-info">
             <div class="stat-label">Active Subscriptions</div>
-            <div class="stat-value">98</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 6.7% from last month</div>
+            <div class="stat-value">{{ $statusCounts['active'] ?? 0 }}</div>
+            <div class="stat-trend" style="color: var(--text-muted);">Currently active</div>
         </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
         <div class="stat-info">
             <div class="stat-label">Expiring Soon</div>
-            <div class="stat-value">14</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 12.5% from last month</div>
+            <div class="stat-value">{{ $statusCounts['expiring_soon'] ?? 0 }}</div>
+            <div class="stat-trend" style="color: var(--text-muted);">Within 30 days</div>
         </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
         <div class="stat-info">
             <div class="stat-label">Expired Subscriptions</div>
-            <div class="stat-value">16</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 5.3% from last month</div>
+            <div class="stat-value">{{ $statusCounts['expired'] ?? 0 }}</div>
+            <div class="stat-trend" style="color: var(--text-muted);">{{ $statusCounts['cancelled'] ?? 0 }} cancelled</div>
         </div>
     </div>
 </div>
 
 <div class="tabs">
-    <a href="#" class="tab active">All Subscriptions</a>
-    <a href="#" class="tab">Active</a>
-    <a href="#" class="tab">Expiring Soon</a>
-    <a href="#" class="tab">Expired</a>
-    <a href="#" class="tab">Cancelled</a>
+    <a href="{{ route('superadmin.subscription.subscriptions') }}" class="tab {{ request()->filled('status') ? '' : 'active' }}">All Subscriptions</a>
+    @foreach(['active' => 'Active', 'expiring_soon' => 'Expiring Soon', 'expired' => 'Expired', 'cancelled' => 'Cancelled'] as $value => $label)
+        <a href="{{ route('superadmin.subscription.subscriptions', ['status' => $value]) }}" class="tab {{ request('status') === $value ? 'active' : '' }}">{{ $label }}</a>
+    @endforeach
 </div>
 
 <div class="card">
     <div class="card-body">
-        <div class="filter-bar">
-            <div class="filter-item" style="flex: 1;">
-                <div class="header-search" style="max-width: 100%;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Search by society or building...">
-                </div>
+        <form method="GET" action="{{ route('superadmin.subscription.subscriptions') }}" class="filter-bar">
+            @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
+            <div class="filter-item" style="flex: 0 0 auto;">
+                <select name="society" class="form-control">
+                    <option value="">All Societies</option>
+                    @foreach($societies as $s)
+                        <option value="{{ $s->id }}" {{ (string) request('society') === (string) $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="filter-item" style="flex: 0 0 auto;">
-                <select class="form-control"><option>All Plans</option><option>Basic</option><option>Standard</option><option>Premium</option></select>
+                <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-filter"></i> Filter</button>
+                <a href="{{ route('superadmin.subscription.subscriptions') }}" class="btn btn-secondary btn-sm"><i class="fas fa-rotate"></i> Reset</a>
             </div>
-            <div class="filter-item" style="flex: 0 0 auto;">
-                <select class="form-control"><option>All Status</option><option>Active</option><option>Expired</option></select>
-            </div>
-            <div class="filter-item" style="flex: 0 0 auto;">
-                <select class="form-control"><option>All Buildings</option></select>
-            </div>
-            <div class="filter-item" style="flex: 0 0 auto;">
-                <div class="header-search" style="max-width: 180px;"><i class="fas fa-calendar search-icon"></i><input type="text" placeholder="01 May 2025 - 31 May 2025"></div>
-            </div>
-            <div class="filter-item" style="flex: 0 0 auto;">
-                <button class="btn btn-secondary btn-sm"><i class="fas fa-filter"></i> Filters</button>
-            </div>
-        </div>
+        </form>
 
         <div class="table-responsive">
             <table class="data-table">
@@ -112,7 +103,7 @@
                                 <div class="society-icon"><i class="fas fa-building"></i></div>
                                 <div class="society-details">
                                     <h4>{{ $sub->society->name ?? 'N/A' }}</h4>
-                                    <p>{{ $sub->building_name ?? 'All Buildings' }}</p>
+                                    <p>{{ $sub->subscription_number }}</p>
                                 </div>
                             </div>
                         </td>
@@ -120,7 +111,7 @@
                         <td>{{ $sub->start_date ? $sub->start_date->format('d M Y') : 'N/A' }}</td>
                         <td>{{ $sub->end_date ? $sub->end_date->format('d M Y') : 'N/A' }}</td>
                         <td><span class="status-badge {{ $sub->status }}">{{ ucfirst(str_replace('_', ' ', $sub->status)) }}</span></td>
-                        <td style="font-weight: 600;">&#8377; {{ number_format($sub->plan->amount ?? 0, 2) }}</td>
+                        <td style="font-weight: 600;">&#8377; {{ number_format($sub->amount ?: ($sub->plan->amount ?? 0), 2) }}</td>
                         <td>
                             @if($sub->end_date)
                                 @php $daysLeft = now()->diffInDays($sub->end_date, false); @endphp
@@ -134,9 +125,18 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="action-btn view"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn edit"><i class="fas fa-pen"></i></button>
-                                <button class="action-btn delete"><i class="fas fa-ellipsis-v"></i></button>
+                                @if($sub->status !== 'cancelled')
+                                    <a href="{{ route('superadmin.subscription.subscriptions.renew', $sub) }}" class="action-btn edit" title="Renew / Upgrade"><i class="fas fa-rotate"></i></a>
+                                    <form method="POST" action="{{ route('superadmin.subscription.subscriptions.cancel', $sub) }}" onsubmit="return confirm('Cancel this subscription?');">
+                                        @csrf
+                                        <button type="submit" class="action-btn delete" title="Cancel"><i class="fas fa-ban"></i></button>
+                                    </form>
+                                @else
+                                    <span style="font-size: 11px; color: var(--text-muted);">{{ $sub->cancel_reason ?: 'Cancelled' }}</span>
+                                @endif
+                                @if($sub->renewedFrom)
+                                    <span class="badge badge-secondary" title="Renewed from {{ $sub->renewedFrom->subscription_number }}"><i class="fas fa-link"></i></span>
+                                @endif
                             </div>
                         </td>
                     </tr>

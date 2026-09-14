@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
             UnitTypeSeeder::class,
             PaymentModeSeeder::class,
             SubscriptionPlanSeeder::class,
+            PrefixSettingSeeder::class,
             SocietySeeder::class,
+            SubscriptionSeeder::class,
             UserSeeder::class,
             SocietyProfileSeeder::class,
             UnitSeeder::class,
@@ -54,7 +56,6 @@ class DatabaseSeeder extends Seeder
             SystemLogSeeder::class,
             AnnouncementSeeder::class,
             SupportTicketSeeder::class,
-            PrefixSettingSeeder::class,
         ]);
     }
 }

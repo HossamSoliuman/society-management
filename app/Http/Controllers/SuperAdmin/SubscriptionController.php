@@ -3,25 +3,32 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Society;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
-use App\Models\Society;
+use App\Services\SubscriptionService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\View\View;
 
 class SubscriptionController extends Controller
 {
-    public function plans()
+    public function __construct(private readonly SubscriptionService $subscriptions) {}
+
+    public function plans(): View
     {
         $plans = SubscriptionPlan::with('modules')->latest()->paginate(10);
+
         return view('superadmin.subscription.plans', compact('plans'));
     }
 
-    public function createPlan()
+    public function createPlan(): View
     {
         return view('superadmin.subscription.create-plan');
     }
 
-    public function storePlan(Request $request)
+    public function storePlan(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -40,29 +47,45 @@ class SubscriptionController extends Controller
         ]);
 
         SubscriptionPlan::create($validated);
+
         return redirect()->route('superadmin.subscription.plans')->with('success', 'Plan created successfully');
     }
 
-    public function subscriptions()
+    public function subscriptions(Request $request): View
     {
-        $subscriptions = Subscription::with(['society', 'plan'])->latest()->paginate(10);
-        return view('superadmin.subscription.subscriptions', compact('subscriptions'));
+        $subscriptions = Subscription::with(['society', 'plan', 'renewedFrom'])
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('society'), fn ($q) => $q->where('society_id', $request->integer('society')))
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('superadmin.subscription.subscriptions', [
+            'subscriptions' => $subscriptions,
+            'societies' => Society::orderBy('name')->get(['id', 'name']),
+            'statusCounts' => Subscription::query()
+                ->selectRaw('status, COUNT(*) as c')
+                ->groupBy('status')
+                ->pluck('c', 'status'),
+        ]);
     }
 
-    public function createSubscription()
+    public function createSubscription(): View
     {
         $societies = Society::where('status', 'active')->get();
         $plans = SubscriptionPlan::where('status', 'active')->get();
+
         return view('superadmin.subscription.create-subscription', compact('societies', 'plans'));
     }
 
-    public function storeSubscription(Request $request)
+    public function storeSubscription(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'society_id' => 'required|exists:societies,id',
             'plan_id' => 'required|exists:subscription_plans,id',
             'building_name' => 'nullable|string|max:255',
             'monthly_cost_per_flat' => 'required|numeric|min:0',
+            'amount' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'additional_free_days' => 'integer|min:0',
@@ -74,15 +97,77 @@ class SubscriptionController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['subscription_number'] = 'SUB-' . date('Y') . '-' . str_pad(Subscription::count() + 1, 4, '0', STR_PAD_LEFT);
-        $validated['status'] = 'active';
+        $society = Society::findOrFail($validated['society_id']);
+        $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+        unset($validated['society_id'], $validated['plan_id']);
 
-        Subscription::create($validated);
+        if (! isset($validated['amount'])) {
+            $validated['amount'] = $plan->amount;
+        }
 
-        return redirect()->route('superadmin.subscription.subscriptions')->with('success', 'Subscription created successfully');
+        $subscription = $this->subscriptions->createForSociety($society, $plan, $validated);
+
+        return redirect()->route('superadmin.subscription.subscriptions')
+            ->with('success', "Subscription {$subscription->subscription_number} created successfully");
     }
 
-    public function renewals()
+    public function renewForm(Subscription $subscription): View
+    {
+        $subscription->load(['society', 'plan']);
+        $plans = SubscriptionPlan::where('status', 'active')->orderBy('priority')->get();
+
+        $start = max($subscription->end_date->copy()->addDay(), Carbon::today());
+
+        return view('superadmin.subscription.renew', [
+            'subscription' => $subscription,
+            'plans' => $plans,
+            'defaultStart' => $start,
+            'defaultEnd' => $this->subscriptions->endDateFor($subscription->plan, $start),
+        ]);
+    }
+
+    /**
+     * Renew on the same plan or upgrade to another; both create a new row linked
+     * through renewed_from_id so the history stays intact.
+     */
+    public function renew(Request $request, Subscription $subscription): RedirectResponse
+    {
+        abort_if($subscription->status === 'cancelled', 422, 'A cancelled subscription cannot be renewed. Create a new one instead.');
+
+        $validated = $request->validate([
+            'plan_id' => 'required|exists:subscription_plans,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'amount' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:100',
+            'payment_date' => 'nullable|date',
+            'reference_number' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+        ]);
+
+        $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+        unset($validated['plan_id']);
+        if (! isset($validated['amount'])) {
+            $validated['amount'] = $plan->amount;
+        }
+
+        $renewed = $this->subscriptions->renew($subscription, $plan, $validated);
+        $verb = $plan->is($subscription->plan) ? 'renewed' : 'upgraded';
+
+        return redirect()->route('superadmin.subscription.subscriptions')
+            ->with('success', "Subscription {$verb}: {$renewed->subscription_number} runs {$renewed->start_date->format('d M Y')} – {$renewed->end_date->format('d M Y')}.");
+    }
+
+    public function cancel(Request $request, Subscription $subscription): RedirectResponse
+    {
+        $validated = $request->validate(['reason' => 'nullable|string|max:255']);
+
+        $this->subscriptions->cancel($subscription, $validated['reason'] ?? null);
+
+        return back()->with('success', "Subscription {$subscription->subscription_number} cancelled.");
+    }
+
+    public function renewals(): View
     {
         $upcomingRenewals = Subscription::with(['society', 'plan'])
             ->where('end_date', '<=', now()->addDays(60))

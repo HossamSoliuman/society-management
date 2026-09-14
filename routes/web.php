@@ -21,6 +21,7 @@ use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
 use App\Http\Controllers\Society\ServiceVendorController;
+use App\Http\Controllers\Society\SubscriptionController as SocietySubscriptionController;
 use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
 use App\Http\Controllers\Society\TenderController;
@@ -76,11 +77,20 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/subscription/subscriptions', [SubscriptionController::class, 'subscriptions'])->name('subscription.subscriptions');
     Route::get('/subscription/subscriptions/create', [SubscriptionController::class, 'createSubscription'])->name('subscription.subscriptions.create');
     Route::post('/subscription/subscriptions', [SubscriptionController::class, 'storeSubscription'])->name('subscription.subscriptions.store');
+    Route::get('/subscription/subscriptions/{subscription}/renew', [SubscriptionController::class, 'renewForm'])->name('subscription.subscriptions.renew');
+    Route::post('/subscription/subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscription.subscriptions.renew.store');
+    Route::post('/subscription/subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.subscriptions.cancel');
     Route::get('/subscription/renewals', [SubscriptionController::class, 'renewals'])->name('subscription.renewals');
 
     Route::get('/billing/overview', [BillingController::class, 'overview'])->name('billing.overview');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
+    Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
+    Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
+    Route::get('/billing/payments/create', [BillingController::class, 'createPayment'])->name('billing.payments.create');
+    Route::post('/billing/payments', [BillingController::class, 'recordPayment'])->name('billing.payments.store');
+    Route::get('/billing/refunds/create', [BillingController::class, 'createRefund'])->name('billing.refunds.create');
+    Route::post('/billing/refunds', [BillingController::class, 'storeRefund'])->name('billing.refunds.store');
     Route::get('/billing/receipts', [BillingController::class, 'receipts'])->name('billing.receipts');
     Route::get('/billing/outstanding', [BillingController::class, 'outstanding'])->name('billing.outstanding');
     Route::get('/billing/overdue', [BillingController::class, 'overdue'])->name('billing.overdue');
@@ -169,6 +179,9 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::get('/profile/edit', [SocietyProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [SocietyProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [SocietyProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // My Subscription (read-only, every society role)
+    Route::get('/subscription', [SocietySubscriptionController::class, 'index'])->name('subscription.index');
 
     // Members & Units
     Route::middleware('permission:members.manage')->group(function () {
