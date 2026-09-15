@@ -72,6 +72,8 @@ it('loads the record payment page with payment-mode tiles', function () {
 });
 
 it('loads the pending dues page with aging tabs', function () {
+    MaintenanceBill::factory()->create(['society_id' => $this->society->id, 'status' => 'pending', 'outstanding_amount' => 1200, 'total_amount' => 1200, 'collected_amount' => 0, 'due_date' => now()]);
+
     $this->actingAs($this->user)->get(route('society.collections.pending-dues'))
         ->assertOk()
         ->assertSee('Pending Dues')

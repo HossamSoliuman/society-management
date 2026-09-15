@@ -18,6 +18,7 @@ class LateFeeSetting extends Model
             'grace_period_days' => 'integer',
             'late_fee_percent' => 'decimal:2',
             'late_fee_flat' => 'decimal:2',
+            'late_fee_per_day' => 'decimal:2',
             'max_late_fee_cap' => 'decimal:2',
             'enable_interest' => 'boolean',
             'interest_rate_annual' => 'decimal:2',

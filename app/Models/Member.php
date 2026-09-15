@@ -28,6 +28,21 @@ class Member extends Model
         return $this->belongsTo(Society::class);
     }
 
+    public function units()
+    {
+        return $this->hasMany(Unit::class);
+    }
+
+    public function bills()
+    {
+        return $this->hasMany(MaintenanceBill::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(CollectionPayment::class);
+    }
+
     /**
      * Map the member status to a `.status-badge` state class.
      */

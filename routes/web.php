@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\AmcController;
 use App\Http\Controllers\Society\AssetCategoryController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
 use App\Http\Controllers\Society\NoticeController as SocietyNoticeController;
 use App\Http\Controllers\Society\NumberingSeriesController;
+use App\Http\Controllers\Society\OnlinePaymentController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
@@ -53,6 +55,9 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Payment-provider callbacks: signature-verified inside the gateway driver.
+Route::post('/webhooks/payments', PaymentWebhookController::class)->name('webhooks.payments');
+
 Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [PasswordController::class, 'request'])->name('password.request');
     Route::post('/forgot-password', [PasswordController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
@@ -224,8 +229,14 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('billing/bills', [BillController::class, 'store'])->name('billing.bills.store');
         Route::get('billing/bills/bulk-upload', [BillController::class, 'bulkUpload'])->name('billing.bills.bulk');
         Route::post('billing/bills/bulk-upload', [BillController::class, 'bulkStore'])->name('billing.bills.bulk.store');
+        Route::post('billing/bills/bulk-upload/confirm', [BillController::class, 'bulkConfirm'])->name('billing.bills.bulk.confirm');
+        Route::post('billing/bills/bulk-upload/discard', [BillController::class, 'bulkDiscard'])->name('billing.bills.bulk.discard');
+        Route::get('billing/bills/generate', [BillController::class, 'generate'])->name('billing.bills.generate');
+        Route::post('billing/bills/generate', [BillController::class, 'storeGenerate'])->name('billing.bills.generate.store');
         Route::get('billing/bills/{bill}', [BillController::class, 'show'])->name('billing.bills.show');
         Route::get('billing/bills/{bill}/print', [BillController::class, 'print'])->name('billing.bills.print');
+        Route::get('billing/bills/{bill}/pdf', [BillController::class, 'pdf'])->name('billing.bills.pdf');
+        Route::post('billing/bills/{bill}/send', [BillController::class, 'send'])->name('billing.bills.send');
 
         Route::get('billing/settings/general', [BillSettingController::class, 'general'])->name('billing.settings.general');
         Route::put('billing/settings/general', [BillSettingController::class, 'updateGeneral'])->name('billing.settings.general.update');
@@ -242,6 +253,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::put('billing/settings/taxes/{tax}', [TaxController::class, 'update'])->name('billing.settings.taxes.update');
         Route::delete('billing/settings/taxes/{tax}', [TaxController::class, 'destroy'])->name('billing.settings.taxes.destroy');
         Route::get('billing/settings/notifications', [BillSettingController::class, 'notifications'])->name('billing.settings.notifications');
+        Route::put('billing/settings/notifications', [BillSettingController::class, 'updateNotifications'])->name('billing.settings.notifications.update');
         Route::get('billing/settings/numbering', [NumberingSeriesController::class, 'index'])->name('billing.settings.numbering');
         Route::post('billing/settings/numbering', [NumberingSeriesController::class, 'store'])->name('billing.settings.numbering.store');
         Route::put('billing/settings/numbering/{series}', [NumberingSeriesController::class, 'update'])->name('billing.settings.numbering.update');
@@ -255,6 +267,10 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
         Route::get('collections/receipts', [PaymentReceiptController::class, 'index'])->name('collections.receipts.index');
         Route::get('collections/receipts/{payment}', [PaymentReceiptController::class, 'show'])->name('collections.receipts.show');
+        Route::post('collections/online/bills/{bill}', [OnlinePaymentController::class, 'createForBill'])->name('collections.online.bill');
+        Route::get('collections/online/checkout/{order}', [OnlinePaymentController::class, 'checkout'])->name('collections.online.checkout');
+        Route::get('collections/receipts/{payment}/pdf', [PaymentReceiptController::class, 'pdf'])->name('collections.receipts.pdf');
+        Route::post('collections/receipts/{payment}/email', [PaymentReceiptController::class, 'email'])->name('collections.receipts.email');
     });
 
     // Expenses. Static segments precede the {expense} wildcard so they aren't captured by binding.

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendMaintenanceBill;
 use App\Models\CollectionPayment;
 use App\Models\MaintenanceBill;
 use App\Models\Member;
-use App\Models\NumberingSeries;
 use App\Models\Society;
 use App\Models\Unit;
+use App\Models\User;
+use App\Services\PaymentAllocationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,8 +21,17 @@ use Illuminate\View\View;
 
 class CollectionController extends Controller
 {
-    /** Users offered in the "Collected By" filter. */
-    private const COLLECTORS = ['Neha Patil', 'Sanjay Verma'];
+    /** Aging buckets (label => [from, to] days past due). */
+    private const BUCKETS = [
+        '0-30' => [0, 30],
+        '31-60' => [31, 60],
+        '61-90' => [61, 90],
+        '90+' => [91, null],
+    ];
+
+    private const BUCKET_COLORS = ['0-30' => '#16a34a', '31-60' => '#f59e0b', '61-90' => '#ea580c', '90+' => '#dc2626'];
+
+    public function __construct(private readonly PaymentAllocationService $allocations) {}
 
     public function index(Request $request): View
     {
@@ -47,7 +59,7 @@ class CollectionController extends Controller
         ][$tab] ?? null;
 
         $query = CollectionPayment::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($onlineOnly, fn ($q) => $q->where('is_online', true))
             ->when($tabStatus, fn ($q) => $q->where('status', $tabStatus))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
@@ -73,32 +85,37 @@ class CollectionController extends Controller
             'title' => $title,
             'payments' => $payments,
             'tab' => $tab,
-            'kpis' => $this->kpis(),
-            'overview' => $this->overviewDonut(),
+            'kpis' => $this->kpis($society),
+            'overview' => $this->overviewDonut($society),
             'recent' => $this->recentTransactions($society),
-            'collectors' => self::COLLECTORS,
+            'collectors' => $this->collectors($society),
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $society = $this->currentSociety();
 
-        $members = Member::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->orderBy('name')
+        $members = Member::query()->forSociety($society)->orderBy('name')->get();
+        $units = Unit::query()->forSociety($society)->orderBy('unit_number')->get();
+
+        $openBills = MaintenanceBill::query()
+            ->forSociety($society)
+            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->where('outstanding_amount', '>', 0)
+            ->orderBy('due_date')
             ->get();
 
-        $units = Unit::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->orderBy('unit_number')
-            ->get();
+        $billPeriods = MaintenanceBill::query()->forSociety($society)->select('bill_month')->distinct()->pluck('bill_month');
 
-        $billPeriods = MaintenanceBill::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->select('bill_month')->distinct()->pluck('bill_month');
-
-        return view('society.collections.create', compact('society', 'members', 'units', 'billPeriods'));
+        return view('society.collections.create', [
+            'society' => $society,
+            'members' => $members,
+            'units' => $units,
+            'openBills' => $openBills,
+            'billPeriods' => $billPeriods,
+            'selectedBill' => $request->integer('bill') ? $openBills->firstWhere('id', $request->integer('bill')) : null,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -127,169 +144,160 @@ class CollectionController extends Controller
             'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
-        $totalDue = (float) $data['total_due'];
-        $paid = (float) $data['paid_amount'];
-        $discount = (float) ($data['discount'] ?? 0);
-        $fine = (float) ($data['fine_penalty'] ?? 0);
-        $balance = max(0, $totalDue - $discount - $paid);
+        if ($request->hasFile('attachment')) {
+            $data['attachment_path'] = $request->file('attachment')->store('collection-attachments', 'public');
+        }
 
-        $status = match (true) {
-            $balance <= 0 => 'paid',
-            $paid > 0 => 'partial',
-            default => 'pending',
-        };
+        $payment = $this->allocations->record($society, $data, $request->user()->name);
 
-        $attachmentPath = $request->hasFile('attachment')
-            ? $request->file('attachment')->store('collection-attachments', 'public')
-            : null;
+        if ($payment->maintenance_bill_id && ($bill = $payment->maintenanceBill)) {
+            $bill->forceFill(['send_email' => (bool) $bill->member?->email, 'send_sms' => false])->saveQuietly();
+            if ($bill->send_email) {
+                SendMaintenanceBill::dispatch($bill, 'payment_received');
+            }
+        }
 
-        $payment = CollectionPayment::create([
-            'society_id' => $society?->id,
-            'receipt_number' => $this->nextReceiptNumber($society),
-            'member_id' => $data['member_id'] ?? null,
-            'unit_id' => $data['unit_id'] ?? null,
-            'maintenance_bill_id' => $data['maintenance_bill_id'] ?? null,
-            'member_name' => $data['member_name'] ?? null,
-            'flat_number' => $data['flat_number'] ?? null,
-            'unit_label' => $data['unit_label'] ?? null,
-            'bill_type' => $data['bill_type'],
-            'bill_period' => $data['bill_period'] ?? null,
-            'due_date' => $data['due_date'] ?? null,
-            'receipt_date' => Carbon::parse($data['receipt_date']),
-            'total_due' => $totalDue,
-            'paid_amount' => $paid,
-            'discount' => $discount,
-            'fine_penalty' => $fine,
-            'balance_due' => $balance,
-            'payment_mode' => $data['payment_mode'],
-            'reference_no' => $data['reference_no'] ?? null,
-            'transaction_utr' => $data['transaction_utr'] ?? null,
-            'collected_by' => auth()->user()->name ?? 'Neha Patil',
-            'status' => $status,
-            'is_online' => in_array($data['payment_mode'], ['upi', 'card', 'net_banking'], true),
-            'notes' => $data['notes'] ?? null,
-            'attachment_path' => $attachmentPath,
-        ]);
-
-        $this->allocateToBill($payment);
+        $allocated = count($this->allocations->lastAllocations);
+        $message = "Payment {$payment->receipt_number} recorded successfully."
+            .($allocated > 1 ? " Applied to {$allocated} bills (oldest first)." : '');
 
         if ($request->boolean('print')) {
             return redirect()->route('society.collections.receipts.show', ['payment' => $payment, 'print' => 1])
-                ->with('success', "Payment {$payment->receipt_number} recorded successfully.");
+                ->with('success', $message);
         }
 
-        return redirect()->route('society.collections.index')
-            ->with('success', "Payment {$payment->receipt_number} recorded successfully.");
+        return redirect()->route('society.collections.index')->with('success', $message);
     }
 
     public function pendingDues(Request $request): View
     {
         $society = $this->currentSociety();
-
-        $rows = $this->pendingDuesRows();
         $bucket = $request->string('bucket')->toString() ?: 'all';
+        if ($bucket !== 'all' && ! array_key_exists($bucket, self::BUCKETS)) {
+            $bucket = 'all';
+        }
 
-        $filtered = collect($rows)
-            ->when($bucket !== 'all', fn ($items) => $items->filter(fn ($r) => $r['bucket'] === $bucket))
-            ->values();
+        $base = MaintenanceBill::query()
+            ->forSociety($society)
+            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->where('outstanding_amount', '>', 0);
+
+        $counts = ['all' => (clone $base)->count()];
+        foreach (self::BUCKETS as $key => [$from, $to]) {
+            $counts[$key] = $this->applyBucket(clone $base, $from, $to)->count();
+        }
+
+        $rowsQuery = clone $base;
+        if ($bucket !== 'all') {
+            [$from, $to] = self::BUCKETS[$bucket];
+            $rowsQuery = $this->applyBucket($rowsQuery, $from, $to);
+        }
+
+        $rows = $rowsQuery
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $term = $request->string('q');
+                $q->where(fn ($sub) => $sub->where('member_name', 'like', "%{$term}%")->orWhere('flat_number', 'like', "%{$term}%")->orWhere('bill_number', 'like', "%{$term}%"));
+            })
+            ->orderBy('due_date')
+            ->orderBy('id')
+            ->paginate(10)
+            ->withQueryString()
+            ->through(function (MaintenanceBill $bill) {
+                $days = max(0, (int) $bill->due_date->diffInDays(Carbon::today(), false));
+
+                return [
+                    'id' => $bill->id,
+                    'member_name' => $bill->member_name ?: '—',
+                    'flat_number' => $bill->flat_number ?: '—',
+                    'wing' => $bill->tower_wing ?: '',
+                    'bill_number' => $bill->bill_number,
+                    'bill_period' => $bill->bill_month,
+                    'due_date' => $bill->due_date->format('d M Y'),
+                    'total_due' => (float) $bill->total_amount,
+                    'paid' => (float) $bill->collected_amount,
+                    'balance' => (float) $bill->outstanding_amount,
+                    'days_overdue' => $days,
+                    'bucket' => $this->bucketFor($days),
+                ];
+            });
 
         return view('society.collections.pending-dues', [
             'society' => $society,
-            'rows' => $filtered,
+            'rows' => $rows,
             'bucket' => $bucket,
-            'counts' => $this->pendingDuesCounts(),
-            'kpis' => $this->pendingDuesKpis(),
-            'aging' => $this->duesAgingDonut(),
-        ]);
-    }
-
-    private function nextReceiptNumber(?Society $society): string
-    {
-        $series = NumberingSeries::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->where('document_type', 'receipt')
-            ->first();
-
-        if ($series) {
-            return $series->generateNext();
-        }
-
-        $last = CollectionPayment::max('id') ?? 0;
-
-        return 'RCPT-'.now()->format('Y').'-'.str_pad((string) ($last + 1), 4, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Apply the payment to its linked maintenance bill (updates collected/outstanding/status).
-     */
-    private function allocateToBill(CollectionPayment $payment): void
-    {
-        if (! $payment->maintenance_bill_id) {
-            return;
-        }
-
-        $bill = MaintenanceBill::find($payment->maintenance_bill_id);
-
-        if (! $bill) {
-            return;
-        }
-
-        $collected = (float) $bill->collected_amount + (float) $payment->paid_amount;
-        $outstanding = max(0, (float) $bill->total_amount - $collected);
-
-        $bill->update([
-            'collected_amount' => $collected,
-            'outstanding_amount' => $outstanding,
-            'status' => $outstanding <= 0 ? 'paid' : ($collected > 0 ? 'partial' : $bill->status),
+            'counts' => $counts,
+            'kpis' => $this->pendingDuesKpis($society, clone $base),
+            'aging' => $this->duesAgingDonut(clone $base),
         ]);
     }
 
     /**
-     * KPI figures mirror the reference design (Payment Collection.png §3.2).
+     * KPI cards on the collections list.
      *
      * @return array<string, mixed>
      */
-    private function kpis(): array
+    private function kpis(Society $society): array
     {
+        $paid = fn () => CollectionPayment::query()->forSociety($society)->whereIn('status', ['paid', 'partial']);
+
+        $monthCollected = (float) $paid()->whereBetween('receipt_date', [now()->startOfMonth(), now()->endOfMonth()])->sum('paid_amount');
+        $lastMonth = (float) $paid()->whereBetween('receipt_date', [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth()])->sum('paid_amount');
+        $yearCollected = (float) $paid()->whereBetween('receipt_date', [now()->startOfYear(), now()->endOfYear()])->sum('paid_amount');
+        $lastYear = (float) $paid()->whereBetween('receipt_date', [now()->subYear()->startOfYear(), now()->subYear()->endOfYear()])->sum('paid_amount');
+
+        $open = MaintenanceBill::query()->forSociety($society)->whereIn('status', ['pending', 'partial'])->where('outstanding_amount', '>', 0);
+        $overdue = MaintenanceBill::query()->forSociety($society)->where('status', 'overdue')->where('outstanding_amount', '>', 0);
+
+        $trend = fn (float $now, float $then) => $then > 0 ? round(($now - $then) / $then * 100, 1) : null;
+
         return [
-            'month_collected' => 124850,
-            'year_collected' => 1548600,
-            'pending' => 326450,
-            'pending_sub' => '26 Units / 32 Members',
-            'overdue' => 112300,
-            'overdue_sub' => '18 Units / 21 Members',
+            'month_collected' => $monthCollected,
+            'month_trend' => $trend($monthCollected, $lastMonth),
+            'year_collected' => $yearCollected,
+            'year_trend' => $trend($yearCollected, $lastYear),
+            'pending' => (float) (clone $open)->sum('outstanding_amount'),
+            'pending_sub' => $this->unitsMembersLabel(clone $open),
+            'overdue' => (float) (clone $overdue)->sum('outstanding_amount'),
+            'overdue_sub' => $this->unitsMembersLabel(clone $overdue),
         ];
     }
 
     /**
-     * Collection Overview donut segments + legend (design §3.6).
+     * Collection Overview donut: this year's demand split by state.
      *
      * @return array<string, mixed>
      */
-    private function overviewDonut(): array
+    private function overviewDonut(Society $society): array
     {
+        $year = MaintenanceBill::query()->forSociety($society)->whereBetween('bill_date', [now()->startOfYear(), now()->endOfYear()]);
+        $collected = (float) (clone $year)->sum('collected_amount');
+        $pending = (float) (clone $year)->whereIn('status', ['pending', 'partial'])->sum('outstanding_amount');
+        $overdue = (float) (clone $year)->where('status', 'overdue')->sum('outstanding_amount');
+        $refunded = (float) CollectionPayment::query()->forSociety($society)->where('status', 'refunded')
+            ->whereBetween('receipt_date', [now()->startOfYear(), now()->endOfYear()])->sum('paid_amount');
+        $total = $collected + $pending + $overdue + $refunded;
+        $pct = fn (float $v) => $total > 0 ? round($v / $total * 100, 1).'%' : '0%';
+
         return [
             'segments' => [
-                ['label' => 'Collected', 'value' => 15.48, 'pct' => '72.5%', 'amount' => '&#8377; 15.48L', 'color' => '#16a34a'],
-                ['label' => 'Pending', 'value' => 3.26, 'pct' => '15.3%', 'amount' => '&#8377; 3.26L', 'color' => '#f59e0b'],
-                ['label' => 'Overdue', 'value' => 1.12, 'pct' => '5.2%', 'amount' => '&#8377; 1.12L', 'color' => '#dc2626'],
-                ['label' => 'Refunded', 'value' => 0.48, 'pct' => '2.0%', 'amount' => '&#8377; 0.48L', 'color' => '#7c3aed'],
+                ['label' => 'Collected', 'value' => $collected, 'pct' => $pct($collected), 'amount' => '&#8377; '.$this->short($collected), 'color' => '#16a34a'],
+                ['label' => 'Pending', 'value' => $pending, 'pct' => $pct($pending), 'amount' => '&#8377; '.$this->short($pending), 'color' => '#f59e0b'],
+                ['label' => 'Overdue', 'value' => $overdue, 'pct' => $pct($overdue), 'amount' => '&#8377; '.$this->short($overdue), 'color' => '#dc2626'],
+                ['label' => 'Refunded', 'value' => $refunded, 'pct' => $pct($refunded), 'amount' => '&#8377; '.$this->short($refunded), 'color' => '#7c3aed'],
             ],
-            'center_value' => '&#8377; 15.48L',
+            'center_value' => '&#8377; '.$this->short($collected),
             'center_label' => 'This Year',
-            'total' => '&#8377; 20.34L',
+            'total' => '&#8377; '.$this->short($total),
         ];
     }
 
     /**
-     * Recent Transactions rail (design §3.6).
-     *
      * @return Collection<int, CollectionPayment>
      */
-    private function recentTransactions(?Society $society)
+    private function recentTransactions(Society $society): Collection
     {
         return CollectionPayment::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->where('paid_amount', '>', 0)
             ->orderByDesc('receipt_date')
             ->take(3)
@@ -297,89 +305,127 @@ class CollectionController extends Controller
     }
 
     /**
-     * KPI figures for Pending Dues (design §6.1).
+     * Society users who can collect payments (for the "Collected By" filter).
      *
+     * @return array<int, string>
+     */
+    private function collectors(Society $society): array
+    {
+        $users = User::query()->where('society_id', $society->id)->where('status', 'active')->orderBy('name')->pluck('name')->all();
+        $historic = CollectionPayment::query()->forSociety($society)->whereNotNull('collected_by')->distinct()->pluck('collected_by')->all();
+
+        return array_values(array_unique(array_merge($users, $historic)));
+    }
+
+    /**
+     * @param  Builder<MaintenanceBill>  $open
      * @return array<string, mixed>
      */
-    private function pendingDuesKpis(): array
+    private function pendingDuesKpis(Society $society, $open): array
     {
+        $dueThisMonth = (clone $open)->whereBetween('due_date', [now()->startOfMonth(), now()->endOfMonth()]);
+        $overdue = (clone $open)->whereDate('due_date', '<', Carbon::today());
+
+        $avgDays = (clone $overdue)->get()->avg(fn (MaintenanceBill $b) => $b->due_date->diffInDays(Carbon::today()));
+
         return [
-            'outstanding' => 326450,
-            'outstanding_sub' => '21 Units / 18 Members',
-            'due_month' => 82450,
-            'due_month_sub' => '8 Units / 7 Members',
-            'overdue' => 244000,
-            'overdue_sub' => '17 Units / 14 Members',
-            'avg_days' => '45 Days',
-            'avg_days_sub' => 'As on 31 May 2024',
+            'outstanding' => (float) (clone $open)->sum('outstanding_amount'),
+            'outstanding_sub' => $this->unitsMembersLabel(clone $open),
+            'due_month' => (float) (clone $dueThisMonth)->sum('outstanding_amount'),
+            'due_month_sub' => $this->unitsMembersLabel(clone $dueThisMonth),
+            'overdue' => (float) (clone $overdue)->sum('outstanding_amount'),
+            'overdue_sub' => $this->unitsMembersLabel(clone $overdue),
+            'avg_days' => ($avgDays ? (int) round($avgDays) : 0).' Days',
+            'avg_days_sub' => 'As on '.Carbon::today()->format('d M Y'),
         ];
     }
 
     /**
-     * Dues Aging donut segments (design §6.5).
-     *
+     * @param  Builder<MaintenanceBill>  $open
      * @return array<string, mixed>
      */
-    private function duesAgingDonut(): array
+    private function duesAgingDonut($open): array
     {
+        $segments = [];
+        $total = 0.0;
+        $amounts = [];
+        foreach (self::BUCKETS as $key => [$from, $to]) {
+            $amounts[$key] = (float) $this->applyBucket(clone $open, $from, $to)->sum('outstanding_amount');
+            $total += $amounts[$key];
+        }
+        foreach (self::BUCKETS as $key => $_) {
+            $label = $key === '90+' ? '90+ Days' : str_replace('-', ' - ', $key).' Days';
+            $segments[] = [
+                'label' => $label,
+                'value' => $amounts[$key],
+                'pct' => ($total > 0 ? round($amounts[$key] / $total * 100, 1) : 0).'%',
+                'amount' => '&#8377; '.number_format($amounts[$key]),
+                'color' => self::BUCKET_COLORS[$key],
+            ];
+        }
+
         return [
-            'segments' => [
-                ['label' => '0 - 30 Days', 'value' => 82450, 'pct' => '25.2%', 'amount' => '&#8377; 82,450', 'color' => '#16a34a'],
-                ['label' => '31 - 60 Days', 'value' => 74350, 'pct' => '22.8%', 'amount' => '&#8377; 74,350', 'color' => '#f59e0b'],
-                ['label' => '61 - 90 Days', 'value' => 45650, 'pct' => '14.0%', 'amount' => '&#8377; 45,650', 'color' => '#ea580c'],
-                ['label' => '90+ Days', 'value' => 123900, 'pct' => '37.9%', 'amount' => '&#8377; 1,23,900', 'color' => '#dc2626'],
-            ],
-            'center_value' => '&#8377; 3.26L',
+            'segments' => $segments,
+            'center_value' => '&#8377; '.$this->short($total),
             'center_label' => 'Total Dues',
         ];
     }
 
     /**
-     * Tab counts for the aging pills (design §6.3).
+     * Constrain a bills query to an aging bucket (days past due, inclusive).
      *
-     * @return array<string, int>
+     * @param  Builder<MaintenanceBill>  $query
+     * @return Builder<MaintenanceBill>
      */
-    private function pendingDuesCounts(): array
+    private function applyBucket($query, int $from, ?int $to)
     {
-        return [
-            'all' => 21,
-            '0-30' => 5,
-            '31-60' => 6,
-            '61-90' => 4,
-            '90+' => 6,
-        ];
+        $today = Carbon::today();
+
+        // days past due = today - due_date, so the bucket [from, to] maps to
+        // due_date between (today - to) and (today - from); "0" includes future dues.
+        if ($from > 0) {
+            $query->whereDate('due_date', '<=', $today->copy()->subDays($from));
+        }
+        if ($to !== null) {
+            $query->whereDate('due_date', '>=', $today->copy()->subDays($to));
+        }
+
+        return $query;
+    }
+
+    private function bucketFor(int $days): string
+    {
+        foreach (self::BUCKETS as $key => [$from, $to]) {
+            if ($days >= $from && ($to === null || $days <= $to)) {
+                return $key;
+            }
+        }
+
+        return '90+';
     }
 
     /**
-     * The exact 8 pending-dues rows shown on page 1 (design §6.4).
+     * "N Units / M Members" helper for stat-card subtitles.
      *
-     * @return array<int, array<string, mixed>>
+     * @param  Builder<MaintenanceBill>  $query
      */
-    private function pendingDuesRows(): array
+    private function unitsMembersLabel($query): string
     {
-        // [name, flat, wing, period, due_date, total, paid, balance, days, bucket]
-        $data = [
-            ['Rahul Sharma', 'A-101', 'Wing A', 'May 2024', '31 May 2024', 2850.00, 0.00, 2850.00, 0, '0-30'],
-            ['Priya Sharma', 'A-102', 'Wing A', 'May 2024', '31 May 2024', 2850.00, 1000.00, 1850.00, 0, '0-30'],
-            ['Amit Patel', 'A-103', 'Wing A', 'May 2024', '31 May 2024', 2850.00, 0.00, 2850.00, 0, '0-30'],
-            ['Neha Verma', 'A-104', 'Wing A', 'May 2024', '31 May 2024', 2850.00, 0.00, 2850.00, 0, '0-30'],
-            ['Vikram Singh', 'A-201', 'Wing A', 'May 2024', '25 May 2024', 3150.00, 0.00, 3150.00, 6, '0-30'],
-            ['Sneha Iyer', 'A-202', 'Wing A', 'May 2024', '20 May 2024', 2850.00, 0.00, 2850.00, 11, '0-30'],
-            ['Meena Patel', 'A-203', 'Wing A', 'May 2024', '18 May 2024', 2850.00, 1500.00, 1350.00, 13, '0-30'],
-            ['Anjali Singh', 'B-101', 'Wing B', 'May 2024', '15 May 2024', 2850.00, 0.00, 2850.00, 16, '0-30'],
-        ];
+        $units = (clone $query)->whereNotNull('unit_id')->distinct()->count('unit_id');
+        $members = (clone $query)->whereNotNull('member_id')->distinct()->count('member_id');
 
-        return array_map(fn ($r) => [
-            'member_name' => $r[0],
-            'flat_number' => $r[1],
-            'wing' => $r[2],
-            'bill_period' => $r[3],
-            'due_date' => $r[4],
-            'total_due' => $r[5],
-            'paid' => $r[6],
-            'balance' => $r[7],
-            'days_overdue' => $r[8],
-            'bucket' => $r[9],
-        ], $data);
+        return "{$units} Units / {$members} Members";
+    }
+
+    /**
+     * Compact Indian notation (12.5L, 1.2Cr) for donut labels.
+     */
+    private function short(float $value): string
+    {
+        return match (true) {
+            $value >= 10000000 => number_format($value / 10000000, 2).'Cr',
+            $value >= 100000 => number_format($value / 100000, 2).'L',
+            default => number_format($value),
+        };
     }
 }

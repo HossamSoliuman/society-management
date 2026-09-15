@@ -42,6 +42,7 @@ class BillSettingController extends Controller
             'include_previous_dues' => ['nullable', 'boolean'],
             'default_payment_mode' => ['nullable', 'string'],
             'default_collection_account' => ['nullable', 'string'],
+            'upi_id' => ['nullable', 'string', 'max:100'],
             'allow_partial_payments' => ['nullable', 'boolean'],
             'auto_email_bill' => ['nullable', 'boolean'],
             'auto_sms_bill' => ['nullable', 'boolean'],
@@ -148,7 +149,8 @@ class BillSettingController extends Controller
         $data = $request->validate([
             'enable_late_fee' => ['nullable', 'boolean'],
             'grace_period_days' => ['required', 'integer', 'min:0'],
-            'late_fee_type' => ['required', 'in:percentage,flat'],
+            'late_fee_type' => ['required', 'in:percentage,flat,per_day'],
+            'late_fee_per_day' => ['nullable', 'numeric', 'min:0'],
             'late_fee_percent' => ['nullable', 'numeric', 'min:0'],
             'late_fee_flat' => ['nullable', 'numeric', 'min:0'],
             'max_late_fee_cap' => ['nullable', 'numeric', 'min:0'],
@@ -180,7 +182,57 @@ class BillSettingController extends Controller
         $society = $this->currentSociety();
         $settings = $this->settings($society);
 
-        return view('society.billing.settings.notifications', compact('society', 'settings'));
+        $events = collect(array_keys(BillSetting::notificationEventDefaults()))
+            ->mapWithKeys(fn (string $key) => [$key => $settings->notificationEvent($key)])
+            ->all();
+
+        return view('society.billing.settings.notifications', compact('society', 'settings', 'events'));
+    }
+
+    public function updateNotifications(Request $request): RedirectResponse
+    {
+        $settings = $this->settings($this->currentSociety());
+        $keys = array_keys(BillSetting::notificationEventDefaults());
+
+        $data = $request->validate([
+            'reminder_days_before_due' => ['nullable', 'string', 'max:50'],
+            'reminder_days_after_due' => ['nullable', 'string', 'max:50'],
+            'events' => ['nullable', 'array'],
+            'events.*.template' => ['nullable', 'string', 'max:500'],
+            'events.*.email' => ['nullable', 'boolean'],
+            'events.*.sms' => ['nullable', 'boolean'],
+            'events.*.whatsapp' => ['nullable', 'boolean'],
+        ]);
+
+        $parseDays = fn (?string $value) => collect(explode(',', (string) $value))
+            ->map(fn ($v) => (int) trim($v))
+            ->filter(fn ($v) => $v > 0)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        $notificationSettings = [];
+        foreach ($keys as $key) {
+            $event = $data['events'][$key] ?? [];
+            $notificationSettings[$key] = [
+                'channels' => [
+                    'email' => (bool) ($event['email'] ?? false),
+                    'sms' => (bool) ($event['sms'] ?? false),
+                    'whatsapp' => (bool) ($event['whatsapp'] ?? false),
+                ],
+                'template' => trim((string) ($event['template'] ?? '')) ?: BillSetting::notificationEventDefaults()[$key]['template'],
+            ];
+        }
+
+        $settings->update([
+            'reminder_days_before_due' => $parseDays($data['reminder_days_before_due'] ?? null),
+            'reminder_days_after_due' => $parseDays($data['reminder_days_after_due'] ?? null),
+            'notification_settings' => $notificationSettings,
+        ]);
+
+        return redirect()->route('society.billing.settings.notifications')
+            ->with('success', 'Notification settings saved successfully.');
     }
 
     private function settings(?Society $society): BillSetting

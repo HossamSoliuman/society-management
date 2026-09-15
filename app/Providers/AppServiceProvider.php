@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentGateway;
 use App\Contracts\SmsGateway;
 use App\Models\SmtpSetting;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
+use App\Services\Payments\FakeGateway;
+use App\Services\Payments\RazorpayGateway;
 use App\Services\Sms\FakeSmsGateway;
 use App\Services\Sms\LogSmsGateway;
 use Illuminate\Notifications\ChannelManager;
@@ -25,6 +28,17 @@ class AppServiceProvider extends ServiceProvider
             return match (config('services.sms.driver', 'log')) {
                 'fake' => new FakeSmsGateway,
                 default => new LogSmsGateway,
+            };
+        });
+
+        $this->app->singleton(PaymentGateway::class, function () {
+            return match (config('services.payment_gateway.driver', 'fake')) {
+                'razorpay' => new RazorpayGateway(
+                    (string) config('services.razorpay.key'),
+                    (string) config('services.razorpay.secret'),
+                    config('services.razorpay.webhook_secret'),
+                ),
+                default => new FakeGateway,
             };
         });
     }

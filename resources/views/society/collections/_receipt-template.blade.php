@@ -6,10 +6,10 @@
      * @var \App\Models\CollectionPayment $payment
      * @var \App\Models\Society|null $society
      */
-    $societyName = $society->name ?? 'Green Meadows Society';
-    $societyAddress = trim(collect([$society->address_line_1 ?? null, $society->city ?? null])->filter()->implode(', ')) ?: 'Sector 15, Nerul, Navi Mumbai - 400706';
-    $societyEmail = $society->primary_email ?? 'contact@greenmeadows.in';
-    $societyPhone = $society->primary_mobile ?? '9876543210';
+    $societyName = $society->name ?? '—';
+    $societyAddress = trim(collect([$society->address_line_1 ?? null, $society->city ?? null])->filter()->implode(', ')) ?: '';
+    $societyEmail = $society->primary_email ?? '';
+    $societyPhone = $society->primary_mobile ?? '';
     $isPaid = $payment->status === 'paid';
     $memberMobile = $payment->member_mobile ?: $payment->member?->mobile;
     $memberEmail = $payment->member_email ?: $payment->member?->email;

@@ -12,7 +12,7 @@ class Unit extends Model
     use BelongsToSociety, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'society_id', 'unit_number', 'building', 'wing', 'floor', 'unit_type',
+        'society_id', 'member_id', 'unit_number', 'building', 'wing', 'floor', 'unit_type',
         'area_sqft', 'status', 'occupied_by_name', 'occupied_by_role',
         'owner_name', 'owner_mobile',
     ];
@@ -27,6 +27,16 @@ class Unit extends Model
     public function society()
     {
         return $this->belongsTo(Society::class);
+    }
+
+    public function member()
+    {
+        return $this->belongsTo(Member::class);
+    }
+
+    public function bills()
+    {
+        return $this->hasMany(MaintenanceBill::class);
     }
 
     /**

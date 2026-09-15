@@ -200,12 +200,15 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Default Collection Account</label>
-                        <select name="default_collection_account" class="form-control">
-                            <option value="">Select Account</option>
-                            @foreach(['Main Account', 'Sinking Fund Account', 'Reserve Account'] as $opt)
-                                <option value="{{ $opt }}" {{ $sel($settings->default_collection_account, $opt) }}>{{ $opt }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" name="default_collection_account" class="form-control" value="{{ $settings->default_collection_account }}" placeholder="e.g. HDFC Bank - Current A/c">
+                        <div class="form-text">Printed on bills and pre-selected when recording payments.</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">UPI ID (for Scan &amp; Pay)</label>
+                        <input type="text" name="upi_id" class="form-control" value="{{ $settings->upi_id }}" placeholder="society@bank">
+                        <div class="form-text">Shown on the bill's QR block when "Show Payment QR" is on.</div>
                     </div>
                 </div>
 

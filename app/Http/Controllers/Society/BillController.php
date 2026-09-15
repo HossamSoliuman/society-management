@@ -3,36 +3,43 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
-use App\Models\BillSetting;
+use App\Imports\MaintenanceBillImport;
+use App\Jobs\SendMaintenanceBill;
+use App\Models\Account;
 use App\Models\ChargeHead;
 use App\Models\MaintenanceBill;
 use App\Models\Member;
-use App\Models\NumberingSeries;
 use App\Models\PaymentMode;
 use App\Models\Society;
 use App\Models\Unit;
+use App\Services\BillDocumentService;
+use App\Services\BillingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use InvalidArgumentException;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BillController extends Controller
 {
-    /** Collection accounts offered on the Create Bill screen. */
-    private const COLLECTION_ACCOUNTS = [
-        'HDFC Bank - Current A/c',
-        'SBI - Savings A/c',
-        'ICICI Bank - Current A/c',
-        'Cash in Hand',
-    ];
+    private const IMPORT_SESSION_KEY = 'billing.bulk-import';
+
+    public function __construct(
+        private readonly BillingService $billing,
+        private readonly BillDocumentService $documents,
+    ) {}
 
     public function index(Request $request): View
     {
         $society = $this->currentSociety();
 
         $query = MaintenanceBill::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
                 $q->where(function ($sub) use ($term) {
@@ -46,69 +53,59 @@ class BillController extends Controller
             ->when($request->filled('cycle'), fn ($q) => $q->where('bill_cycle', $request->string('cycle')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->when($request->filled('tower'), fn ($q) => $q->where('tower_wing', $request->string('tower')))
-            ->orderByDesc('bill_number');
+            ->orderByDesc('bill_date')
+            ->orderByDesc('id');
 
         $perPage = (int) $request->input('per_page', 10);
         $bills = $query->paginate($perPage)->withQueryString();
 
-        $base = MaintenanceBill::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
+        $base = MaintenanceBill::query()->forSociety($society);
 
         $months = (clone $base)->select('bill_month')->distinct()->pluck('bill_month');
         $cycles = (clone $base)->select('bill_cycle')->distinct()->pluck('bill_cycle');
         $towers = (clone $base)->select('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');
 
-        // KPI figures mirror the reference design (Maintenance bill.png §3.2).
-        $kpis = [
-            'total_bills' => 156,
-            'paid_bills' => 98,
-            'paid_amount' => 342500,
-            'pending_bills' => 46,
-            'pending_amount' => 145600,
-            'overdue_bills' => 12,
-            'overdue_amount' => 35200,
-            'total_amount' => 523300,
-        ];
-
-        return view('society.billing.bills.index', compact('society', 'bills', 'kpis', 'months', 'cycles', 'towers'));
+        return view('society.billing.bills.index', [
+            'society' => $society,
+            'bills' => $bills,
+            'kpis' => $this->kpis($society, $request->string('month')->toString() ?: null),
+            'months' => $months,
+            'cycles' => $cycles,
+            'towers' => $towers,
+        ]);
     }
 
     public function create(): View
     {
         $society = $this->currentSociety();
 
-        $chargeHeads = ChargeHead::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->where('status', 'active')
-            ->orderBy('sort_order')
-            ->get();
+        $chargeHeads = $this->activeChargeHeads($society);
 
-        $members = Member::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->orderBy('name')
-            ->get();
-
-        $units = Unit::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->orderBy('unit_number')
-            ->get();
+        $members = Member::query()->forSociety($society)->orderBy('name')->get();
+        $units = Unit::query()->forSociety($society)->orderBy('unit_number')->get();
 
         $towers = $units->pluck('building')->filter()->unique()->values();
         $floors = $units->pluck('floor')->filter()->unique()->values();
 
         $paymentModes = PaymentMode::where('status', 'active')->orderBy('name')->pluck('name');
-        $collectionAccounts = self::COLLECTION_ACCOUNTS;
+        $collectionAccounts = $this->collectionAccounts($society);
+        $settings = $this->billing->settings($society);
 
-        // Default charge lines shown on the design (Create maintenance bill.png §4.2).
-        $defaultLines = [
-            ['name' => 'Maintenance Charges', 'description' => 'Monthly maintenance charges', 'amount' => 2500],
-            ['name' => 'Sinking Fund', 'description' => 'Sinking fund contribution', 'amount' => 500],
-            ['name' => 'Reserve Fund', 'description' => 'Reserve fund contribution', 'amount' => 300],
-            ['name' => 'Others', 'description' => 'Water tank cleaning charges', 'amount' => 200],
-        ];
+        // Pre-filled lines come from the society's recurring charge heads.
+        $defaultLines = $chargeHeads
+            ->where('type', 'recurring')
+            ->take(4)
+            ->map(fn (ChargeHead $head) => [
+                'name' => $head->name,
+                'description' => $head->description,
+                'amount' => (float) $head->default_amount,
+            ])
+            ->values()
+            ->all();
 
         return view('society.billing.bills.create', compact(
             'society', 'chargeHeads', 'members', 'units', 'towers', 'floors',
-            'paymentModes', 'collectionAccounts', 'defaultLines',
+            'paymentModes', 'collectionAccounts', 'defaultLines', 'settings',
         ));
     }
 
@@ -144,16 +141,12 @@ class BillController extends Controller
             'send_whatsapp' => ['nullable', 'boolean'],
         ]);
 
-        $subTotal = collect($data['items'])->sum(fn ($item) => (float) $item['amount']);
-        $discount = (float) ($data['discount'] ?? 0);
-        $lateFee = (float) ($data['late_fee'] ?? 0);
-        $total = max(0, $subTotal - $discount + $lateFee);
+        $member = isset($data['member_id']) ? Member::find($data['member_id']) : null;
+        $unit = isset($data['unit_id']) ? Unit::find($data['unit_id']) : null;
 
-        $bill = MaintenanceBill::create([
-            'society_id' => $society?->id,
-            'bill_number' => $this->nextBillNumber($society),
-            'member_id' => $data['member_id'] ?? null,
-            'unit_id' => $data['unit_id'] ?? null,
+        $bill = $this->billing->createBill($society, [
+            'member' => $member,
+            'unit' => $unit,
             'member_name' => $data['member_name'] ?? null,
             'flat_number' => $data['flat_number'] ?? null,
             'tower_wing' => $data['tower_wing'] ?? null,
@@ -163,13 +156,9 @@ class BillController extends Controller
             'due_date' => Carbon::parse($data['due_date']),
             'bill_cycle' => $data['bill_cycle'] ?? $data['bill_month'],
             'billing_type' => $data['billing_type'],
-            'sub_total' => $subTotal,
-            'discount' => $discount,
-            'late_fee' => $lateFee,
-            'total_amount' => $total,
-            'collected_amount' => 0,
-            'outstanding_amount' => $total,
-            'status' => 'pending',
+            'lines' => array_values($data['items']),
+            'discount' => (float) ($data['discount'] ?? 0),
+            'late_fee' => (float) ($data['late_fee'] ?? 0),
             'collection_account' => $data['collection_account'],
             'payment_mode' => $data['payment_mode'] ?? null,
             'reference_no' => $data['reference_no'] ?? null,
@@ -179,114 +168,262 @@ class BillController extends Controller
             'send_whatsapp' => $request->boolean('send_whatsapp'),
         ]);
 
-        foreach (array_values($data['items']) as $index => $item) {
-            $bill->items()->create([
-                'charge_head_id' => $item['charge_head_id'] ?? null,
-                'charge_head_name' => $item['charge_head_name'],
-                'description' => $item['description'] ?? null,
-                'amount' => (float) $item['amount'],
-                'sort_order' => $index + 1,
-            ]);
+        if ($bill->send_email || $bill->send_sms || $bill->send_whatsapp) {
+            SendMaintenanceBill::dispatch($bill);
         }
 
         return redirect()->route('society.billing.bills.index')
             ->with('success', "Bill {$bill->bill_number} generated successfully.");
     }
 
+    public function generate(Request $request): View
+    {
+        $society = $this->currentSociety();
+        $settings = $this->billing->settings($society);
+        $units = Unit::query()->forSociety($society)->where('status', 'occupied')->orderBy('building')->orderBy('unit_number')->get();
+
+        $billDate = Carbon::today();
+
+        return view('society.billing.bills.generate', [
+            'society' => $society,
+            'chargeHeads' => $this->activeChargeHeads($society),
+            'units' => $units,
+            'towers' => $units->pluck('building')->filter()->unique()->values(),
+            'settings' => $settings,
+            'defaultMonth' => $billDate->format('F Y'),
+            'defaultBillDate' => $billDate->toDateString(),
+            'defaultDueDate' => $billDate->copy()->addDays((int) ($settings->due_date_days ?: 15))->toDateString(),
+            'preview' => null,
+        ]);
+    }
+
+    /**
+     * Preview (dry run) or confirm bulk generation, depending on the `confirm` flag.
+     */
+    public function storeGenerate(Request $request): View|RedirectResponse
+    {
+        $society = $this->currentSociety();
+
+        $data = $request->validate([
+            'bill_month' => ['required', 'string', 'max:50'],
+            'bill_cycle' => ['nullable', 'string', 'max:50'],
+            'billing_type' => ['nullable', 'string', 'max:100'],
+            'bill_date' => ['required', 'date'],
+            'due_date' => ['required', 'date', 'after_or_equal:bill_date'],
+            'charge_heads' => ['required', 'array', 'min:1'],
+            'charge_heads.*' => ['integer', Rule::exists('charge_heads', 'id')->where('society_id', $society->id)],
+            'tower' => ['nullable', 'string', 'max:100'],
+            'send_email' => ['nullable', 'boolean'],
+            'send_sms' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'confirm' => ['nullable', 'boolean'],
+        ]);
+
+        $options = [
+            'bill_date' => $data['bill_date'],
+            'due_date' => $data['due_date'],
+            'bill_cycle' => $data['bill_cycle'] ?? $data['bill_month'],
+            'billing_type' => $data['billing_type'] ?? null,
+            'send_email' => $request->boolean('send_email'),
+            'send_sms' => $request->boolean('send_sms'),
+            'notes' => $data['notes'] ?? null,
+        ];
+        if (! empty($data['tower'])) {
+            $options['unit_ids'] = Unit::query()->forSociety($society)->where('building', $data['tower'])->pluck('id')->all();
+        }
+
+        if (! $request->boolean('confirm')) {
+            $preview = $this->billing->previewForPeriod($society, $data['bill_month'], $data['charge_heads'], $options);
+            $units = Unit::query()->forSociety($society)->where('status', 'occupied')->orderBy('building')->orderBy('unit_number')->get();
+            $settings = $this->billing->settings($society);
+
+            return view('society.billing.bills.generate', [
+                'society' => $society,
+                'chargeHeads' => $this->activeChargeHeads($society),
+                'units' => $units,
+                'towers' => $units->pluck('building')->filter()->unique()->values(),
+                'settings' => $settings,
+                'defaultMonth' => $data['bill_month'],
+                'defaultBillDate' => $data['bill_date'],
+                'defaultDueDate' => $data['due_date'],
+                'preview' => $preview,
+            ]);
+        }
+
+        try {
+            $bills = $this->billing->generateForPeriod($society, $data['bill_month'], $data['charge_heads'], $options);
+        } catch (InvalidArgumentException $exception) {
+            throw ValidationException::withMessages(['charge_heads' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('society.billing.bills.index', ['month' => $data['bill_month']])
+            ->with('success', "{$bills->count()} bill(s) generated for {$data['bill_month']}.");
+    }
+
     public function show(MaintenanceBill $bill): View
     {
-        $bill->load('items');
-        $design = $this->design($bill->society_id);
+        $bill->load(['items', 'payments']);
 
         return view('society.billing.bills.show', [
-            'design' => $design,
+            'design' => $this->documents->design($bill->society_id),
             'billModel' => $bill,
-            'bill' => $this->billTemplateData($bill),
+            'bill' => $this->documents->templateData($bill),
         ]);
     }
 
     public function print(MaintenanceBill $bill): View
     {
         $bill->load('items');
-        $design = $this->design($bill->society_id);
 
         return view('society.billing.bills.print', [
-            'design' => $design,
-            'bill' => $this->billTemplateData($bill),
+            'design' => $this->documents->design($bill->society_id),
+            'bill' => $this->documents->templateData($bill),
         ]);
     }
 
-    public function bulkUpload(): View
+    public function pdf(MaintenanceBill $bill): Response
+    {
+        return $this->documents->renderPdf($bill)->download($this->documents->fileName($bill));
+    }
+
+    public function send(MaintenanceBill $bill): RedirectResponse
+    {
+        $bill->forceFill(['send_email' => true])->saveQuietly();
+        SendMaintenanceBill::dispatch($bill);
+
+        return back()->with('success', "Bill {$bill->bill_number} queued for delivery.");
+    }
+
+    public function bulkUpload(Request $request): View
     {
         $society = $this->currentSociety();
+        $import = $request->session()->get(self::IMPORT_SESSION_KEY);
 
-        return view('society.billing.bills.bulk-upload', compact('society'));
-    }
-
-    public function bulkStore(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
+        return view('society.billing.bills.bulk-upload', [
+            'society' => $society,
+            'preview' => $import && ($import['society_id'] ?? null) === $society->id ? $import : null,
         ]);
-
-        // Parsing/preview is handled by the review step; acknowledge the upload here.
-        return redirect()->route('society.billing.bills.bulk')
-            ->with('success', 'File uploaded. Review the parsed rows before generating bills.');
-    }
-
-    private function nextBillNumber(?Society $society): string
-    {
-        $series = NumberingSeries::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->where('document_type', 'maintenance_bill')
-            ->first();
-
-        if ($series) {
-            return $series->generateNext();
-        }
-
-        $last = MaintenanceBill::max('id') ?? 0;
-
-        return 'MB-'.now()->format('Y').'-'.str_pad((string) ($last + 1), 6, '0', STR_PAD_LEFT);
-    }
-
-    private function design(?int $societyId): BillSetting
-    {
-        return BillSetting::query()
-            ->when($societyId, fn ($q) => $q->where('society_id', $societyId))
-            ->first() ?? new BillSetting;
     }
 
     /**
-     * Build the array shape consumed by the shared `_bill-template` (2A).
-     *
-     * @return array<string, mixed>
+     * Parse the spreadsheet, validate every row and stash the result for review.
      */
-    private function billTemplateData(MaintenanceBill $bill): array
+    public function bulkStore(Request $request): RedirectResponse
     {
-        $flat = collect([$bill->flat_number, $bill->tower_wing, $bill->floor])->filter()->implode(', ');
+        $society = $this->currentSociety();
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:5120'],
+        ]);
+
+        $import = new MaintenanceBillImport($society);
+        Excel::import($import, $request->file('file'));
+
+        $request->session()->put(self::IMPORT_SESSION_KEY, [
+            'society_id' => $society->id,
+            'file_name' => $request->file('file')->getClientOriginalName(),
+            'rows' => $import->rows,
+            'errors' => $import->errors,
+        ]);
+
+        $valid = count($import->rows);
+        $invalid = count($import->errors);
+
+        return redirect()->route('society.billing.bills.bulk')
+            ->with($invalid > 0 ? 'error' : 'success', "{$valid} valid row(s) parsed".($invalid > 0 ? ", {$invalid} row(s) need attention." : '. Review and confirm to generate bills.'));
+    }
+
+    public function bulkConfirm(Request $request): RedirectResponse
+    {
+        $society = $this->currentSociety();
+        $import = $request->session()->get(self::IMPORT_SESSION_KEY);
+
+        abort_unless($import && ($import['society_id'] ?? null) === $society->id, 404);
+
+        if (empty($import['rows'])) {
+            return redirect()->route('society.billing.bills.bulk')->with('error', 'No valid rows to import.');
+        }
+
+        $bills = $this->billing->createFromRows($society, $import['rows']);
+        $request->session()->forget(self::IMPORT_SESSION_KEY);
+
+        return redirect()->route('society.billing.bills.index')
+            ->with('success', "{$bills->count()} bill(s) created from {$import['file_name']}.");
+    }
+
+    public function bulkDiscard(Request $request): RedirectResponse
+    {
+        $request->session()->forget(self::IMPORT_SESSION_KEY);
+
+        return redirect()->route('society.billing.bills.bulk')->with('success', 'Upload discarded.');
+    }
+
+    /**
+     * Aggregates for the stat cards (optionally for one bill month).
+     *
+     * @return array<string, int|float>
+     */
+    private function kpis(Society $society, ?string $month): array
+    {
+        $rows = MaintenanceBill::query()
+            ->forSociety($society)
+            ->when($month, fn ($q) => $q->where('bill_month', $month))
+            ->selectRaw('status, COUNT(*) as c, COALESCE(SUM(total_amount),0) as total, COALESCE(SUM(collected_amount),0) as collected, COALESCE(SUM(outstanding_amount),0) as outstanding')
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        $count = fn (array $statuses) => (int) collect($statuses)->sum(fn ($s) => $rows[$s]->c ?? 0);
+        $sum = fn (array $statuses, string $col) => (float) collect($statuses)->sum(fn ($s) => $rows[$s]->{$col} ?? 0);
 
         return [
-            'number' => $bill->bill_number,
-            'date' => $bill->bill_date?->format('d M Y'),
-            'due_date' => $bill->due_date?->format('d M Y'),
-            'to_name' => $bill->member_name ?: 'Mr. Ramesh Sharma',
-            'to_flat' => $flat ?: 'A-101, Tower A, 1st Floor',
-            'month' => $bill->bill_month,
-            'type' => $bill->billing_type,
-            'cycle' => $bill->bill_cycle,
-            'items' => $bill->items->map(fn ($item) => [
-                'name' => $item->charge_head_name,
-                'description' => $item->description,
-                'amount' => (float) $item->amount,
-            ])->all(),
-            'subtotal' => (float) $bill->sub_total,
-            'discount' => (float) $bill->discount,
-            'late_fee' => (float) $bill->late_fee,
-            'total' => (float) $bill->total_amount,
-            'previous_dues' => (float) $bill->previous_dues,
-            'total_payable' => (float) $bill->total_amount + (float) $bill->previous_dues,
-            'upi_id' => 'greenview@sbi',
+            'total_bills' => (int) $rows->sum('c'),
+            'paid_bills' => $count(['paid']),
+            'paid_amount' => (float) $rows->sum('collected'),
+            'pending_bills' => $count(['pending', 'partial']),
+            'pending_amount' => $sum(['pending', 'partial'], 'outstanding'),
+            'overdue_bills' => $count(['overdue']),
+            'overdue_amount' => $sum(['overdue'], 'outstanding'),
+            'total_amount' => (float) $rows->sum('total'),
         ];
+    }
+
+    /**
+     * @return Collection<int, ChargeHead>
+     */
+    private function activeChargeHeads(Society $society): Collection
+    {
+        return ChargeHead::query()
+            ->forSociety($society)
+            ->where('status', 'active')
+            ->orderBy('sort_order')
+            ->get();
+    }
+
+    /**
+     * Bank / cash accounts a payment can be collected into: detail accounts
+     * from the chart of accounts, else the society's bank + cash.
+     *
+     * @return array<int, string>
+     */
+    private function collectionAccounts(Society $society): array
+    {
+        $accounts = Account::query()
+            ->forSociety($society)
+            ->where('type', 'detail')
+            ->where('status', 'active')
+            ->where(fn ($q) => $q->where('name', 'like', '%Bank%')->orWhere('name', 'like', '%Cash%'))
+            ->orderBy('code')
+            ->pluck('name')
+            ->all();
+
+        if ($accounts !== []) {
+            return $accounts;
+        }
+
+        return array_values(array_filter([
+            $society->bank_name ? trim($society->bank_name.' - A/c '.($society->account_number ?? '')) : null,
+            'Cash in Hand',
+        ]));
     }
 }

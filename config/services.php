@@ -44,4 +44,18 @@ return [
         'log_channel' => env('SMS_LOG_CHANNEL'),
     ],
 
+    /*
+     * Online payment gateway. "fake" (default) completes orders through a
+     * simulated webhook; "razorpay" needs the keys below.
+     */
+    'payment_gateway' => [
+        'driver' => env('PAYMENT_GATEWAY', 'fake'),
+    ],
+
+    'razorpay' => [
+        'key' => env('RAZORPAY_KEY'),
+        'secret' => env('RAZORPAY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
+
 ];

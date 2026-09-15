@@ -177,6 +177,7 @@
                     </button>
                     <div class="nav-submenu">
                         <a href="{{ route('society.billing.bills.create') }}" class="nav-item {{ request()->routeIs('society.billing.bills.create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus"></i><span>Create Bill</span></a>
+                        <a href="{{ route('society.billing.bills.generate') }}" class="nav-item {{ request()->routeIs('society.billing.bills.generate*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i><span>Generate Bills</span></a>
                         <a href="{{ route('society.billing.bills.index') }}" class="nav-item {{ request()->routeIs('society.billing.bills.index') || request()->routeIs('society.billing.bills.show') ? 'active' : '' }}"><i class="fas fa-list"></i><span>Bill List</span></a>
                         <a href="{{ route('society.billing.bills.bulk') }}" class="nav-item {{ request()->routeIs('society.billing.bills.bulk') ? 'active' : '' }}"><i class="fas fa-file-arrow-up"></i><span>Bulk Upload</span></a>
                         <a href="{{ route('society.billing.settings.general') }}" class="nav-item {{ request()->routeIs('society.billing.settings.general') ? 'active' : '' }}"><i class="fas fa-gear"></i><span>Bill Settings</span></a>

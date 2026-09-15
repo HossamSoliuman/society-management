@@ -26,12 +26,12 @@
 <div class="card">
     <div class="card-body">
         <div class="steps-wizard" style="margin-bottom: 0;">
-            <div class="step-item active">
+            <div class="step-item {{ $preview ? 'completed' : 'active' }}">
                 <div class="step-number">1</div>
                 <div class="step-label">Upload File</div>
                 <div style="font-size: 11px; color: var(--text-muted);">Upload your Excel/CSV file</div>
             </div>
-            <div class="step-item">
+            <div class="step-item {{ $preview ? 'active' : '' }}">
                 <div class="step-number">2</div>
                 <div class="step-label">Review &amp; Validate</div>
                 <div style="font-size: 11px; color: var(--text-muted);">Validate bill data</div>
@@ -114,11 +114,75 @@
     </div>
 </div>
 
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding-bottom: 24px;">
-    <div class="info-box" style="flex: 1; margin: 0;">
-        <i class="fas fa-circle-info"></i>
-        <span>Upload a file to preview parsed rows with per-row validation before generating bills.</span>
+@if($preview)
+    <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Review &amp; Validate — {{ $preview['file_name'] }}</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                    <span class="badge badge-success">{{ count($preview['rows']) }} valid</span>
+                    <span class="badge {{ count($preview['errors']) ? 'badge-danger' : 'badge-secondary' }}">{{ count($preview['errors']) }} with errors</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <form method="POST" action="{{ route('society.billing.bills.bulk.discard') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-xmark"></i> Discard</button>
+                </form>
+                <form method="POST" action="{{ route('society.billing.bills.bulk.confirm') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary btn-sm" {{ count($preview['rows']) === 0 ? 'disabled' : '' }}><i class="fas fa-check"></i> Generate {{ count($preview['rows']) }} Row(s)</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 20px;">Row</th>
+                            <th>Flat</th>
+                            <th>Bill Month</th>
+                            <th>Bill / Due</th>
+                            <th>Charge Head</th>
+                            <th style="text-align: right;">Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($preview['errors'] as $bad)
+                            <tr style="background: var(--danger-light, #fef2f2);">
+                                <td style="padding-left: 20px;">{{ $bad['row'] }}</td>
+                                <td>{{ $bad['data']['flat_no'] ?: '—' }}</td>
+                                <td>{{ $bad['data']['bill_month'] ?: '—' }}</td>
+                                <td>{{ $bad['data']['bill_date'] ?? '—' }} / {{ $bad['data']['due_date'] ?? '—' }}</td>
+                                <td>{{ $bad['data']['charge_head'] ?: '—' }}</td>
+                                <td style="text-align: right;">{{ $bad['data']['amount'] !== null ? number_format($bad['data']['amount'], 2) : '—' }}</td>
+                                <td style="color: var(--danger); font-size: 12px;">{{ implode(' ', $bad['errors']) }}</td>
+                            </tr>
+                        @endforeach
+                        @foreach($preview['rows'] as $row)
+                            <tr>
+                                <td style="padding-left: 20px;">{{ $row['row'] }}</td>
+                                <td>{{ $row['flat_no'] }}</td>
+                                <td>{{ $row['bill_month'] }}</td>
+                                <td>{{ $row['bill_date'] }} / {{ $row['due_date'] }}</td>
+                                <td>{{ $row['charge_head'] }}</td>
+                                <td style="text-align: right;">{{ number_format($row['amount'], 2) }}</td>
+                                <td><span class="badge badge-success">Valid</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <button class="btn btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">Next: Review &amp; Validate <i class="fas fa-arrow-right"></i></button>
-</div>
+@else
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding-bottom: 24px;">
+        <div class="info-box" style="flex: 1; margin: 0;">
+            <i class="fas fa-circle-info"></i>
+            <span>Upload a file to preview parsed rows with per-row validation before generating bills.</span>
+        </div>
+    </div>
+@endif
 @endsection

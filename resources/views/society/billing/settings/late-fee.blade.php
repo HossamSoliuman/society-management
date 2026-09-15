@@ -68,6 +68,23 @@
                             <input type="radio" name="late_fee_type" value="flat" class="form-check-input" {{ $lateFee->late_fee_type === 'flat' ? 'checked' : '' }}>
                             <span class="form-check-label">Flat Amount</span>
                         </label>
+                        <label class="form-check">
+                            <input type="radio" name="late_fee_type" value="per_day" class="form-check-input" {{ $lateFee->late_fee_type === 'per_day' ? 'checked' : '' }}>
+                            <span class="form-check-label">Per Day</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Flat Late Fee (&#8377;)</label>
+                        <input type="number" step="0.01" name="late_fee_flat" class="form-control" value="{{ $lateFee->late_fee_flat !== null ? number_format((float) $lateFee->late_fee_flat, 2, '.', '') : '' }}">
+                        <div class="form-text">Used when type is Flat Amount</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Per-day Late Fee (&#8377;)</label>
+                        <input type="number" step="0.01" name="late_fee_per_day" class="form-control" value="{{ $lateFee->late_fee_per_day !== null ? number_format((float) $lateFee->late_fee_per_day, 2, '.', '') : '' }}">
+                        <div class="form-text">Charged for every day past the grace period</div>
                     </div>
                 </div>
 

@@ -13,6 +13,7 @@ use App\Models\MaintenanceBill;
 use App\Models\Member;
 use App\Models\Notice;
 use App\Models\NumberingSeries;
+use App\Models\PaymentGatewayOrder;
 use App\Models\ServiceVendor;
 use App\Models\Society;
 use App\Models\SupportTicket;
@@ -68,6 +69,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
         'notice' => Notice::factory()->create($sid + ['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'target_roles' => null]),
         'teamUser' => tap(User::factory()->create($sid), fn (User $u) => $u->roles()->sync([seededRole('staff')->id])),
+        'order' => PaymentGatewayOrder::create($sid + ['provider' => 'fake', 'provider_order_id' => 'iso_'.uniqid(), 'amount' => 100, 'status' => 'created']),
         default => throw new RuntimeException("No fixture for route parameter {{$param}} on {$routeName}; add one to SocietyIsolationTest."),
     };
 }

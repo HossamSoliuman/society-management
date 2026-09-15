@@ -20,7 +20,11 @@
         <div class="action-toolbar-right">
             <a href="{{ route('society.collections.receipts.index') }}" class="btn btn-outline-secondary"><i class="fas fa-chevron-left"></i> Back to Receipts</a>
             <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
-            <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fas fa-download"></i> Download</button>
+            <form method="POST" action="{{ route('society.collections.receipts.email', $payment) }}" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-paper-plane"></i> Email Receipt</button>
+            </form>
+            <a href="{{ route('society.collections.receipts.pdf', $payment) }}" class="btn btn-primary"><i class="fas fa-download"></i> Download PDF</a>
         </div>
     </div>
 </div>

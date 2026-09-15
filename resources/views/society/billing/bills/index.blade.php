@@ -29,7 +29,10 @@
                 <span>Bill List</span>
             </div>
         </div>
-        <a href="{{ route('society.billing.bills.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Bill</a>
+        <div style="display: flex; gap: 8px;">
+            <a href="{{ route('society.billing.bills.generate') }}" class="btn btn-secondary"><i class="fas fa-layer-group"></i> Generate Bills</a>
+            <a href="{{ route('society.billing.bills.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Bill</a>
+        </div>
     </div>
 </div>
 
@@ -179,6 +182,11 @@
                                         <div class="dropdown-menu">
                                             <a href="{{ route('society.billing.bills.show', $bill) }}" class="dropdown-item"><i class="fas fa-eye"></i> View</a>
                                             <a href="{{ route('society.billing.bills.print', $bill) }}" target="_blank" class="dropdown-item"><i class="fas fa-print"></i> Print</a>
+                                            <a href="{{ route('society.billing.bills.pdf', $bill) }}" class="dropdown-item"><i class="fas fa-file-pdf"></i> Download PDF</a>
+                                            <form method="POST" action="{{ route('society.billing.bills.send', $bill) }}">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item" style="width: 100%; text-align: left; background: none; border: 0; cursor: pointer;"><i class="fas fa-paper-plane"></i> Email to member</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\CollectionPayment;
+use App\Notifications\PaymentReceiptIssued;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class PaymentReceiptController extends Controller
@@ -14,7 +19,7 @@ class PaymentReceiptController extends Controller
         $society = $this->currentSociety();
 
         $query = CollectionPayment::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
                 $q->where(function ($sub) use ($term) {
@@ -36,5 +41,28 @@ class PaymentReceiptController extends Controller
         $society = $payment->society ?? $this->currentSociety();
 
         return view('society.collections.receipts.show', compact('payment', 'society'));
+    }
+
+    public function pdf(CollectionPayment $payment): Response
+    {
+        $payment->loadMissing(['society', 'maintenanceBill']);
+
+        return Pdf::loadView('society.collections.receipts.pdf', [
+            'payment' => $payment,
+            'society' => $payment->society ?? $this->currentSociety(),
+        ])->setPaper('a4')->download(str_replace(['/', '\\'], '-', $payment->receipt_number).'.pdf');
+    }
+
+    public function email(CollectionPayment $payment): RedirectResponse
+    {
+        $email = $payment->member_email ?: $payment->member?->email;
+
+        if (! $email) {
+            return back()->with('error', 'No email address is on file for this member.');
+        }
+
+        Notification::route('mail', $email)->notify(new PaymentReceiptIssued($payment));
+
+        return back()->with('success', "Receipt {$payment->receipt_number} emailed to {$email}.");
     }
 }
