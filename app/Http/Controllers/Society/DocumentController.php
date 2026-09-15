@@ -11,8 +11,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
@@ -29,13 +31,15 @@ class DocumentController extends Controller
     /** Related-to options offered on the upload form. */
     private const RELATED_TO = ['Society', 'Tower A', 'Tower B', 'Tower C', 'Clubhouse', 'All Members'];
 
+    private const DISK = 'local';
+
     public function index(Request $request): View
     {
         $society = $this->currentSociety();
 
         $documents = Document::query()
             ->with('category')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('category'), fn ($q) => $q->where('document_category_id', $request->integer('category')))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->when($request->filled('uploaded_by'), fn ($q) => $q->where('uploaded_by', $request->string('uploaded_by')))
@@ -56,7 +60,7 @@ class DocumentController extends Controller
 
         return view('society.documents.index', [
             'documents' => $documents,
-            'stats' => $this->documentStats(),
+            'stats' => $this->documentStats($society),
             'categories' => $this->categoryOptions($society),
             'documentTypes' => self::DOCUMENT_TYPES,
             'uploaders' => $this->uploaders($society),
@@ -86,19 +90,23 @@ class DocumentController extends Controller
             ->values()
             ->all();
 
+        $file = $request->file('file');
+        $path = $file->store("documents/{$society->id}", self::DISK);
+        $extension = strtoupper($file->getClientOriginalExtension() ?: $data['type']);
+
         $document = Document::create([
-            'society_id' => $society?->id,
+            'society_id' => $society->id,
             'name' => $data['name'],
             'document_category_id' => $data['document_category_id'],
-            'type' => $data['type'],
+            'type' => in_array($extension, self::DOCUMENT_TYPES, true) ? $extension : $data['type'],
             'description' => $data['description'] ?? null,
             'related_to' => $data['related_to'] ?? null,
             'tags' => $tags,
             'expiry_date' => $data['expiry_date'] ?? null,
             'confidentiality' => $data['confidentiality'],
-            'uploaded_by' => 'Society Admin',
-            'size' => $data['size'] ?? '1.24 MB',
-            'file_path' => 'documents/'.Str::uuid().'.'.strtolower($data['type']),
+            'uploaded_by' => $request->user()->name,
+            'size' => $this->humanSize($file->getSize()),
+            'file_path' => $path,
             'downloads' => 0,
         ]);
 
@@ -106,12 +114,33 @@ class DocumentController extends Controller
             ->with('success', "Document \"{$document->name}\" uploaded successfully.");
     }
 
+    public function download(Document $document): StreamedResponse|RedirectResponse
+    {
+        return $this->serve($document, inline: false);
+    }
+
+    public function preview(Document $document): StreamedResponse|RedirectResponse
+    {
+        return $this->serve($document, inline: true);
+    }
+
+    public function destroy(Document $document): RedirectResponse
+    {
+        if ($document->file_path && Storage::disk(self::DISK)->exists($document->file_path)) {
+            Storage::disk(self::DISK)->delete($document->file_path);
+        }
+        $document->delete();
+
+        return redirect()->route('society.documents.index')
+            ->with('success', "Document \"{$document->name}\" deleted.");
+    }
+
     public function categories(): View
     {
         $society = $this->currentSociety();
 
         $categories = DocumentCategory::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->withCount('documents')
             ->orderBy('name')
             ->paginate(10)
@@ -123,35 +152,86 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function destroy(Document $document): RedirectResponse
+    public function storeCategory(Request $request): RedirectResponse
     {
-        $document->delete();
+        $society = $this->currentSociety();
+        $data = $this->validateCategory($request, $society);
 
-        return redirect()->route('society.documents.index')
-            ->with('success', 'Document deleted successfully.');
+        $category = DocumentCategory::create($data + ['society_id' => $society->id]);
+
+        return redirect()->route('society.documents.categories')
+            ->with('success', "Category \"{$category->name}\" created.");
     }
 
-    /* -------------------------------------------------------------------------
-     |  Shared option data
-     |------------------------------------------------------------------------- */
+    public function updateCategory(Request $request, DocumentCategory $category): RedirectResponse
+    {
+        $society = $this->currentSociety();
+        $category->update($this->validateCategory($request, $society, $category));
+
+        return redirect()->route('society.documents.categories')
+            ->with('success', "Category \"{$category->name}\" updated.");
+    }
+
+    public function destroyCategory(DocumentCategory $category): RedirectResponse
+    {
+        if ($category->documents()->exists()) {
+            return back()->with('error', "\"{$category->name}\" still has documents; move them first.");
+        }
+
+        $name = $category->name;
+        $category->delete();
+
+        return redirect()->route('society.documents.categories')->with('success', "Category \"{$name}\" deleted.");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateCategory(Request $request, Society $society, ?DocumentCategory $category = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:100', Rule::unique('document_categories', 'name')->where('society_id', $society->id)->ignore($category?->id)],
+            'description' => ['nullable', 'string', 'max:255'],
+            'icon' => ['nullable', 'string', 'max:50'],
+            'color' => ['nullable', 'string', 'max:30'],
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+    }
+
+    /**
+     * Stream the stored file (route binding already enforces society ownership).
+     */
+    private function serve(Document $document, bool $inline): StreamedResponse|RedirectResponse
+    {
+        if (! $document->file_path || ! Storage::disk(self::DISK)->exists($document->file_path)) {
+            return back()->with('error', 'The file for this document is not available on the server.');
+        }
+
+        $document->increment('downloads');
+        $extension = strtolower(pathinfo($document->file_path, PATHINFO_EXTENSION) ?: $document->type);
+        $filename = str($document->name)->slug()->toString().'.'.$extension;
+
+        return $inline
+            ? Storage::disk(self::DISK)->response($document->file_path, $filename)
+            : Storage::disk(self::DISK)->download($document->file_path, $filename);
+    }
 
     /**
      * @return Collection<int, DocumentCategory>
      */
-    private function categoryOptions(?Society $society)
+    private function categoryOptions(?Society $society): Collection
     {
         return DocumentCategory::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->where('status', 'active')
             ->orderBy('name')
             ->get();
     }
 
     /**
-     * Distinct uploader names for the "Uploaded By" filter.
-     *
      * @return Collection<int, string>
      */
-    private function uploaders(?Society $society)
+    private function uploaders(?Society $society): Collection
     {
         return Document::query()
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
@@ -161,36 +241,50 @@ class DocumentController extends Controller
             ->pluck('uploaded_by');
     }
 
-    /* -------------------------------------------------------------------------
-     |  Demo figures (stat cards) matching the PNGs
-     |------------------------------------------------------------------------- */
-
     /**
      * @return array<string, string>
      */
-    private function documentStats(): array
+    private function documentStats(Society $society): array
     {
+        $base = Document::query()->forSociety($society);
+        $bytes = 0;
+        foreach ((clone $base)->whereNotNull('file_path')->pluck('file_path') as $path) {
+            $bytes += Storage::disk(self::DISK)->exists($path) ? (int) Storage::disk(self::DISK)->size($path) : 0;
+        }
+
         return [
-            'total' => '243',
-            'categories' => '18',
-            'total_size' => '2.45 GB',
-            'downloads' => '126',
-            'expiring_soon' => '7',
+            'total' => number_format((clone $base)->count()),
+            'categories' => number_format(DocumentCategory::query()->forSociety($society)->count()),
+            'total_size' => $this->humanSize($bytes),
+            'downloads' => number_format((int) (clone $base)->sum('downloads')),
+            'expiring_soon' => number_format((clone $base)->whereNotNull('expiry_date')->whereBetween('expiry_date', [now()->toDateString(), now()->addDays(30)->toDateString()])->count()),
         ];
     }
 
     /**
      * @return array<string, string|int>
      */
-    private function categoryStats(?Society $society): array
+    private function categoryStats(Society $society): array
     {
-        $base = DocumentCategory::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
+        $base = DocumentCategory::query()->forSociety($society);
 
         return [
-            'total' => '18',
+            'total' => (clone $base)->count(),
             'active' => (clone $base)->where('status', 'active')->count(),
             'inactive' => (clone $base)->where('status', 'inactive')->count(),
-            'documents' => '243',
+            'documents' => Document::query()->forSociety($society)->count(),
         ];
+    }
+
+    private function humanSize(int|false|null $bytes): string
+    {
+        $bytes = (int) $bytes;
+
+        return match (true) {
+            $bytes >= 1073741824 => number_format($bytes / 1073741824, 2).' GB',
+            $bytes >= 1048576 => number_format($bytes / 1048576, 2).' MB',
+            $bytes >= 1024 => number_format($bytes / 1024, 1).' KB',
+            default => $bytes.' B',
+        };
     }
 }

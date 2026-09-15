@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<form method="POST" action="{{ route('society.documents.store') }}">
+<form method="POST" action="{{ route('society.documents.store') }}" enctype="multipart/form-data">
     @csrf
 
     @if($errors->any())
@@ -104,11 +104,13 @@
 
             <div class="form-group">
                 <label class="form-label">Upload File <span class="required">*</span></label>
-                <div style="border: 2px dashed var(--border-color); border-radius: 10px; padding: 36px; text-align: center;">
+                <label for="documentFile" style="display: block; border: 2px dashed var(--border-color); border-radius: 10px; padding: 36px; text-align: center; cursor: pointer;">
                     <div style="font-size: 32px; color: var(--text-muted); margin-bottom: 10px;"><i class="fas fa-cloud-arrow-up"></i></div>
                     <div style="font-weight: 600;">Drag and drop your file here, or <span style="color: var(--primary);">click to browse</span></div>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Supports: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max. 20MB)</div>
-                </div>
+                    <div id="documentFileName" style="font-size: 12px; color: var(--primary); margin-top: 8px;"></div>
+                    <input type="file" name="file" id="documentFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" style="display: none;" required onchange="document.getElementById('documentFileName').textContent = this.files[0] ? this.files[0].name : ''">
+                </label>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">

@@ -5,6 +5,8 @@ use App\Models\DocumentCategory;
 use App\Models\Society;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -43,6 +45,7 @@ it('loads the categories list', function () {
 });
 
 it('stores a document and redirects', function () {
+    Storage::fake('local');
     $category = DocumentCategory::factory()->create(['society_id' => $this->society->id]);
 
     $this->actingAs($this->user)
@@ -52,6 +55,7 @@ it('stores a document and redirects', function () {
             'type' => 'PDF',
             'description' => 'Registration certificate issued by registrar',
             'confidentiality' => 'general',
+            'file' => UploadedFile::fake()->create('certificate.pdf', 50, 'application/pdf'),
         ])
         ->assertRedirect()
         ->assertSessionHas('success');

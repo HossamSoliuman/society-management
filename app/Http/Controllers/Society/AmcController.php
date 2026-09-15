@@ -62,7 +62,7 @@ class AmcController extends Controller
         return view('society.amc.index', [
             'tab' => $tab,
             'contracts' => $contracts,
-            'stats' => $this->trackerStats(),
+            'stats' => $this->trackerStats($society),
             'categories' => $this->categoryOptions($society),
             'vendors' => $this->vendorNameOptions($society),
         ]);
@@ -145,7 +145,7 @@ class AmcController extends Controller
 
         return view('society.amc.categories', [
             'categories' => $categories,
-            'stats' => $this->categoryStats(),
+            'stats' => $this->categoryStats($society),
         ]);
     }
 
@@ -227,36 +227,52 @@ class AmcController extends Controller
     }
 
     /* -------------------------------------------------------------------------
-     |  Demo figures (stat cards) matching the PNGs
+     |  Stat cards (computed)
      |------------------------------------------------------------------------- */
 
     /**
      * @return array<string, string>
      */
-    private function trackerStats(): array
+    private function trackerStats(?Society $society): array
     {
+        $rows = AmcContract::query()
+            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->selectRaw('status, COUNT(*) as c, COALESCE(SUM(amount),0) as v')
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        $total = (int) $rows->sum('c');
+        $active = (int) ($rows['active']->c ?? 0);
+
         return [
-            'total' => '56',
-            'active' => '42',
-            'active_pct' => '75% of total',
-            'expiring_soon' => '7',
-            'expired' => '7',
-            'total_value' => '18,75,600',
+            'total' => number_format($total),
+            'active' => number_format($active),
+            'active_pct' => ($total > 0 ? round($active / $total * 100) : 0).'% of total',
+            'expiring_soon' => number_format((int) ($rows['expiring_soon']->c ?? 0)),
+            'expired' => number_format((int) ($rows['expired']->c ?? 0)),
+            'total_value' => number_format((float) $rows->sum('v')),
         ];
     }
 
     /**
      * @return array<string, string>
      */
-    private function categoryStats(): array
+    private function categoryStats(?Society $society): array
     {
+        $base = AmcCategory::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
+        $total = (clone $base)->count();
+        $active = (clone $base)->where('status', 'active')->count();
+        $inactive = $total - $active;
+        $pct = fn (int $n) => ($total > 0 ? round($n / $total * 100, 1) : 0).'% of total';
+
         return [
-            'total' => '12',
-            'active' => '10',
-            'active_pct' => '83.3% of total',
-            'inactive' => '2',
-            'inactive_pct' => '16.7% of total',
-            'assets_covered' => '156',
+            'total' => number_format($total),
+            'active' => number_format($active),
+            'active_pct' => $pct($active),
+            'inactive' => number_format($inactive),
+            'inactive_pct' => $pct($inactive),
+            'assets_covered' => number_format((int) AmcContract::query()->when($society, fn ($q) => $q->where('society_id', $society->id))->whereIn('status', ['active', 'expiring_soon'])->count()),
         ];
     }
 }

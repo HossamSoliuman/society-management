@@ -43,7 +43,7 @@
                 <div class="stat-info">
                     <div class="stat-label">Total Expenses (This Month)</div>
                     <div class="stat-value">&#8377; {{ $inr($kpis['month_total']) }}</div>
-                    <div class="stat-trend" style="color: var(--success);"><i class="fas fa-arrow-down"></i><span>{{ $kpis['month_trend'] }}</span></div>
+                    <div class="stat-trend" style="color: {{ $kpis['month_up'] ? 'var(--danger)' : 'var(--success)' }};"><i class="fas {{ $kpis['month_up'] ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i><span>{{ $kpis['month_trend'] }}</span></div>
                 </div>
             </div>
             <div class="stat-card">
@@ -51,7 +51,7 @@
                 <div class="stat-info">
                     <div class="stat-label">Total Expenses (This Year)</div>
                     <div class="stat-value">&#8377; {{ $inr($kpis['year_total']) }}</div>
-                    <div class="stat-trend" style="color: var(--success);"><i class="fas fa-arrow-down"></i><span>{{ $kpis['year_trend'] }}</span></div>
+                    <div class="stat-trend" style="color: {{ $kpis['year_up'] ? 'var(--danger)' : 'var(--success)' }};"><i class="fas {{ $kpis['year_up'] ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i><span>{{ $kpis['year_trend'] }}</span></div>
                 </div>
             </div>
             <div class="stat-card">

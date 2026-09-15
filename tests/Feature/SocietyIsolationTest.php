@@ -8,6 +8,7 @@ use App\Models\BankStatementLine;
 use App\Models\ChargeHead;
 use App\Models\CollectionPayment;
 use App\Models\Document;
+use App\Models\DocumentCategory;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\MaintenanceBill;
@@ -19,6 +20,7 @@ use App\Models\ServiceVendor;
 use App\Models\Society;
 use App\Models\SupportTicket;
 use App\Models\Tax;
+use App\Models\Tender;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
@@ -55,9 +57,11 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'tax' => Tax::factory()->create($sid),
         'series' => NumberingSeries::factory()->create($sid),
         'payment' => CollectionPayment::factory()->create($sid),
-        'category' => str_starts_with($routeName, 'society.assets.')
-            ? AssetCategory::factory()->create($sid)
-            : ExpenseCategory::factory()->create($sid),
+        'category' => match (true) {
+            str_starts_with($routeName, 'society.assets.') => AssetCategory::factory()->create($sid),
+            str_starts_with($routeName, 'society.documents.') => DocumentCategory::factory()->create($sid),
+            default => ExpenseCategory::factory()->create($sid),
+        },
         'vendor' => str_starts_with($routeName, 'society.expenses.')
             ? Vendor::factory()->create($sid)
             : ServiceVendor::factory()->create($sid),
@@ -68,6 +72,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'asset' => Asset::factory()->create($sid + ['category_id' => AssetCategory::factory()->create($sid)->id]),
         'request' => SupportTicket::factory()->create($sid),
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
+        'tender' => Tender::factory()->create($sid),
         'notice' => Notice::factory()->create($sid + ['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'target_roles' => null]),
         'teamUser' => tap(User::factory()->create($sid), fn (User $u) => $u->roles()->sync([seededRole('staff')->id])),
         'order' => PaymentGatewayOrder::create($sid + ['provider' => 'fake', 'provider_order_id' => 'iso_'.uniqid(), 'amount' => 100, 'status' => 'created']),
@@ -82,7 +87,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
 it('returns 404 on every society record route when the row belongs to another society', function () {
     $routes = collect(Route::getRoutes()->getRoutes())
         ->filter(fn (RouteInstance $route) => str_starts_with((string) $route->getName(), 'society.'))
-        ->filter(fn (RouteInstance $route) => $route->parameterNames() !== [] && $route->getName() !== 'society.placeholder');
+        ->filter(fn (RouteInstance $route) => $route->parameterNames() !== [] && ! in_array($route->getName(), ['society.placeholder', 'society.reports.show'], true));
 
     expect($routes)->not->toBeEmpty();
 

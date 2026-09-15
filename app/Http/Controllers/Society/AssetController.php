@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAssetRequest;
+use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Models\Society;
@@ -11,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
 {
@@ -62,7 +64,7 @@ class AssetController extends Controller
         return view('society.assets.index', [
             'society' => $society,
             'assets' => $assets,
-            'stats' => $this->stats(),
+            'stats' => $this->stats($society),
             'categories' => $this->categories($society),
             'railCategories' => $this->railCategories($society),
             'locations' => self::TOWERS,
@@ -125,10 +127,41 @@ class AssetController extends Controller
             ->with('success', "Asset {$code} deleted.");
     }
 
-    public function import(): RedirectResponse
+    public function import(Request $request): RedirectResponse
     {
-        return redirect()->route('society.assets.index')
-            ->with('success', 'Asset import is coming soon.');
+        $society = $this->currentSociety();
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:5120'],
+        ]);
+
+        $import = new AssetImport($society);
+        Excel::import($import, $request->file('file'));
+
+        $message = "{$import->created} asset(s) imported.";
+        if ($import->errors !== []) {
+            $message .= ' '.count($import->errors).' row(s) skipped: '.collect($import->errors)->take(3)->map(fn ($e) => "row {$e['row']} ({$e['error']})")->implode(', ').'.';
+        }
+
+        return redirect()->route('society.assets.index')->with($import->created > 0 ? 'success' : 'error', $message);
+    }
+
+    public function importSample()
+    {
+        $headings = ['Name', 'Category', 'Brand', 'Model', 'Serial Number', 'Location', 'Tower', 'Purchase Date', 'Purchase Cost', 'Warranty End', 'Status', 'Condition', 'Notes'];
+        $rows = [
+            ['Passenger Lift', 'Lifts', 'Otis', 'Gen2', 'OT-2211', 'Tower A Lobby', 'Tower A', '15/03/2024', '1850000', '15/03/2026', 'in_use', 'good', 'AMC with vendor'],
+            ['DG Set 125kVA', 'Generators', 'Kirloskar', 'KG-125', 'KG-9981', 'Basement', '', '01/01/2023', '950000', '', 'in_use', 'fair', ''],
+        ];
+
+        return response()->streamDownload(function () use ($headings, $rows) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headings);
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, 'assets_sample.csv', ['Content-Type' => 'text/csv']);
     }
 
     /**
@@ -242,21 +275,34 @@ class AssetController extends Controller
     }
 
     /**
-     * Demo stat-card figures matching "Assets Management.png".
+     * Stat-card figures from the society's assets.
      *
      * @return array<string, mixed>
      */
-    private function stats(): array
+    private function stats(?Society $society): array
     {
+        $rows = Asset::query()
+            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->selectRaw('status, COUNT(*) as c, COALESCE(SUM(COALESCE(current_value, purchase_cost)),0) as v')
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        $total = (int) $rows->sum('c');
+        $pct = fn (int $n) => ($total > 0 ? number_format($n / $total * 100, 2) : '0.00').'%';
+        $inUse = (int) ($rows['in_use']->c ?? 0);
+        $maintenance = (int) ($rows['under_maintenance']->c ?? 0);
+        $inactive = (int) (($rows['inactive']->c ?? 0) + ($rows['disposed']->c ?? 0));
+
         return [
-            'total' => 128,
-            'in_use' => 98,
-            'in_use_pct' => '76.56%',
-            'under_maintenance' => 12,
-            'under_maintenance_pct' => '9.38%',
-            'inactive' => 18,
-            'inactive_pct' => '14.06%',
-            'total_value' => '24,75,800',
+            'total' => $total,
+            'in_use' => $inUse,
+            'in_use_pct' => $pct($inUse),
+            'under_maintenance' => $maintenance,
+            'under_maintenance_pct' => $pct($maintenance),
+            'inactive' => $inactive,
+            'inactive_pct' => $pct($inactive),
+            'total_value' => number_format((float) $rows->sum('v')),
         ];
     }
 }

@@ -290,9 +290,9 @@
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'Collection Report']) }}" class="nav-item"><i class="fas fa-chart-pie"></i><span>Collection Report</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Expense Report']) }}" class="nav-item"><i class="fas fa-chart-line"></i><span>Expense Report</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Defaulter Report']) }}" class="nav-item"><i class="fas fa-triangle-exclamation"></i><span>Defaulter Report</span></a>
+                        <a href="{{ route('society.reports.show', 'collection') }}" class="nav-item {{ request()->routeIs('society.reports.show') && request()->route('report') === 'collection' ? 'active' : '' }}"><i class="fas fa-chart-pie"></i><span>Collection Report</span></a>
+                        <a href="{{ route('society.reports.show', 'expense') }}" class="nav-item {{ request()->routeIs('society.reports.show') && request()->route('report') === 'expense' ? 'active' : '' }}"><i class="fas fa-chart-line"></i><span>Expense Report</span></a>
+                        <a href="{{ route('society.reports.show', 'defaulter') }}" class="nav-item {{ request()->routeIs('society.reports.show') && request()->route('report') === 'defaulter' ? 'active' : '' }}"><i class="fas fa-triangle-exclamation"></i><span>Defaulter Report</span></a>
                     </div>
                 </div>
 

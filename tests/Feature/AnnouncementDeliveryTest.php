@@ -113,8 +113,8 @@ it('dispatches scheduled announcements and notices when their time comes', funct
 it('shows a society only global notices and those targeted at it, with acknowledgement', function () {
     Queue::fake();
     $global = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => null, 'target_roles' => null, 'title' => 'Global notice', 'require_acknowledgement' => true]);
-    $forA = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => $this->societyA->id, 'target_roles' => null, 'title' => 'Only for A']);
-    $forB = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => $this->societyB->id, 'target_roles' => null, 'title' => 'Only for B']);
+    $forA = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => $this->societyA->id, 'target_roles' => null, 'title' => 'Only for A', 'require_acknowledgement' => false]);
+    $forB = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => $this->societyB->id, 'target_roles' => null, 'title' => 'Only for B', 'require_acknowledgement' => false]);
     Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => null, 'target_roles' => ['accountant'], 'title' => 'Accountants only']);
     Notice::factory()->create(['status' => 'draft', 'society_id' => null, 'target_roles' => null, 'title' => 'Draft notice']);
 

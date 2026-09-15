@@ -23,6 +23,7 @@ use App\Http\Controllers\Society\OnlinePaymentController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
+use App\Http\Controllers\Society\ReportController as SocietyReportController;
 use App\Http\Controllers\Society\ServiceVendorController;
 use App\Http\Controllers\Society\SubscriptionController as SocietySubscriptionController;
 use App\Http\Controllers\Society\SupportController;
@@ -303,6 +304,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::middleware('permission:assets.manage')->group(function () {
         Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
         Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
+        Route::get('assets/import/sample', [AssetController::class, 'importSample'])->name('assets.import.sample');
 
         Route::get('assets/categories', [AssetCategoryController::class, 'index'])->name('assets.categories.index');
         Route::get('assets/categories/create', [AssetCategoryController::class, 'create'])->name('assets.categories.create');
@@ -377,6 +379,12 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('tenders/create', [TenderController::class, 'create'])->name('tenders.create');
         Route::post('tenders', [TenderController::class, 'store'])->name('tenders.store');
         Route::get('tenders/reports', [TenderController::class, 'reports'])->name('tenders.reports');
+        Route::get('tenders/{tender}', [TenderController::class, 'show'])->name('tenders.show');
+        Route::get('tenders/{tender}/edit', [TenderController::class, 'edit'])->name('tenders.edit');
+        Route::put('tenders/{tender}', [TenderController::class, 'update'])->name('tenders.update');
+        Route::post('tenders/{tender}/publish', [TenderController::class, 'publish'])->name('tenders.publish');
+        Route::post('tenders/{tender}/award', [TenderController::class, 'award'])->name('tenders.award');
+        Route::post('tenders/{tender}/close', [TenderController::class, 'close'])->name('tenders.close');
     });
 
     // Document Management. Static segments precede the {document} wildcard.
@@ -385,8 +393,19 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('documents/upload', [DocumentController::class, 'create'])->name('documents.create');
         Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
         Route::get('documents/categories', [DocumentController::class, 'categories'])->name('documents.categories');
+        Route::post('documents/categories', [DocumentController::class, 'storeCategory'])->name('documents.categories.store');
+        Route::put('documents/categories/{category}', [DocumentController::class, 'updateCategory'])->name('documents.categories.update');
+        Route::delete('documents/categories/{category}', [DocumentController::class, 'destroyCategory'])->name('documents.categories.destroy');
+        Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+        Route::get('documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
         Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
     });
+
+    // Reports (collection / expense / defaulter) with Excel + PDF export
+    Route::get('reports/{report}', [SocietyReportController::class, 'show'])
+        ->middleware('permission:reports.view')
+        ->where('report', 'collection|expense|defaulter')
+        ->name('reports.show');
 
     // Settings -> Users & Roles (society team)
     Route::middleware('permission:team.manage')->group(function () {

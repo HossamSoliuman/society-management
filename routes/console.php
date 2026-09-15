@@ -15,3 +15,4 @@ Schedule::command('announcements:dispatch-scheduled')->everyMinute();
 Schedule::command('bills:mark-overdue')->dailyAt('00:45');
 Schedule::command('bills:apply-late-fees')->dailyAt('01:00');
 Schedule::command('bills:send-reminders')->dailyAt('09:00');
+Schedule::command('amc:send-expiry-alerts')->dailyAt('08:30');

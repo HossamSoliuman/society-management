@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseBudget;
 use App\Models\ExpenseCategory;
+use App\Services\ExpenseStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -26,6 +28,8 @@ class ExpenseCategoryController extends Controller
         'fa-cart-shopping' => ['Purchase', 'teal'],
         'fa-tag' => ['General', 'gray'],
     ];
+
+    public function __construct(private readonly ExpenseStatsService $stats) {}
 
     public function index(Request $request): View
     {
@@ -55,9 +59,11 @@ class ExpenseCategoryController extends Controller
                 'total' => (clone $base)->count(),
                 'active' => (clone $base)->where('status', 'active')->count(),
                 'inactive' => (clone $base)->where('status', 'inactive')->count(),
-                'top' => 'Maintenance',
+                'top' => $this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear(), 1)[0]['label'] ?? '—',
             ],
-            'usage' => $this->usageDonut(),
+            'usage' => $this->stats->categoryDonut($society, now()->startOfYear(), now()->endOfYear(), 'This Year'),
+            'budgets' => $this->stats->budgetUsage($society, (int) now()->year),
+            'year' => (int) now()->year,
         ]);
     }
 
@@ -85,6 +91,7 @@ class ExpenseCategoryController extends Controller
             'applicable_for' => $data['applicable_for'],
             'notes' => $data['notes'] ?? null,
         ]);
+        $this->saveBudget($category, $data);
 
         return redirect()->route('society.expenses.categories.index')
             ->with('success', "Category \"{$category->name}\" created successfully.");
@@ -113,6 +120,7 @@ class ExpenseCategoryController extends Controller
             'applicable_for' => $data['applicable_for'],
             'notes' => $data['notes'] ?? null,
         ]);
+        $this->saveBudget($category, $data);
 
         return redirect()->route('society.expenses.categories.index')
             ->with('success', "Category \"{$category->name}\" updated successfully.");
@@ -142,26 +150,25 @@ class ExpenseCategoryController extends Controller
             'display_order' => ['nullable', 'integer', 'min:0'],
             'applicable_for' => ['required', 'in:all_buildings,specific_buildings,specific_wings'],
             'notes' => ['nullable', 'string', 'max:200'],
+            'budget_amount' => ['nullable', 'numeric', 'min:0'],
+            'budget_year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
         ]);
     }
 
     /**
-     * Category Usage donut + legend (rail card in "expense category list.png").
+     * Upsert the yearly budget row for the category when an amount is given.
      *
-     * @return array<string, mixed>
+     * @param  array<string, mixed>  $data
      */
-    private function usageDonut(): array
+    private function saveBudget(ExpenseCategory $category, array $data): void
     {
-        return [
-            'center_value' => '&#8377; 82,450',
-            'center_label' => 'Total Expense',
-            'segments' => [
-                ['label' => 'Maintenance', 'amount' => '&#8377; 28,450', 'pct' => '34.5%', 'value' => 28450, 'color' => '#F97316'],
-                ['label' => 'Utilities', 'amount' => '&#8377; 18,750', 'pct' => '22.7%', 'value' => 18750, 'color' => '#3B82F6'],
-                ['label' => 'Salary', 'amount' => '&#8377; 16,200', 'pct' => '19.6%', 'value' => 16200, 'color' => '#10B981'],
-                ['label' => 'Security', 'amount' => '&#8377; 9,800', 'pct' => '11.9%', 'value' => 9800, 'color' => '#8B5CF6'],
-                ['label' => 'Others', 'amount' => '&#8377; 9,250', 'pct' => '11.2%', 'value' => 9250, 'color' => '#94a3b8'],
-            ],
-        ];
+        if (! array_key_exists('budget_amount', $data) || $data['budget_amount'] === null || $data['budget_amount'] === '') {
+            return;
+        }
+
+        ExpenseBudget::updateOrCreate(
+            ['society_id' => $category->society_id, 'expense_category_id' => $category->id, 'year' => (int) ($data['budget_year'] ?? now()->year)],
+            ['amount' => (float) $data['budget_amount']],
+        );
     }
 }

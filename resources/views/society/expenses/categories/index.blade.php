@@ -93,6 +93,7 @@
                                 <th>Category Name</th>
                                 <th>Description</th>
                                 <th>Status</th>
+                                <th>Budget {{ $year }}</th>
                                 <th>Created On</th>
                                 <th>Actions</th>
                             </tr>
@@ -110,6 +111,15 @@
                                     </td>
                                     <td style="color: var(--text-secondary);">{{ $category->description }}</td>
                                     <td><span class="badge {{ $category->statusBadgeClass() }}">{{ $category->statusLabel() }}</span></td>
+                                    <td>
+                                        @if(isset($budgets[$category->id]))
+                                            @php($b = $budgets[$category->id])
+                                            <div style="font-size: 12px;">{{ format_inr($b['spent']) }} / {{ format_inr($b['budget']) }}</div>
+                                            <div class="progress-bar" style="width: 120px;"><div class="progress-bar-fill" style="width: {{ $b['pct'] }}%; background: {{ $b['pct'] >= 90 ? 'var(--danger)' : 'var(--orange)' }};"></div></div>
+                                        @else
+                                            <span style="color: var(--text-muted); font-size: 12px;">—</span>
+                                        @endif
+                                    </td>
                                     <td style="white-space: nowrap;">{{ $category->created_at?->format('d M Y') }}</td>
                                     <td>
                                         <div style="display: inline-flex; gap: 6px;">
@@ -120,7 +130,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="7">
                                         <div class="empty-state">
                                             <div class="empty-state-icon"><i class="fas fa-layer-group"></i></div>
                                             <div class="empty-state-title">No categories found</div>

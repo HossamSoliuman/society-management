@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Society;
 use App\Models\Vendor;
+use App\Services\ExpenseStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,6 +22,8 @@ class ExpenseController extends Controller
 
     /** Scope options for the "Expense For" select. */
     private const EXPENSE_FOR = ['Building', 'Wing', 'Flat', 'Society'];
+
+    public function __construct(private readonly ExpenseStatsService $stats) {}
 
     public function index(Request $request): View
     {
@@ -56,9 +59,12 @@ class ExpenseController extends Controller
             'society' => $society,
             'expenses' => $expenses,
             'tab' => $tab,
-            'kpis' => $this->kpis(),
-            'overview' => $this->overviewDonut(),
-            'topCategories' => $this->topCategories(),
+            'kpis' => $this->stats->kpis($society),
+            'overview' => $this->stats->categoryDonut($society, now()->startOfMonth(), now()->endOfMonth(), 'This Month'),
+            'topCategories' => array_map(
+                fn (array $row) => $row + ['color_var' => $row['color']],
+                array_slice($this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear()), 0, 5)
+            ),
             'categories' => $this->activeCategories($society),
             'vendors' => $this->activeVendors($society),
             'paymentModes' => self::PAYMENT_MODES,
@@ -262,57 +268,5 @@ class ExpenseController extends Controller
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
-    }
-
-    /**
-     * Demo KPI figures matching the stat cards in "expenses.png".
-     *
-     * @return array<string, mixed>
-     */
-    private function kpis(): array
-    {
-        return [
-            'month_total' => 82450,
-            'month_trend' => '12.5% vs last month',
-            'year_total' => 945600,
-            'year_trend' => '8.3% vs last year',
-            'pending' => 125000,
-            'pending_bills' => 5,
-            'budget' => 150000,
-            'budget_used_pct' => 55,
-        ];
-    }
-
-    /**
-     * Expense Overview donut + legend (rail card 1 in "expenses.png").
-     *
-     * @return array<string, mixed>
-     */
-    private function overviewDonut(): array
-    {
-        return [
-            'center_value' => '&#8377; 82,450',
-            'center_label' => 'Total',
-            'segments' => [
-                ['label' => 'Utilities', 'amount' => '&#8377; 18,750', 'pct' => '22.8%', 'value' => 18750, 'color' => '#3B82F6'],
-                ['label' => 'Salary', 'amount' => '&#8377; 52,000', 'pct' => '63.1%', 'value' => 52000, 'color' => '#10B981'],
-                ['label' => 'Maintenance', 'amount' => '&#8377; 11,900', 'pct' => '14.4%', 'value' => 11900, 'color' => '#F97316'],
-                ['label' => 'Others', 'amount' => '&#8377; –', 'pct' => '0%', 'value' => 0, 'color' => '#8B5CF6'],
-            ],
-        ];
-    }
-
-    /**
-     * Top Categories progress rows (rail card 2 in "expenses.png").
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function topCategories(): array
-    {
-        return [
-            ['label' => 'Salary', 'amount' => '&#8377; 52,000', 'pct' => '63.1%', 'width' => 63, 'color' => 'var(--success)'],
-            ['label' => 'Utilities', 'amount' => '&#8377; 18,750', 'pct' => '22.8%', 'width' => 23, 'color' => 'var(--info)'],
-            ['label' => 'Maintenance', 'amount' => '&#8377; 11,900', 'pct' => '14.4%', 'width' => 14, 'color' => 'var(--orange)'],
-        ];
     }
 }

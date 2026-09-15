@@ -66,9 +66,9 @@
                             <td><span class="badge badge-secondary">Closed</span></td>
                             <td>
                                 <div style="display: inline-flex; gap: 6px;">
-                                    <button type="button" class="action-btn" title="View"><i class="fas fa-eye"></i></button>
-                                    <button type="button" class="action-btn" title="Document"><i class="fas fa-file-lines"></i></button>
-                                    <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
+                                    <a href="{{ route('society.tenders.show', $tender) }}" class="action-btn" title="View"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ route('society.tenders.edit', $tender) }}" class="action-btn" title="Edit"><i class="fas fa-pencil"></i></a>
+                                    
                                 </div>
                             </td>
                         </tr>

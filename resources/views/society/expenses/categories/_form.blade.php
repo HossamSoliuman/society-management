@@ -117,6 +117,19 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Notes <span style="color: var(--text-muted); font-weight: 400;">(Optional)</span></label>
                         <textarea name="notes" id="catNotes" class="form-control" rows="3" maxlength="200" placeholder="Enter any additional notes about this category">{{ $notesValue }}</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Yearly Budget (&#8377;)</label>
+                            @php
+                                $budgetRow = isset($category) && $category ? \App\Models\ExpenseBudget::where('expense_category_id', $category->id)->where('year', now()->year)->first() : null;
+                            @endphp
+                            <input type="number" step="0.01" min="0" name="budget_amount" class="form-control" value="{{ old('budget_amount', $budgetRow?->amount) }}" placeholder="Leave blank for no budget">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Budget Year</label>
+                            <input type="number" name="budget_year" class="form-control" value="{{ old('budget_year', $budgetRow?->year ?? now()->year) }}" min="2000" max="2100">
+                        </div>
                         <div style="text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 4px;"><span id="notesCount">{{ mb_strlen((string) $notesValue) }}</span> / 200</div>
                     </div>
 

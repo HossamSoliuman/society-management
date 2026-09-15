@@ -27,7 +27,7 @@ class StoreDocumentRequest extends FormRequest
             'tags' => ['nullable', 'string', 'max:255'],
             'expiry_date' => ['nullable', 'date'],
             'confidentiality' => ['required', 'in:general,confidential,restricted'],
-            'size' => ['nullable', 'string', 'max:50'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:20480'],
         ];
     }
 }

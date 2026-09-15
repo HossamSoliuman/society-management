@@ -19,9 +19,37 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" style="margin-bottom: 20px;"><i class="fas fa-circle-check"></i> <span>{{ session('success') }}</span></div>
+@if($errors->any())
+    <div class="alert alert-danger" style="margin-bottom: 20px;"><i class="fas fa-exclamation-circle"></i> <span>{{ $errors->first() }}</span></div>
 @endif
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ route('society.documents.categories.store') }}" style="display: grid; grid-template-columns: 1fr 1.5fr 160px 140px auto; gap: 12px; align-items: end;">
+            @csrf
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">New Category <span class="required">*</span></label>
+                <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="e.g. Audit Reports" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Description</label>
+                <input type="text" name="description" class="form-control" value="{{ old('description') }}" placeholder="Optional">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Icon</label>
+                <input type="text" name="icon" class="form-control" value="{{ old('icon', 'fa-folder') }}" placeholder="fa-folder">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add</button>
+        </form>
+    </div>
+</div>
 
 <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
     <div class="stat-card">
@@ -87,9 +115,31 @@
                             <td><span class="badge {{ $category->statusBadgeClass() }}">{{ ucfirst($category->status) }}</span></td>
                             <td>
                                 <div style="display: inline-flex; gap: 6px;">
-                                    <button type="button" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></button>
-                                    <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
+                                    <button type="button" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);" onclick="document.getElementById('edit-cat-{{ $category->id }}').style.display = document.getElementById('edit-cat-{{ $category->id }}').style.display === 'none' ? 'table-row' : 'none'"><i class="fas fa-pencil"></i></button>
+                                    <form method="POST" action="{{ route('society.documents.categories.destroy', $category) }}" onsubmit="return confirm('Delete this category?');" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn" title="Delete" style="color: var(--danger); border-color: var(--danger);"><i class="fas fa-trash"></i></button>
+                                    </form>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr id="edit-cat-{{ $category->id }}" style="display: none; background: var(--gray-50);">
+                            <td colspan="6">
+                                <form method="POST" action="{{ route('society.documents.categories.update', $category) }}" style="display: grid; grid-template-columns: 1fr 1.5fr 160px 140px auto; gap: 12px; align-items: end;">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="form-group" style="margin-bottom: 0;"><input type="text" name="name" class="form-control" value="{{ $category->name }}" required></div>
+                                    <div class="form-group" style="margin-bottom: 0;"><input type="text" name="description" class="form-control" value="{{ $category->description }}"></div>
+                                    <div class="form-group" style="margin-bottom: 0;"><input type="text" name="icon" class="form-control" value="{{ $category->icon }}"></div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <select name="status" class="form-control">
+                                            <option value="active" {{ $category->status === 'active' ? 'selected' : '' }}>Active</option>
+                                            <option value="inactive" {{ $category->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save</button>
+                                </form>
                             </td>
                         </tr>
                     @empty

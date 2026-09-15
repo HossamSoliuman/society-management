@@ -14,9 +14,11 @@
             </div>
         </div>
         <div style="display: inline-flex; gap: 12px;">
-            <form method="POST" action="{{ route('society.assets.import') }}" style="margin: 0;">
+            <form method="POST" action="{{ route('society.assets.import') }}" enctype="multipart/form-data" style="margin: 0; display: inline-flex; gap: 8px;" id="assetImportForm">
                 @csrf
-                <button type="submit" class="btn btn-secondary"><i class="fas fa-file-import"></i> Import Assets</button>
+                <input type="file" name="file" accept=".xlsx,.xls,.csv" style="display: none;" id="assetImportFile" onchange="document.getElementById('assetImportForm').submit()">
+                <a href="{{ route('society.assets.import.sample') }}" class="btn btn-secondary" title="Download sample"><i class="fas fa-download"></i></a>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('assetImportFile').click()"><i class="fas fa-file-import"></i> Import Assets</button>
             </form>
             <a href="{{ route('society.assets.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Asset</a>
         </div>

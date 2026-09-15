@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Society;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServiceVendorRequest;
 use App\Models\ServiceVendor;
+use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -55,7 +56,7 @@ class ServiceVendorController extends Controller
         return view('society.vendors.index', [
             'active' => 'vendors',
             'vendors' => $vendors,
-            'stats' => $this->vendorStats(),
+            'stats' => $this->vendorStats($society),
             'categories' => self::CATEGORIES,
         ]);
     }
@@ -125,17 +126,19 @@ class ServiceVendorController extends Controller
     }
 
     /**
-     * Demo stat-card figures matching the Vendor Management screenshot.
+     * Stat-card figures from the society's vendors.
      *
      * @return array<string, string>
      */
-    private function vendorStats(): array
+    private function vendorStats(?Society $society): array
     {
+        $base = ServiceVendor::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
+
         return [
-            'total' => '48',
-            'active' => '36',
-            'pending' => '5',
-            'inactive' => '7',
+            'total' => number_format((clone $base)->count()),
+            'active' => number_format((clone $base)->where('status', 'active')->where('approval_status', 'approved')->count()),
+            'pending' => number_format((clone $base)->where('approval_status', 'pending')->count()),
+            'inactive' => number_format((clone $base)->where('status', 'inactive')->count()),
         ];
     }
 }
