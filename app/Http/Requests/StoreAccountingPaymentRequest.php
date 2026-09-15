@@ -25,6 +25,7 @@ class StoreAccountingPaymentRequest extends FormRequest
             'mode' => ['required', 'string', 'max:50'],
             'amount' => ['required', 'numeric', 'min:0'],
             'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('society_id', $this->user()->society_id)],
+            'expense_account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('society_id', $this->user()->society_id)],
             'reference_no' => ['nullable', 'string', 'max:255'],
         ];
     }

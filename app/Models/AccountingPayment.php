@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Observers\LedgerPostingObserver;
 use Database\Factories\AccountingPaymentFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(LedgerPostingObserver::class)]
 class AccountingPayment extends Model
 {
     use BelongsToSociety;
@@ -17,7 +20,7 @@ class AccountingPayment extends Model
 
     protected $fillable = [
         'society_id', 'payment_no', 'date', 'payee', 'purpose', 'mode',
-        'amount', 'account_id', 'reference_no', 'status',
+        'amount', 'account_id', 'expense_account_id', 'reference_no', 'status',
     ];
 
     protected function casts(): array
@@ -36,6 +39,11 @@ class AccountingPayment extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    public function expenseAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'expense_account_id');
     }
 
     public function modeIcon(): string

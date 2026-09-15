@@ -17,7 +17,7 @@ class AccountGroup extends Model
     use HasFactory;
 
     protected $fillable = [
-        'society_id', 'name', 'color', 'icon',
+        'society_id', 'name', 'kind', 'color', 'icon',
     ];
 
     public function society(): BelongsTo

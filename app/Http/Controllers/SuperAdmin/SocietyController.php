@@ -8,6 +8,7 @@ use App\Models\Society;
 use App\Models\SocietyType;
 use App\Models\SubscriptionPlan;
 use App\Notifications\SocietyAdminInvitation;
+use App\Services\AccountingService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,10 @@ use Throwable;
 
 class SocietyController extends Controller
 {
-    public function __construct(private readonly SubscriptionService $subscriptions) {}
+    public function __construct(
+        private readonly SubscriptionService $subscriptions,
+        private readonly AccountingService $accounting,
+    ) {}
 
     public function index()
     {
@@ -98,6 +102,8 @@ class SocietyController extends Controller
                 'status' => 'active',
             ]);
             $admin->roles()->attach(Role::where('name', 'society_admin')->firstOrFail());
+
+            $this->accounting->seedChartFor($society);
 
             $plan = SubscriptionPlan::findOrFail($validated['subscription_plan_id']);
             $this->subscriptions->createForSociety($society, $plan, [

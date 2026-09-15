@@ -28,6 +28,16 @@
     </div>
 </div>
 
+<form method="GET" action="{{ route('society.accounting.trial-balance') }}" class="card" style="margin-bottom: 20px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: end;">
+        <div class="form-group" style="margin: 0;">
+            <label class="form-label">As on</label>
+            <input type="date" name="as_on" class="form-control" value="{{ $asOn }}">
+        </div>
+        <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> Apply</button>
+        <span style="font-size: 12px; color: var(--text-muted);">Balances as on {{ $trialBalance['as_on'] }}</span>
+    </div>
+</form>
 @php $balanced = abs($trialBalance['total_debit'] - $trialBalance['total_credit']) < 0.01; @endphp
 
 <div class="content-grid">

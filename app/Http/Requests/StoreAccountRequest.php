@@ -25,6 +25,7 @@ class StoreAccountRequest extends FormRequest
             'parent_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('society_id', $this->user()->society_id)],
             'type' => ['required', 'in:group,detail'],
             'opening_balance' => ['nullable', 'numeric'],
+            'is_bank' => ['nullable', 'boolean'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

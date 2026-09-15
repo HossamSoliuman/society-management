@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Observers\LedgerPostingObserver;
 use Database\Factories\ReceiptFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(LedgerPostingObserver::class)]
 class Receipt extends Model
 {
     use BelongsToSociety;
@@ -18,7 +21,7 @@ class Receipt extends Model
     protected $fillable = [
         'society_id', 'receipt_no', 'date', 'payer_name', 'flat_no',
         'receipt_type', 'reference_no', 'mode_of_payment', 'amount',
-        'account_id', 'location', 'status',
+        'account_id', 'income_account_id', 'location', 'status',
     ];
 
     protected function casts(): array
@@ -37,6 +40,11 @@ class Receipt extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    public function incomeAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'income_account_id');
     }
 
     public function typeBadgeClass(): string

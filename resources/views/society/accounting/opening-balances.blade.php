@@ -21,11 +21,22 @@
     </div>
 </div>
 
+<form method="POST" action="{{ route('society.accounting.opening-balances.update') }}">
+@csrf
+@method('PUT')
 <div class="content-grid">
     <div>
+        @if($errors->any())
+            <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ $errors->first() }}</div>
+        @endif
         <div class="card">
             <div class="card-header">
-                <div class="card-title">Opening Balances <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">Financial Year 2025-2026</span></div>
+                <div class="card-title">Opening Balances <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">Financial Year {{ $financialYear }}</span></div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <label class="form-label" style="margin: 0;">As on</label>
+                    <input type="date" name="financial_year_start" class="form-control" style="width: 170px;" value="{{ old('financial_year_start', $openingEntry?->date?->toDateString() ?? $fyStart) }}" required>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save &amp; Post</button>
+                </div>
             </div>
             <div class="card-body" style="padding: 0;">
                 <table class="fin-table">
@@ -39,12 +50,18 @@
                     </thead>
                     <tbody>
                         @forelse($accounts as $account)
+                            @php($openingLine = $openingEntry?->lines?->firstWhere('account_id', $account->id))
+                            @php($currentValue = $openingLine ? ((float) $openingLine->debit > 0 ? (float) $openingLine->debit : (float) $openingLine->credit) : (float) $account->opening_balance)
                             <tr>
                                 <td style="font-weight: 600;">{{ $account->code }}</td>
                                 <td>{{ $account->name }}</td>
                                 <td>{{ $account->group?->name ?? '—' }}</td>
                                 <td class="num" style="width: 200px;">
-                                    <input type="number" step="0.01" class="form-control" style="text-align: right;" value="{{ number_format((float) $account->opening_balance, 2, '.', '') }}">
+                                    @if($account->system_key === 'opening_equity')
+                                        <span style="color: var(--text-muted); font-size: 12px;">Balancing account</span>
+                                    @else
+                                        <input type="number" step="0.01" name="balances[{{ $account->id }}]" class="form-control" style="text-align: right;" value="{{ old('balances.'.$account->id, number_format($currentValue, 2, '.', '')) }}">
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -55,7 +72,7 @@
             </div>
         </div>
 
-        <div class="tip-banner orange"><i class="fas fa-lightbulb"></i><span>Enter the closing balances of the previous financial year as opening balances for the current year.</span></div>
+        <div class="tip-banner orange"><i class="fas fa-lightbulb"></i><span>Enter natural balances (assets/expenses as debits, liabilities/income/equity as credits). Any difference is posted to Opening Balance Equity{{ $openingEntry ? ' — currently entry '.$openingEntry->entry_no : '' }}.</span></div>
     </div>
 
     <div>
@@ -70,4 +87,5 @@
         ]])
     </div>
 </div>
+</form>
 @endsection

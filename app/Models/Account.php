@@ -17,7 +17,7 @@ class Account extends Model
     use HasFactory;
 
     protected $fillable = [
-        'society_id', 'code', 'name', 'group_id', 'parent_id', 'type',
+        'society_id', 'code', 'name', 'system_key', 'is_bank', 'group_id', 'parent_id', 'type',
         'tree_no', 'indent', 'opening_balance', 'balance', 'status', 'display_order',
     ];
 
@@ -28,6 +28,7 @@ class Account extends Model
             'balance' => 'decimal:2',
             'display_order' => 'integer',
             'indent' => 'integer',
+            'is_bank' => 'boolean',
         ];
     }
 
@@ -49,6 +50,11 @@ class Account extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
     }
 
     public function typePillClass(): string

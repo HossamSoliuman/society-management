@@ -34,28 +34,21 @@
 <div class="card">
     <div class="card-body">
         <form method="GET" action="{{ route('society.accounting.balance-sheet') }}">
-            <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr auto; gap: 14px; align-items: end;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Financial Year *</label>
-                    <input type="text" class="form-control" value="2025-2026 (01 Apr 2025 - 31 Mar 2026)" readonly>
-                </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">As On Date *</label>
-                    <input type="text" class="form-control" value="30 May 2025" readonly>
+                    <input type="date" name="as_on" class="form-control" value="{{ $asOn }}" required>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Compare With</label>
-                    <input type="text" class="form-control" value="31 Mar 2025" readonly>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Account Group</label>
-                    <select name="group" class="form-control">
-                        <option value="">All Groups</option>
-                    </select>
+                    <input type="date" name="compare_on" class="form-control" value="{{ request('compare_on', $bs['compare_on']) }}">
                 </div>
                 <button type="submit" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-filter"></i> Filter</button>
             </div>
         </form>
+        @unless($bs['balanced'])
+            <div class="alert alert-danger" style="margin-top: 12px;"><i class="fas fa-exclamation-circle"></i> Assets do not equal liabilities + equity — check for unposted opening balances.</div>
+        @endunless
     </div>
 </div>
 

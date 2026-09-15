@@ -43,7 +43,7 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label class="form-label">Date <span class="required">*</span></label>
-                            <input type="date" name="date" value="{{ old('date', '2025-05-30') }}" class="form-control" required>
+                            <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Payee <span class="required">*</span></label>
@@ -80,9 +80,20 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Purpose</label>
-                        <input type="text" name="purpose" value="{{ old('purpose') }}" class="form-control" placeholder="What is this payment for?">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Purpose</label>
+                            <input type="text" name="purpose" value="{{ old('purpose') }}" class="form-control" placeholder="What is this payment for?">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Debit To (Expense Account)</label>
+                            <select name="expense_account_id" class="form-control">
+                                <option value="">General Expenses</option>
+                                @foreach($expenseAccounts as $account)
+                                    <option value="{{ $account->id }}" {{ (string) old('expense_account_id') === (string) $account->id ? 'selected' : '' }}>{{ $account->code }} - {{ $account->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">

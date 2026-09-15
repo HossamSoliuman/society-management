@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Observers\LedgerPostingObserver;
 use Database\Factories\JournalEntryFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy(LedgerPostingObserver::class)]
 class JournalEntry extends Model
 {
     use BelongsToSociety;
@@ -18,7 +21,7 @@ class JournalEntry extends Model
 
     protected $fillable = [
         'society_id', 'entry_no', 'date', 'narration',
-        'total_debit', 'total_credit', 'status',
+        'total_debit', 'total_credit', 'status', 'is_opening', 'source_type', 'source_id',
     ];
 
     protected function casts(): array
@@ -27,6 +30,7 @@ class JournalEntry extends Model
             'date' => 'date',
             'total_debit' => 'decimal:2',
             'total_credit' => 'decimal:2',
+            'is_opening' => 'boolean',
         ];
     }
 

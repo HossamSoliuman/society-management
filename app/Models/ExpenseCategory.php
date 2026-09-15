@@ -16,7 +16,7 @@ class ExpenseCategory extends Model
 
     protected $fillable = [
         'society_id', 'name', 'slug', 'icon', 'color', 'description',
-        'status', 'display_order', 'applicable_for', 'notes',
+        'status', 'display_order', 'applicable_for', 'account_id', 'notes',
     ];
 
     protected function casts(): array

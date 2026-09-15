@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
 use App\Models\Concerns\LogsActivity;
+use App\Observers\LedgerPostingObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy(LedgerPostingObserver::class)]
 class CollectionPayment extends Model
 {
     use BelongsToSociety, HasFactory, LogsActivity, SoftDeletes;

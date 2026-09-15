@@ -30,6 +30,33 @@
     </div>
 </div>
 
+{{-- Period filter --}}
+<div class="card">
+    <div class="card-body">
+        <form method="GET" action="{{ route('society.accounting.profit-loss') }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 14px; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">From *</label>
+                    <input type="date" name="from" class="form-control" value="{{ $from }}" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">To *</label>
+                    <input type="date" name="to" class="form-control" value="{{ $to }}" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Compare From</label>
+                    <input type="date" name="compare_from" class="form-control" value="{{ request('compare_from', $pl['period']['compare_from']) }}">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Compare To</label>
+                    <input type="date" name="compare_to" class="form-control" value="{{ request('compare_to', $pl['period']['compare_to']) }}">
+                </div>
+                <button type="submit" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-filter"></i> Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- KPI cards --}}
 <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
     <div class="kpi-tinted income">

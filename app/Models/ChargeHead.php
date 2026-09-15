@@ -13,7 +13,7 @@ class ChargeHead extends Model
 
     protected $fillable = [
         'society_id', 'name', 'description', 'category', 'type',
-        'calculation_type', 'default_amount', 'applies_to', 'status', 'sort_order',
+        'calculation_type', 'default_amount', 'applies_to', 'account_id', 'status', 'sort_order',
     ];
 
     protected function casts(): array

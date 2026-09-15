@@ -92,6 +92,9 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="is_bank" value="1" @checked(old('is_bank'))> This is a bank account (available for reconciliation and as a collection account)</label>
+                    </div>
 
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
                         <a href="{{ route('society.accounting.chart-of-accounts') }}" class="btn btn-secondary">Cancel</a>

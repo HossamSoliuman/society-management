@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Observers\LedgerPostingObserver;
 use Database\Factories\ExpenseFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(LedgerPostingObserver::class)]
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */

@@ -341,6 +341,9 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('accounting/journal-entries/create', [AccountingController::class, 'createJournalEntry'])->name('accounting.journal-entries.create');
         Route::post('accounting/journal-entries', [AccountingController::class, 'storeJournalEntry'])->name('accounting.journal-entries.store');
         Route::get('accounting/bank-reconciliation', [AccountingController::class, 'bankReconciliation'])->name('accounting.bank-reconciliation');
+        Route::post('accounting/bank-reconciliation/import', [AccountingController::class, 'importBankStatement'])->name('accounting.bank-reconciliation.import');
+        Route::post('accounting/bank-reconciliation/{line}/match', [AccountingController::class, 'matchBankLine'])->name('accounting.bank-reconciliation.match');
+        Route::post('accounting/bank-reconciliation/{line}/unmatch', [AccountingController::class, 'unmatchBankLine'])->name('accounting.bank-reconciliation.unmatch');
         Route::get('accounting/trial-balance', [AccountingController::class, 'trialBalance'])->name('accounting.trial-balance');
         Route::get('accounting/profit-loss', [AccountingController::class, 'profitLoss'])->name('accounting.profit-loss');
         Route::get('accounting/balance-sheet', [AccountingController::class, 'balanceSheet'])->name('accounting.balance-sheet');
@@ -348,6 +351,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('accounting/chart-of-accounts/create', [AccountingController::class, 'createAccount'])->name('accounting.chart-of-accounts.create');
         Route::post('accounting/chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounting.chart-of-accounts.store');
         Route::get('accounting/opening-balances', [AccountingController::class, 'openingBalances'])->name('accounting.opening-balances');
+        Route::put('accounting/opening-balances', [AccountingController::class, 'updateOpeningBalances'])->name('accounting.opening-balances.update');
     });
 
     // Vendor Management, AMC & Tenders

@@ -7,28 +7,36 @@ use App\Http\Requests\StoreAccountingPaymentRequest;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\StoreReceiptRequest;
+use App\Imports\BankStatementImport;
 use App\Models\Account;
 use App\Models\AccountGroup;
 use App\Models\AccountingPayment;
+use App\Models\BankStatementLine;
 use App\Models\JournalEntry;
 use App\Models\Receipt;
 use App\Models\Society;
 use App\Models\Transaction;
 use App\Services\AccountingService;
+use App\Services\BankReconciliationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AccountingController extends Controller
 {
     /** Payment modes offered across the accounting create forms and filters. */
     private const PAYMENT_MODES = ['UPI', 'Card', 'Net Banking', 'Cheque', 'Cash'];
 
-    private const LOCATIONS = ['Tower A', 'Tower B', 'Tower C', 'Clubhouse'];
-
-    public function __construct(private readonly AccountingService $accounting) {}
+    public function __construct(
+        private readonly AccountingService $accounting,
+        private readonly BankReconciliationService $reconciliation,
+    ) {}
 
     public function index(): View
     {
@@ -36,7 +44,7 @@ class AccountingController extends Controller
 
         $recent = Transaction::query()
             ->with('account')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->limit(5)
@@ -44,14 +52,14 @@ class AccountingController extends Controller
 
         return view('society.accounting.index', [
             'active' => 'dashboard',
-            'stats' => $this->dashboardStats(),
+            'stats' => $this->accounting->dashboardStats($society),
             'recent' => $recent,
-            'cashFlow' => $this->accounting->cashFlowSeries(),
-            'balanceSummary' => $this->accounting->accountBalanceSummary(),
-            'bankAccounts' => $this->bankAccounts(),
+            'cashFlow' => $this->accounting->cashFlowSeries($society),
+            'balanceSummary' => $this->accounting->accountBalanceSummary($society),
+            'bankAccounts' => $this->accounting->bankAccounts($society),
             'accountsForFilter' => $this->detailAccounts($society),
             'paymentModes' => self::PAYMENT_MODES,
-            'locations' => self::LOCATIONS,
+            'locations' => $this->locations($society),
         ]);
     }
 
@@ -69,7 +77,7 @@ class AccountingController extends Controller
 
         $transactions = Transaction::query()
             ->with('account')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($tabType, fn ($q) => $q->where('type', $tabType))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->when($request->filled('account'), fn ($q) => $q->where('account_id', $request->integer('account')))
@@ -86,11 +94,11 @@ class AccountingController extends Controller
             'active' => 'transactions',
             'tab' => $tab,
             'transactions' => $transactions,
-            'stats' => $this->transactionStats(),
-            'summary' => $this->accounting->transactionSummary(),
+            'stats' => $this->transactionStats($society),
+            'summary' => $this->accounting->transactionSummary($society),
             'accountsForFilter' => $this->detailAccounts($society),
             'paymentModes' => self::PAYMENT_MODES,
-            'locations' => self::LOCATIONS,
+            'locations' => $this->locations($society),
         ]);
     }
 
@@ -100,7 +108,7 @@ class AccountingController extends Controller
 
         $receipts = Receipt::query()
             ->with('account')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('type'), fn ($q) => $q->where('receipt_type', $request->string('type')))
             ->when($request->filled('account'), fn ($q) => $q->where('account_id', $request->integer('account')))
             ->when($request->filled('location'), fn ($q) => $q->where('location', $request->string('location')))
@@ -120,12 +128,12 @@ class AccountingController extends Controller
         return view('society.accounting.receipts', [
             'active' => 'receipts',
             'receipts' => $receipts,
-            'stats' => $this->receiptStats(),
-            'receiptSummary' => $this->receiptSummaryRail(),
-            'paymentModesRail' => $this->paymentModesRail(),
+            'stats' => $this->receiptStats($society),
+            'receiptSummary' => $this->receiptSummaryRail($society),
+            'paymentModesRail' => $this->paymentModesRail($society),
             'accountsForFilter' => $this->detailAccounts($society),
             'receiptTypes' => $this->receiptTypes(),
-            'locations' => self::LOCATIONS,
+            'locations' => $this->locations($society),
         ]);
     }
 
@@ -135,10 +143,11 @@ class AccountingController extends Controller
 
         return view('society.accounting.receipts-create', [
             'active' => 'receipts',
-            'accounts' => $this->detailAccounts($society),
+            'accounts' => $this->settlementAccounts($society),
+            'incomeAccounts' => $this->accountsOfKind($society, 'income'),
             'receiptTypes' => $this->receiptTypes(),
             'paymentModes' => self::PAYMENT_MODES,
-            'locations' => self::LOCATIONS,
+            'locations' => $this->locations($society),
         ]);
     }
 
@@ -148,13 +157,13 @@ class AccountingController extends Controller
         $data = $request->validated();
 
         $receipt = Receipt::create($data + [
-            'society_id' => $society?->id,
-            'receipt_no' => $this->nextReceiptNo(),
+            'society_id' => $society->id,
+            'receipt_no' => $this->accounting->nextNumber($society, 'accounting_receipt'),
             'status' => 'completed',
         ]);
 
         return redirect()->route('society.accounting.receipts')
-            ->with('success', "Receipt {$receipt->receipt_no} recorded successfully.");
+            ->with('success', "Receipt {$receipt->receipt_no} recorded and posted to the ledger.");
     }
 
     public function payments(Request $request): View
@@ -163,7 +172,7 @@ class AccountingController extends Controller
 
         $payments = AccountingPayment::query()
             ->with('account')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('mode'), fn ($q) => $q->where('mode', $request->string('mode')))
             ->when($request->filled('account'), fn ($q) => $q->where('account_id', $request->integer('account')))
             ->when($request->filled('q'), function ($q) use ($request) {
@@ -182,7 +191,7 @@ class AccountingController extends Controller
         return view('society.accounting.payments', [
             'active' => 'payments',
             'payments' => $payments,
-            'stats' => $this->paymentStats(),
+            'stats' => $this->paymentStats($society),
             'accountsForFilter' => $this->detailAccounts($society),
             'paymentModes' => self::PAYMENT_MODES,
         ]);
@@ -194,7 +203,8 @@ class AccountingController extends Controller
 
         return view('society.accounting.payments-create', [
             'active' => 'payments',
-            'accounts' => $this->detailAccounts($society),
+            'accounts' => $this->settlementAccounts($society),
+            'expenseAccounts' => $this->accountsOfKind($society, 'expense'),
             'paymentModes' => self::PAYMENT_MODES,
         ]);
     }
@@ -205,13 +215,13 @@ class AccountingController extends Controller
         $data = $request->validated();
 
         $payment = AccountingPayment::create($data + [
-            'society_id' => $society?->id,
-            'payment_no' => $this->nextPaymentNo(),
+            'society_id' => $society->id,
+            'payment_no' => $this->accounting->nextNumber($society, 'accounting_payment'),
             'status' => 'completed',
         ]);
 
         return redirect()->route('society.accounting.payments')
-            ->with('success', "Payment {$payment->payment_no} recorded successfully.");
+            ->with('success', "Payment {$payment->payment_no} recorded and posted to the ledger.");
     }
 
     public function journalEntries(Request $request): View
@@ -220,8 +230,11 @@ class AccountingController extends Controller
 
         $entries = JournalEntry::query()
             ->withCount('lines')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->when($request->filled('q'), fn ($q) => $q->where('entry_no', 'like', '%'.$request->string('q').'%')->orWhere('narration', 'like', '%'.$request->string('q').'%'))
+            ->forSociety($society)
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $term = $request->string('q');
+                $q->where(fn ($sub) => $sub->where('entry_no', 'like', "%{$term}%")->orWhere('narration', 'like', "%{$term}%"));
+            })
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->paginate(10)
@@ -230,7 +243,7 @@ class AccountingController extends Controller
         return view('society.accounting.journal-entries', [
             'active' => 'journal-entries',
             'entries' => $entries,
-            'stats' => $this->journalStats(),
+            'stats' => $this->journalStats($society),
         ]);
     }
 
@@ -250,26 +263,36 @@ class AccountingController extends Controller
         $data = $request->validated();
 
         $lines = collect($data['lines']);
-        $totalDebit = $lines->sum(fn ($line) => (float) ($line['debit'] ?? 0));
-        $totalCredit = $lines->sum(fn ($line) => (float) ($line['credit'] ?? 0));
+        $totalDebit = round($lines->sum(fn ($line) => (float) ($line['debit'] ?? 0)), 2);
+        $totalCredit = round($lines->sum(fn ($line) => (float) ($line['credit'] ?? 0)), 2);
 
-        $entry = JournalEntry::create([
-            'society_id' => $society?->id,
-            'entry_no' => $this->nextJournalNo(),
-            'date' => $data['date'],
-            'narration' => $data['narration'] ?? null,
-            'total_debit' => $totalDebit,
-            'total_credit' => $totalCredit,
-            'status' => 'posted',
-        ]);
-
-        foreach ($lines as $line) {
-            $entry->lines()->create([
-                'account_id' => $line['account_id'],
-                'debit' => (float) ($line['debit'] ?? 0),
-                'credit' => (float) ($line['credit'] ?? 0),
-            ]);
+        if (abs($totalDebit - $totalCredit) > 0.005) {
+            throw ValidationException::withMessages(['lines' => "Debits ({$totalDebit}) must equal credits ({$totalCredit})."]);
         }
+
+        $entry = DB::transaction(function () use ($society, $data, $lines, $totalDebit, $totalCredit): JournalEntry {
+            $entry = JournalEntry::create([
+                'society_id' => $society->id,
+                'entry_no' => $this->accounting->nextNumber($society, 'journal'),
+                'date' => $data['date'],
+                'narration' => $data['narration'] ?? null,
+                'total_debit' => $totalDebit,
+                'total_credit' => $totalCredit,
+                'status' => 'posted',
+            ]);
+
+            foreach ($lines as $line) {
+                $entry->lines()->create([
+                    'account_id' => $line['account_id'],
+                    'debit' => (float) ($line['debit'] ?? 0),
+                    'credit' => (float) ($line['credit'] ?? 0),
+                ]);
+            }
+
+            $this->accounting->postJournalEntry($entry);
+
+            return $entry;
+        });
 
         return redirect()->route('society.accounting.journal-entries')
             ->with('success', "Journal entry {$entry->entry_no} posted successfully.");
@@ -278,36 +301,110 @@ class AccountingController extends Controller
     public function bankReconciliation(Request $request): View
     {
         $society = $this->currentSociety();
+        $bankAccounts = $this->bankAccountModels($society);
+        $account = $request->filled('account')
+            ? $bankAccounts->firstWhere('id', $request->integer('account'))
+            : $bankAccounts->first();
+
+        $from = $request->filled('from') ? Carbon::parse($request->string('from')) : null;
+        $to = $request->filled('to') ? Carbon::parse($request->string('to')) : null;
+
+        $overview = $account
+            ? $this->reconciliation->overview($society, $account, $from, $to)
+            : ['rows' => collect(), 'summary' => null];
 
         return view('society.accounting.bank-reconciliation', [
             'active' => 'bank-reconciliation',
-            'bankAccounts' => $this->bankAccounts(),
-            'rows' => $this->reconciliationRows(),
+            'bankAccounts' => $bankAccounts,
+            'account' => $account,
+            'rows' => $overview['rows'],
+            'summary' => $overview['summary'],
+            'from' => $from?->toDateString(),
+            'to' => $to?->toDateString(),
         ]);
     }
 
-    public function trialBalance(): View
+    public function importBankStatement(Request $request): RedirectResponse
     {
+        $society = $this->currentSociety();
+
+        $data = $request->validate([
+            'account_id' => ['required', 'integer', Rule::exists('accounts', 'id')->where('society_id', $society->id)],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:5120'],
+        ]);
+
+        $account = Account::query()->forSociety($society)->findOrFail($data['account_id']);
+
+        $import = new BankStatementImport;
+        Excel::import($import, $request->file('file'));
+
+        if ($import->rows === []) {
+            return back()->with('error', 'No statement lines could be read from the file.');
+        }
+
+        $result = $this->reconciliation->import($society, $account, $import->rows);
+
+        return redirect()->route('society.accounting.bank-reconciliation', ['account' => $account->id])
+            ->with('success', "{$result['imported']} statement line(s) imported, {$result['matched']} matched automatically.".(count($import->errors) ? ' '.count($import->errors).' row(s) skipped.' : ''));
+    }
+
+    public function matchBankLine(Request $request, BankStatementLine $line): RedirectResponse
+    {
+        $society = $this->currentSociety();
+        $data = $request->validate([
+            'transaction_id' => ['required', 'integer', Rule::exists('transactions', 'id')->where('society_id', $society->id)->where('account_id', $line->account_id)],
+        ]);
+
+        $this->reconciliation->link($line, Transaction::findOrFail($data['transaction_id']));
+
+        return back()->with('success', 'Statement line matched.');
+    }
+
+    public function unmatchBankLine(BankStatementLine $line): RedirectResponse
+    {
+        $this->reconciliation->unlink($line);
+
+        return back()->with('success', 'Statement line unmatched.');
+    }
+
+    public function trialBalance(Request $request): View
+    {
+        $society = $this->currentSociety();
+        $asOn = $request->filled('as_on') ? Carbon::parse($request->string('as_on')) : Carbon::today();
+
         return view('society.accounting.trial-balance', [
             'active' => 'trial-balance',
-            'trialBalance' => $this->accounting->trialBalance($this->currentSociety()),
+            'trialBalance' => $this->accounting->trialBalance($society, $asOn),
+            'asOn' => $asOn->toDateString(),
         ]);
     }
 
-    public function profitLoss(): View
+    public function profitLoss(Request $request): View
     {
+        $society = $this->currentSociety();
+        [$from, $to] = $this->periodFromRequest($request);
+        $compareFrom = $request->filled('compare_from') ? Carbon::parse($request->string('compare_from')) : null;
+        $compareTo = $request->filled('compare_to') ? Carbon::parse($request->string('compare_to')) : null;
+
         return view('society.accounting.profit-loss', [
             'active' => 'profit-loss',
-            'pl' => $this->accounting->profitAndLoss(),
-            'accountsForFilter' => $this->detailAccounts($this->currentSociety()),
+            'pl' => $this->accounting->profitAndLoss($society, $from, $to, $compareFrom, $compareTo),
+            'accountsForFilter' => $this->detailAccounts($society),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
         ]);
     }
 
-    public function balanceSheet(): View
+    public function balanceSheet(Request $request): View
     {
+        $society = $this->currentSociety();
+        $asOn = $request->filled('as_on') ? Carbon::parse($request->string('as_on')) : Carbon::today();
+        $compareOn = $request->filled('compare_on') ? Carbon::parse($request->string('compare_on')) : null;
+
         return view('society.accounting.balance-sheet', [
             'active' => 'balance-sheet',
-            'bs' => $this->accounting->balanceSheet(),
+            'bs' => $this->accounting->balanceSheet($society, $asOn, $compareOn),
+            'asOn' => $asOn->toDateString(),
         ]);
     }
 
@@ -318,7 +415,7 @@ class AccountingController extends Controller
 
         $accounts = Account::query()
             ->with('group')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->when($request->filled('group'), fn ($q) => $q->where('group_id', $request->integer('group')))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
@@ -335,7 +432,7 @@ class AccountingController extends Controller
             ->withQueryString();
 
         $groups = AccountGroup::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->withCount('accounts')
             ->orderBy('id')
             ->get();
@@ -356,8 +453,8 @@ class AccountingController extends Controller
 
         return view('society.accounting.account-create', [
             'active' => 'chart-of-accounts',
-            'groups' => AccountGroup::when($society, fn ($q) => $q->where('society_id', $society->id))->orderBy('name')->get(),
-            'parents' => Account::when($society, fn ($q) => $q->where('society_id', $society->id))->where('type', 'group')->orderBy('code')->get(),
+            'groups' => AccountGroup::query()->forSociety($society)->orderBy('name')->get(),
+            'parents' => Account::query()->forSociety($society)->where('type', 'group')->orderBy('code')->get(),
         ]);
     }
 
@@ -367,16 +464,17 @@ class AccountingController extends Controller
         $data = $request->validated();
 
         $account = Account::create([
-            'society_id' => $society?->id,
+            'society_id' => $society->id,
             'code' => $data['code'],
             'name' => $data['name'],
             'group_id' => $data['group_id'],
             'parent_id' => $data['parent_id'] ?? null,
             'type' => $data['type'],
+            'is_bank' => $request->boolean('is_bank'),
             'opening_balance' => $data['opening_balance'] ?? 0,
             'balance' => $data['opening_balance'] ?? 0,
             'status' => $data['status'],
-            'display_order' => (Account::max('display_order') ?? 0) + 1,
+            'display_order' => (int) Account::query()->forSociety($society)->max('display_order') + 1,
         ]);
 
         return redirect()->route('society.accounting.chart-of-accounts')
@@ -389,15 +487,110 @@ class AccountingController extends Controller
 
         $accounts = Account::query()
             ->with('group')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->forSociety($society)
             ->where('type', 'detail')
             ->orderBy('code')
             ->get();
 
+        $fyStart = $this->accounting->financialYearStart(Carbon::today());
+
         return view('society.accounting.opening-balances', [
             'active' => 'opening-balances',
             'accounts' => $accounts,
+            'financialYear' => $this->accounting->financialYearLabel(Carbon::today()),
+            'fyStart' => $fyStart->toDateString(),
+            'openingEntry' => JournalEntry::query()->forSociety($society)->where('is_opening', true)->latest('id')->first(),
         ]);
+    }
+
+    /**
+     * Save opening balances: writes them to accounts.opening_balance and posts
+     * (or re-posts) an opening journal entry dated at the financial-year start,
+     * balanced through Opening Balance Equity.
+     */
+    public function updateOpeningBalances(Request $request): RedirectResponse
+    {
+        $society = $this->currentSociety();
+
+        $data = $request->validate([
+            'financial_year_start' => ['required', 'date'],
+            'balances' => ['required', 'array'],
+            'balances.*' => ['nullable', 'numeric'],
+        ]);
+
+        $fyStart = Carbon::parse($data['financial_year_start']);
+        $equity = $this->accounting->defaultAccount($society, 'opening_equity');
+
+        $accounts = Account::query()->with('group')->forSociety($society)->where('type', 'detail')->get()->keyBy('id');
+
+        DB::transaction(function () use ($society, $data, $fyStart, $equity, $accounts) {
+            $lines = [];
+            $debitTotal = 0.0;
+            $creditTotal = 0.0;
+
+            foreach ($data['balances'] as $accountId => $amount) {
+                $account = $accounts->get((int) $accountId);
+                if (! $account || $account->id === $equity->id) {
+                    continue;
+                }
+                $amount = round((float) $amount, 2);
+                $account->forceFill(['opening_balance' => 0])->saveQuietly();
+                if ($amount == 0.0) {
+                    continue;
+                }
+
+                $debitNature = $this->accounting->isDebitNature($account);
+                $debit = ($debitNature && $amount > 0) || (! $debitNature && $amount < 0) ? abs($amount) : 0.0;
+                $credit = $debit > 0 ? 0.0 : abs($amount);
+                $lines[] = ['account_id' => $account->id, 'debit' => $debit, 'credit' => $credit];
+                $debitTotal += $debit;
+                $creditTotal += $credit;
+            }
+
+            $difference = round($debitTotal - $creditTotal, 2);
+            if ($difference > 0) {
+                $lines[] = ['account_id' => $equity->id, 'credit' => $difference];
+            } elseif ($difference < 0) {
+                $lines[] = ['account_id' => $equity->id, 'debit' => abs($difference)];
+            }
+
+            $entry = JournalEntry::query()->forSociety($society)->where('is_opening', true)->first();
+            if ($entry) {
+                $this->accounting->unpost($entry);
+                $entry->lines()->delete();
+            } else {
+                $entry = new JournalEntry([
+                    'society_id' => $society->id,
+                    'entry_no' => $this->accounting->nextNumber($society, 'journal'),
+                    'is_opening' => true,
+                ]);
+            }
+
+            $entry->forceFill([
+                'date' => $fyStart->toDateString(),
+                'narration' => 'Opening balances as on '.$fyStart->format('d M Y'),
+                'total_debit' => round(max($debitTotal, $creditTotal), 2),
+                'total_credit' => round(max($debitTotal, $creditTotal), 2),
+                'status' => 'posted',
+            ])->save();
+
+            foreach ($lines as $line) {
+                $entry->lines()->create([
+                    'account_id' => $line['account_id'],
+                    'debit' => $line['debit'] ?? 0,
+                    'credit' => $line['credit'] ?? 0,
+                ]);
+            }
+
+            if ($lines !== []) {
+                $this->accounting->postJournalEntry($entry);
+            }
+
+            $this->accounting->refreshBalances($society);
+        });
+
+        return redirect()->route('society.accounting.opening-balances')
+            ->with('success', 'Opening balances saved and posted as journal entry dated '.$fyStart->format('d M Y').'.');
     }
 
     /* -------------------------------------------------------------------------
@@ -407,13 +600,51 @@ class AccountingController extends Controller
     /**
      * @return Collection<int, Account>
      */
-    private function detailAccounts(?Society $society)
+    private function detailAccounts(Society $society): Collection
     {
-        return Account::query()
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->where('type', 'detail')
-            ->orderBy('code')
-            ->get();
+        return $this->accounting->detailAccounts($society);
+    }
+
+    /**
+     * Cash and bank accounts money is received into / paid out of.
+     *
+     * @return Collection<int, Account>
+     */
+    private function settlementAccounts(Society $society): Collection
+    {
+        $accounts = $this->detailAccounts($society)
+            ->filter(fn (Account $a) => $a->is_bank || in_array($a->system_key, ['cash', 'bank'], true))
+            ->values();
+
+        return $accounts->isNotEmpty() ? $accounts : $this->detailAccounts($society);
+    }
+
+    /**
+     * @return Collection<int, Account>
+     */
+    private function accountsOfKind(Society $society, string $kind): Collection
+    {
+        return $this->detailAccounts($society)
+            ->filter(fn (Account $a) => ($a->group?->kind ?? $this->accounting->kindForGroupName((string) $a->group?->name)) === $kind)
+            ->values();
+    }
+
+    /**
+     * @return Collection<int, Account>
+     */
+    private function bankAccountModels(Society $society): Collection
+    {
+        return $this->detailAccounts($society)->filter(fn (Account $a) => $a->is_bank || $a->system_key === 'bank')->values();
+    }
+
+    /**
+     * Locations used on existing rows (towers/buildings) for the filters.
+     *
+     * @return array<int, string>
+     */
+    private function locations(Society $society): array
+    {
+        return Transaction::query()->forSociety($society)->whereNotNull('location')->distinct()->orderBy('location')->pluck('location')->all();
     }
 
     /**
@@ -429,145 +660,142 @@ class AccountingController extends Controller
         ];
     }
 
-    private function nextReceiptNo(): string
+    /**
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function periodFromRequest(Request $request): array
     {
-        $next = (Receipt::max('id') ?? 0) + 1;
+        $to = $request->filled('to') ? Carbon::parse($request->string('to')) : Carbon::today();
+        $from = $request->filled('from') ? Carbon::parse($request->string('from')) : $this->accounting->financialYearStart($to);
 
-        return 'RCPT/25-26/'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
-    }
-
-    private function nextPaymentNo(): string
-    {
-        $next = (AccountingPayment::max('id') ?? 0) + 1;
-
-        return 'PMT/25-26/'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
-    }
-
-    private function nextJournalNo(): string
-    {
-        $next = (JournalEntry::max('id') ?? 0) + 1;
-
-        return 'JV/2505/'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+        return [$from, $to];
     }
 
     /* -------------------------------------------------------------------------
-     |  Demo figures (stat cards / rails) matching the PNGs
+     |  Stat cards (all computed from the ledger / source documents)
      |------------------------------------------------------------------------- */
 
     /**
      * @return array<string, string>
      */
-    private function dashboardStats(): array
+    private function transactionStats(Society $society): array
     {
+        $base = Transaction::query()->forSociety($society);
+        $receipts = (float) (clone $base)->where('type', 'receipt')->sum('debit');
+        $payments = (float) (clone $base)->where('type', 'payment')->sum('credit');
+
         return [
-            'total_balance' => '14,85,320.50',
-            'total_income' => '9,32,450.00',
-            'total_expenses' => '6,48,120.00',
-            'total_receivables' => '3,25,600.00',
-            'total_payables' => '1,15,750.00',
+            'total' => number_format((clone $base)->count()),
+            'receipts' => number_format($receipts, 2),
+            'payments' => number_format($payments, 2),
+            'journals' => number_format(JournalEntry::query()->forSociety($society)->count()),
+            'net_balance' => number_format($receipts - $payments, 2),
         ];
     }
 
     /**
      * @return array<string, string>
      */
-    private function transactionStats(): array
+    private function receiptStats(Society $society): array
     {
+        $base = Receipt::query()->forSociety($society);
+        $count = (clone $base)->count();
+        $total = (float) (clone $base)->where('status', 'completed')->sum('amount');
+
         return [
-            'total' => '162',
-            'receipts' => '9,32,450.00',
-            'payments' => '7,98,120.00',
-            'journals' => '26',
-            'net_balance' => '1,34,330.00',
+            'total' => number_format($count),
+            'total_amount' => number_format($total, 2),
+            'pending' => number_format((clone $base)->where('status', 'pending')->count()),
+            'pending_amount' => number_format((float) (clone $base)->where('status', 'pending')->sum('amount'), 2),
+            'average' => number_format($count > 0 ? $total / $count : 0, 2),
         ];
     }
 
     /**
      * @return array<string, string>
      */
-    private function receiptStats(): array
+    private function paymentStats(Society $society): array
     {
+        $base = AccountingPayment::query()->forSociety($society);
+        $count = (clone $base)->count();
+        $total = (float) (clone $base)->where('status', 'completed')->sum('amount');
+
         return [
-            'total' => '248',
-            'total_amount' => '3,25,600.00',
-            'pending' => '12',
-            'pending_amount' => '45,250.00',
-            'average' => '4,256.50',
+            'total' => number_format($count),
+            'total_amount' => number_format($total, 2),
+            'pending' => number_format((clone $base)->where('status', 'pending')->count()),
+            'pending_amount' => number_format((float) (clone $base)->where('status', 'pending')->sum('amount'), 2),
+            'average' => number_format($count > 0 ? $total / $count : 0, 2),
         ];
     }
 
     /**
      * @return array<string, string>
      */
-    private function paymentStats(): array
+    private function journalStats(Society $society): array
     {
-        return [
-            'total' => '86',
-            'total_amount' => '7,98,120.00',
-            'pending' => '8',
-            'pending_amount' => '38,400.00',
-            'average' => '9,280.00',
-        ];
-    }
+        $base = JournalEntry::query()->forSociety($society);
 
-    /**
-     * @return array<string, string>
-     */
-    private function journalStats(): array
-    {
         return [
-            'total' => '26',
-            'total_debit' => '4,85,600.00',
-            'total_credit' => '4,85,600.00',
-            'posted' => '24',
+            'total' => number_format((clone $base)->count()),
+            'total_debit' => number_format((float) (clone $base)->sum('total_debit'), 2),
+            'total_credit' => number_format((float) (clone $base)->sum('total_credit'), 2),
+            'posted' => number_format((clone $base)->where('status', 'posted')->count()),
         ];
     }
 
     /**
      * @return array<int, array<string, string>>
      */
-    private function bankAccounts(): array
+    private function receiptSummaryRail(Society $society): array
     {
-        return [
-            ['name' => 'SBI Bank A/c', 'sub' => 'A/c No. XXXX 4567', 'amount' => '8,25,450.00', 'color' => 'blue', 'icon' => 'fa-building-columns'],
-            ['name' => 'HDFC Bank A/c', 'sub' => 'A/c No. XXXX 7890', 'amount' => '5,12,320.00', 'color' => 'red', 'icon' => 'fa-building-columns'],
-            ['name' => 'Cash in Hand', 'sub' => 'Petty Cash', 'amount' => '1,47,550.50', 'color' => 'green', 'icon' => 'fa-money-bill-wave'],
+        $byType = Receipt::query()->forSociety($society)->where('status', 'completed')
+            ->selectRaw('receipt_type, COALESCE(SUM(amount),0) as total')
+            ->groupBy('receipt_type')
+            ->pluck('total', 'receipt_type');
+
+        $labels = [
+            'maintenance' => ['Maintenance Receipts', 'var(--success)'],
+            'other_charges' => ['Other Charges', 'var(--info)'],
+            'amenities' => ['Amenities', 'var(--orange)'],
+            'interest_penalty' => ['Interest & Penalty', 'var(--purple)'],
         ];
+
+        return collect($labels)->map(fn ($meta, $type) => [
+            'label' => $meta[0],
+            'amount' => number_format((float) ($byType[$type] ?? 0)),
+            'color' => $meta[1],
+        ])->values()->all();
     }
 
     /**
      * @return array<int, array<string, string>>
      */
-    private function receiptSummaryRail(): array
+    private function paymentModesRail(Society $society): array
     {
-        return [
-            ['label' => 'Maintenance Receipts', 'amount' => '2,45,600', 'color' => 'var(--success)'],
-            ['label' => 'Other Charges', 'amount' => '45,250', 'color' => 'var(--info)'],
-            ['label' => 'Amenities', 'amount' => '28,750', 'color' => 'var(--orange)'],
-            ['label' => 'Interest & Penalty', 'amount' => '6,000', 'color' => 'var(--purple)'],
-        ];
-    }
+        $rows = Receipt::query()->forSociety($society)->where('status', 'completed')
+            ->selectRaw('mode_of_payment, COALESCE(SUM(amount),0) as total')
+            ->groupBy('mode_of_payment')
+            ->orderByDesc('total')
+            ->get();
+        $total = (float) $rows->sum('total');
+        $icons = ['UPI' => 'fa-mobile-screen', 'Net Banking' => 'fa-building-columns', 'Card' => 'fa-credit-card', 'Cash' => 'fa-money-bill-wave', 'Cheque' => 'fa-money-check'];
 
-    /**
-     * @return array<int, array<string, string>>
-     */
-    private function paymentModesRail(): array
-    {
-        return [
-            ['label' => 'UPI', 'amount' => '1,48,500', 'pct' => '45.60%', 'icon' => 'fa-mobile-screen'],
-            ['label' => 'Net Banking', 'amount' => '1,02,750', 'pct' => '31.54%', 'icon' => 'fa-building-columns'],
-            ['label' => 'Card', 'amount' => '56,850', 'pct' => '17.44%', 'icon' => 'fa-credit-card'],
-            ['label' => 'Cash', 'amount' => '17,500', 'pct' => '5.38%', 'icon' => 'fa-money-bill-wave'],
-        ];
+        return $rows->map(fn ($r) => [
+            'label' => $r->mode_of_payment ?: 'Other',
+            'amount' => number_format((float) $r->total),
+            'pct' => ($total > 0 ? number_format((float) $r->total / $total * 100, 2) : '0.00').'%',
+            'icon' => $icons[$r->mode_of_payment] ?? 'fa-wallet',
+        ])->all();
     }
 
     /**
      * @param  Collection<int, AccountGroup>  $groups
      * @return array<string, mixed>
      */
-    private function coaStats(?Society $society, $groups): array
+    private function coaStats(Society $society, Collection $groups): array
     {
-        $base = Account::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
+        $base = Account::query()->forSociety($society);
         $total = (clone $base)->count();
         $active = (clone $base)->where('status', 'active')->count();
         $inactive = (clone $base)->where('status', 'inactive')->count();
@@ -579,20 +807,6 @@ class AccountingController extends Controller
             'inactive' => $inactive,
             'inactive_pct' => $total > 0 ? number_format($inactive / $total * 100, 2).'% of total' : '0%',
             'groups' => $groups->count(),
-        ];
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function reconciliationRows(): array
-    {
-        return [
-            ['date' => '28 May 2025', 'description' => 'Maintenance - A-101', 'book' => '8,500.00', 'bank' => '8,500.00', 'matched' => true],
-            ['date' => '27 May 2025', 'description' => 'Electricity Bill', 'book' => '42,000.00', 'bank' => '42,000.00', 'matched' => true],
-            ['date' => '26 May 2025', 'description' => 'Housekeeping Charges', 'book' => '18,000.00', 'bank' => '0.00', 'matched' => false],
-            ['date' => '25 May 2025', 'description' => 'Amenities - Clubhouse', 'book' => '3,500.00', 'bank' => '3,500.00', 'matched' => true],
-            ['date' => '24 May 2025', 'description' => 'Bank Charges', 'book' => '0.00', 'bank' => '250.00', 'matched' => false],
         ];
     }
 }

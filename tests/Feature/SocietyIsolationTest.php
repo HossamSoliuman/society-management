@@ -4,6 +4,7 @@ use App\Models\Account;
 use App\Models\AccountGroup;
 use App\Models\Asset;
 use App\Models\AssetCategory;
+use App\Models\BankStatementLine;
 use App\Models\ChargeHead;
 use App\Models\CollectionPayment;
 use App\Models\Document;
@@ -70,6 +71,10 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'notice' => Notice::factory()->create($sid + ['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'target_roles' => null]),
         'teamUser' => tap(User::factory()->create($sid), fn (User $u) => $u->roles()->sync([seededRole('staff')->id])),
         'order' => PaymentGatewayOrder::create($sid + ['provider' => 'fake', 'provider_order_id' => 'iso_'.uniqid(), 'amount' => 100, 'status' => 'created']),
+        'line' => BankStatementLine::create($sid + [
+            'account_id' => Account::factory()->create($sid + ['type' => 'detail', 'is_bank' => true])->id,
+            'import_batch' => 'iso', 'statement_date' => now(), 'debit' => 0, 'credit' => 10,
+        ]),
         default => throw new RuntimeException("No fixture for route parameter {{$param}} on {$routeName}; add one to SocietyIsolationTest."),
     };
 }
@@ -113,8 +118,8 @@ it('scopes the trial balance to the given society', function () {
     $groupA = AccountGroup::factory()->create(['society_id' => $this->societyA->id, 'name' => 'Assets']);
     $groupB = AccountGroup::factory()->create(['society_id' => $this->societyB->id, 'name' => 'Assets']);
 
-    Account::factory()->create(['society_id' => $this->societyA->id, 'group_id' => $groupA->id, 'type' => 'detail', 'code' => '1001', 'balance' => 500]);
-    Account::factory()->create(['society_id' => $this->societyB->id, 'group_id' => $groupB->id, 'type' => 'detail', 'code' => '1001', 'balance' => 900]);
+    Account::factory()->create(['society_id' => $this->societyA->id, 'group_id' => $groupA->id, 'type' => 'detail', 'code' => '1001', 'opening_balance' => 500, 'balance' => 500]);
+    Account::factory()->create(['society_id' => $this->societyB->id, 'group_id' => $groupB->id, 'type' => 'detail', 'code' => '1001', 'opening_balance' => 900, 'balance' => 900]);
 
     $tb = app(AccountingService::class)->trialBalance($this->societyB);
 

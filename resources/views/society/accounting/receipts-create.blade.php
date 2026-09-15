@@ -43,7 +43,7 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label class="form-label">Date <span class="required">*</span></label>
-                            <input type="date" name="date" value="{{ old('date', '2025-05-30') }}" class="form-control" required>
+                            <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Payer Name <span class="required">*</span></label>
@@ -95,13 +95,22 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Location</label>
-                            <select name="location" class="form-control">
-                                <option value="">Select Location</option>
-                                @foreach($locations as $location)
-                                    <option value="{{ $location }}" {{ old('location') === $location ? 'selected' : '' }}>{{ $location }}</option>
+                            <label class="form-label">Credit To (Income Account)</label>
+                            <select name="income_account_id" class="form-control">
+                                <option value="">Auto by receipt type</option>
+                                @foreach($incomeAccounts as $account)
+                                    <option value="{{ $account->id }}" {{ (string) old('income_account_id') === (string) $account->id ? 'selected' : '' }}>{{ $account->code }} - {{ $account->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" value="{{ old('location') }}" class="form-control" placeholder="Tower / block (optional)" list="locationOptions">
+                            <datalist id="locationOptions">
+                                @foreach($locations as $location)
+                                    <option value="{{ $location }}">
+                                @endforeach
+                            </datalist>
                         </div>
                     </div>
 
