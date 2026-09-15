@@ -17,7 +17,7 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+<div class="stats-grid stats-grid-3">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-envelope-open"></i></div>
         <div class="stat-info">

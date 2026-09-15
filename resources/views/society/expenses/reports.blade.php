@@ -66,7 +66,7 @@
 </div>
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     <div class="kpi-tinted expense">
         <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-bottom: 6px;">Total Expenses</div>
         <div style="font-size: 24px; font-weight: 700; color: var(--danger);">&#8377; {{ number_format((float) $summary['total'], 2) }}</div>
@@ -91,6 +91,7 @@
         <div class="card-title">Category-wise Breakdown</div>
     </div>
     <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
         <table class="fin-table">
             <thead>
                 <tr>
@@ -147,6 +148,7 @@
                 </tfoot>
             @endif
         </table>
+        </div>
     </div>
 </div>
 

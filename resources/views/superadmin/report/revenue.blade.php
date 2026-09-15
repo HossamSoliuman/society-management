@@ -29,7 +29,7 @@
     $lastMonth = $payments->filter(fn($p) => $p->created_at->isLastMonth())->sum('amount');
 @endphp
 
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div>
         <div class="stat-info">

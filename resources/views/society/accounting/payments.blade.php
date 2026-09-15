@@ -30,7 +30,7 @@
             </div>
         </div>
 
-        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="stats-grid stats-grid-4">
             <div class="stat-card">
                 <div class="stat-icon red"><i class="fas fa-credit-card"></i></div>
                 <div class="stat-info">

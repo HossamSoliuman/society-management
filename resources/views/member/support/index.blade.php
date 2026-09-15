@@ -17,7 +17,7 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+<div class="stats-grid stats-grid-3">
     @include('society.partials.stat-card', ['icon' => 'fa-envelope-open', 'iconVariant' => 'warning', 'label' => 'Open', 'value' => $stats['open']])
     @include('society.partials.stat-card', ['icon' => 'fa-spinner', 'iconVariant' => 'info', 'label' => 'In Progress', 'value' => $stats['in_progress']])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Resolved', 'value' => $stats['resolved']])

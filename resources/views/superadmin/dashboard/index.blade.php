@@ -244,6 +244,7 @@
             <div class="card-title">Recent Societies</div>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -274,6 +275,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <div class="card-footer">
             <a href="{{ route('superadmin.societies.index') }}" class="btn-link" style="display: flex; align-items: center; gap: 6px;">
@@ -336,6 +338,7 @@
             <div class="card-title">Recent Payments</div>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -356,6 +359,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <div class="card-footer">
             <a href="{{ route('superadmin.billing.payments') }}" class="btn-link" style="display: flex; align-items: center; gap: 6px;">

@@ -32,7 +32,7 @@
     @include('society.billing.settings._tabs')
 
     {{-- KPI cards --}}
-    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stats-grid stats-grid-4">
         @include('society.partials.stat-card', ['icon' => 'fa-percent', 'iconVariant' => 'danger', 'label' => 'Late Fee Enabled', 'value' => $lateFee->enable_late_fee ? 'Yes' : 'No', 'trend' => 'Late fee is active for overdue bills', 'trendType' => 'muted'])
         @include('society.partials.stat-card', ['icon' => 'fa-calendar-days', 'iconVariant' => 'success', 'label' => 'Grace Period', 'value' => $lateFee->grace_period_days.' Days', 'trend' => 'After bill due date', 'trendType' => 'muted'])
         @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'warning', 'label' => 'Default Late Fee', 'value' => number_format($lateFee->late_fee_percent, 2).'%', 'trend' => 'Monthly on outstanding', 'trendType' => 'muted'])

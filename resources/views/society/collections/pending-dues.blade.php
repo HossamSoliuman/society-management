@@ -42,10 +42,10 @@
 <div class="content-grid">
     <div>
         {{-- KPI cards --}}
-        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-            @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'danger', 'label' => 'Total Outstanding', 'value' => '&#8377; '.$inr($kpis['outstanding']), 'trend' => $kpis['outstanding_sub'], 'trendType' => 'danger'])
-            @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Due This Month', 'value' => '&#8377; '.$inr($kpis['due_month']), 'trend' => $kpis['due_month_sub'], 'trendType' => 'warning'])
-            @include('society.partials.stat-card', ['icon' => 'fa-calendar-xmark', 'iconVariant' => 'danger', 'label' => 'Overdue', 'value' => '&#8377; '.$inr($kpis['overdue']), 'trend' => $kpis['overdue_sub'], 'trendType' => 'danger'])
+        <div class="stats-grid stats-grid-4">
+            @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'danger', 'label' => 'Total Outstanding', 'value' => '₹ '.$inr($kpis['outstanding']), 'trend' => $kpis['outstanding_sub'], 'trendType' => 'danger'])
+            @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Due This Month', 'value' => '₹ '.$inr($kpis['due_month']), 'trend' => $kpis['due_month_sub'], 'trendType' => 'warning'])
+            @include('society.partials.stat-card', ['icon' => 'fa-calendar-xmark', 'iconVariant' => 'danger', 'label' => 'Overdue', 'value' => '₹ '.$inr($kpis['overdue']), 'trend' => $kpis['overdue_sub'], 'trendType' => 'danger'])
             @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Avg. Days Overdue', 'value' => $kpis['avg_days'], 'trend' => $kpis['avg_days_sub'], 'trendType' => 'muted'])
         </div>
 

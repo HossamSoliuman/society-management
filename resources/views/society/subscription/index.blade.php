@@ -18,7 +18,7 @@
 
 <div class="content-grid">
     <div>
-        <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="stats-grid stats-grid-4">
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-cube"></i></div>
                 <div class="stat-info">

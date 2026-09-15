@@ -17,10 +17,10 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding Dues', 'value' => '&#8377; '.format_inr($stats['outstanding']), 'trend' => $stats['overdue'] ? $stats['overdue'].' overdue bill'.($stats['overdue'] === 1 ? '' : 's') : 'All clear', 'trendType' => $stats['overdue'] ? 'danger' : 'success'])
+<div class="stats-grid stats-grid-4">
+    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding Dues', 'value' => '₹ '.format_inr($stats['outstanding']), 'trend' => $stats['overdue'] ? $stats['overdue'].' overdue bill'.($stats['overdue'] === 1 ? '' : 's') : 'All clear', 'trendType' => $stats['overdue'] ? 'danger' : 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'warning', 'label' => 'Open Bills', 'value' => $openBills->count(), 'trend' => 'Awaiting payment', 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid This Year', 'value' => '&#8377; '.format_inr($stats['paid_this_year']), 'trend' => now()->format('Y'), 'trendType' => 'muted'])
+    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid This Year', 'value' => '₹ '.format_inr($stats['paid_this_year']), 'trend' => now()->format('Y'), 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-headset', 'iconVariant' => 'purple', 'label' => 'Open Requests', 'value' => $stats['open_tickets'], 'trend' => 'Complaints & requests', 'trendType' => 'muted'])
 </div>
 

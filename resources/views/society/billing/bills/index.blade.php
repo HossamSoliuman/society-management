@@ -37,12 +37,12 @@
 </div>
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+<div class="stats-grid stats-grid-5">
     @include('society.partials.stat-card', ['icon' => 'fa-file-lines', 'iconVariant' => 'primary', 'label' => 'Total Bills', 'value' => $inr($kpis['total_bills']), 'trend' => 'This Month', 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid Bills', 'value' => $inr($kpis['paid_bills']), 'trend' => '&#8377; '.$inr($kpis['paid_amount']), 'trendType' => 'success'])
-    @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Pending Bills', 'value' => $inr($kpis['pending_bills']), 'trend' => '&#8377; '.$inr($kpis['pending_amount']), 'trendType' => 'warning'])
-    @include('society.partials.stat-card', ['icon' => 'fa-circle-xmark', 'iconVariant' => 'danger', 'label' => 'Overdue Bills', 'value' => $inr($kpis['overdue_bills']), 'trend' => '&#8377; '.$inr($kpis['overdue_amount']), 'trendType' => 'danger'])
-    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'purple', 'label' => 'Total Amount', 'value' => '&#8377; '.$inr($kpis['total_amount']), 'trend' => 'This Month', 'trendType' => 'muted'])
+    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid Bills', 'value' => $inr($kpis['paid_bills']), 'trend' => '₹ '.$inr($kpis['paid_amount']), 'trendType' => 'success'])
+    @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Pending Bills', 'value' => $inr($kpis['pending_bills']), 'trend' => '₹ '.$inr($kpis['pending_amount']), 'trendType' => 'warning'])
+    @include('society.partials.stat-card', ['icon' => 'fa-circle-xmark', 'iconVariant' => 'danger', 'label' => 'Overdue Bills', 'value' => $inr($kpis['overdue_bills']), 'trend' => '₹ '.$inr($kpis['overdue_amount']), 'trendType' => 'danger'])
+    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'purple', 'label' => 'Total Amount', 'value' => '₹ '.$inr($kpis['total_amount']), 'trend' => 'This Month', 'trendType' => 'muted'])
 </div>
 
 {{-- Filter bar --}}

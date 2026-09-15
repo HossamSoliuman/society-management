@@ -220,7 +220,7 @@
 @push('scripts')
 <script>
 (function () {
-    const fmt = (n) => '&#8377; ' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => '₹ ' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const memberSelect = document.getElementById('memberSelect');
     const unitSelect = document.getElementById('unitSelect');
 

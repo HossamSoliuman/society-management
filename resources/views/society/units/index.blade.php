@@ -27,7 +27,7 @@
 </div>
 
 {{-- Stats + Summary --}}
-<div style="display: grid; grid-template-columns: repeat(4, 1fr) 300px; gap: 16px; margin-bottom: 24px;" class="units-stats-grid">
+<div class="units-stats-grid">
     @include('society.partials.stat-card', ['icon' => 'fa-building', 'iconVariant' => 'peach', 'label' => 'Total Units', 'value' => number_format($stats['total']), 'trend' => 'Across all buildings', 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-users', 'iconVariant' => 'success', 'label' => 'Occupied Units', 'value' => number_format($stats['occupied']), 'trend' => $pct($stats['occupied']).'% of total', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-house', 'iconVariant' => 'warning', 'label' => 'Vacant Units', 'value' => number_format($stats['vacant']), 'trend' => $pct($stats['vacant']).'% of total', 'trendType' => 'warning'])

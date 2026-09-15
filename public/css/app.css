@@ -86,7 +86,7 @@ body {
     left: 0;
     height: 100vh;
     z-index: 1000;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, transform 0.3s ease;
     overflow-y: auto;
     overflow-x: hidden;
     border-right: 1px solid var(--border-color);
@@ -915,13 +915,13 @@ select.form-control {
 
 .form-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
 }
 
 .form-row-3 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -1163,19 +1163,19 @@ select.form-control {
 /* Grid Layouts */
 .grid-2 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
 }
 
 .grid-3 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
 }
 
 .grid-4 {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 20px;
 }
 
@@ -1186,10 +1186,14 @@ select.form-control {
     gap: 20px;
 }
 
+.content-grid > * {
+    min-width: 0;
+}
+
 /* Quick Actions */
 .quick-actions {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -1566,23 +1570,23 @@ select.form-control {
 /* Responsive */
 @media (max-width: 1024px) {
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .grid-3 {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .grid-4 {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .content-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .quick-actions {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
@@ -1603,20 +1607,20 @@ select.form-control {
         display: block;
     }
 
-    .header-search {
+    .top-header .header-search {
         display: none;
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .grid-2, .grid-3, .grid-4 {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .form-row, .form-row-3 {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .filter-bar {
@@ -1628,7 +1632,7 @@ select.form-control {
     }
 
     .quick-actions {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .page-header-row {
@@ -1685,7 +1689,7 @@ select.form-control {
 /* Plan Cards */
 .plan-cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -1759,7 +1763,7 @@ select.form-control {
 /* Module Permissions Grid */
 .modules-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -1797,21 +1801,21 @@ select.form-control {
 /* Responsive plan cards */
 @media (max-width: 1024px) {
     .plan-cards {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .modules-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 768px) {
     .plan-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .modules-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -2655,7 +2659,7 @@ select.form-control {
 /* Society info-strip (dashboard footer bar) */
 .info-strip {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .info-strip-cell {
@@ -2729,12 +2733,12 @@ select.form-control {
 }
 
 @media (max-width: 1024px) {
-    .info-strip { grid-template-columns: repeat(2, 1fr); }
+    .info-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .info-strip-cell { border-right: none; border-bottom: 1px solid var(--border-color); }
 }
 
 @media (max-width: 768px) {
-    .info-strip { grid-template-columns: 1fr; }
+    .info-strip { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ==========================================================================
@@ -2759,33 +2763,33 @@ select.form-control {
 /* Responsive settings grids */
 .settings-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
     align-items: start;
 }
 
 .settings-2col {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     align-items: start;
 }
 
 .settings-3col-uneven {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
     align-items: start;
 }
 
 @media (max-width: 1200px) {
-    .settings-grid { grid-template-columns: 1fr 1fr; }
-    .settings-3col-uneven { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .settings-3col-uneven { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 768px) {
     .settings-grid,
-    .settings-2col { grid-template-columns: 1fr; }
+    .settings-2col { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Toggle row: text block on the left, switch on the right */
@@ -2851,7 +2855,7 @@ select.form-control {
 /* Template thumbnail picker */
 .template-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -2982,7 +2986,7 @@ select.form-control {
 
 .bill-parties {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     padding: 16px 0;
     border-bottom: 1px solid var(--border-color);
@@ -3155,7 +3159,7 @@ select.form-control {
 /* Payment-mode tiles (Record Payment §4.1) — compact 6-up radio cards */
 .payment-mode-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -3506,3 +3510,541 @@ select.form-control {
 .tip-banner { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: var(--radius); font-size: 13px; }
 .tip-banner.orange { background: var(--warning-light); color: #92400e; }
 .tip-banner.blue   { background: var(--info-light);    color: #1e40af; }
+
+/* ==========================================================================
+   Mobile responsive
+   ========================================================================== */
+
+/* Sidebar backdrop (mobile off-canvas) */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+body.sidebar-open .sidebar-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Horizontal tab strips scroll instead of overflowing */
+.tabs,
+.sub-nav-tabs,
+.tab-pills {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar,
+.sub-nav-tabs::-webkit-scrollbar,
+.tab-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.sub-nav-tab,
+.tab-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+.breadcrumb {
+    flex-wrap: wrap;
+}
+
+/* Explicit stats-grid column counts (replaces inline styles) */
+.stats-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stats-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stats-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats-grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.stats-grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+/* Thumbnail strip under an image uploader (stays 4-across on phones) */
+.image-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.image-strip-add {
+    grid-column: 1 / -1;
+}
+
+/* Simple grouped bar chart (superadmin billing overview) */
+.bar-chart {
+    height: 240px;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 10px 0;
+    min-width: 0;
+}
+
+.bar-chart-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1px;
+    height: 200px;
+}
+
+.bar-chart-bar {
+    width: 6px;
+    max-width: 45%;
+    border-radius: 2px 2px 0 0;
+}
+
+/* Units index: four KPI cards + a fixed-width occupancy pie card */
+.units-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 300px;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Society dashboard row C: quick actions + activity rail */
+.dashboard-row-c {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+/* Utility: hide/show by breakpoint */
+.show-mobile { display: none !important; }
+
+@media (max-width: 1200px) {
+    .units-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .units-stats-grid > :last-child {
+        grid-column: 1 / -1;
+    }
+
+    .stats-grid-4,
+    .stats-grid-5,
+    .stats-grid-6,
+    .stats-grid[style*="grid-template-columns"] {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* Inline two-pane grids with a fixed-width aside stack on tablets */
+    [style*="grid-template-columns: 1fr 3"],
+    [style*="grid-template-columns: 260px"],
+    [style*="grid-template-columns: 1fr 1fr 340px"],
+    [style*="grid-template-columns: repeat(4, minmax(0, 1fr)) 300px"],
+    [style*="grid-template-columns: 42%"],
+    [style*="grid-template-columns: 45%"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    /* Inline filter/form rows (many tracks + trailing buttons) reflow into equal cells */
+    [style*="grid-template-columns"][style*="align-items: end"],
+    [style*="grid-template-columns: repeat(5, minmax(0, 1fr))"] {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    }
+
+    .dashboard-row-c {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .payment-mode-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .template-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: min(var(--sidebar-width), 85vw);
+        height: 100dvh;
+        box-shadow: none;
+    }
+
+    .sidebar.open {
+        box-shadow: var(--shadow-lg);
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .top-header {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .sidebar-toggle {
+        font-size: 20px;
+        padding: 6px 8px;
+        border-radius: var(--radius);
+    }
+
+    .sidebar-toggle:hover {
+        background: var(--gray-100);
+    }
+
+    .header-actions {
+        gap: 2px;
+    }
+
+    .profile-btn {
+        padding: 4px;
+    }
+
+    .profile-btn .profile-info,
+    .profile-btn .fa-chevron-down {
+        display: none;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .dropdown-menu {
+        max-width: calc(100vw - 24px);
+    }
+
+    .page-content {
+        padding: 16px;
+    }
+
+    .page-header {
+        margin-bottom: 16px;
+    }
+
+    .page-title {
+        font-size: 18px;
+    }
+
+    .page-header-row > .btn,
+    .page-header-row > div:last-child:not(:first-child) {
+        width: 100%;
+    }
+
+    .page-header-row > .btn {
+        justify-content: center;
+    }
+
+    .stats-grid,
+    .stats-grid-2,
+    .stats-grid-3,
+    .stats-grid-4,
+    .stats-grid-5,
+    .stats-grid-6,
+    .stats-grid[style*="grid-template-columns"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .units-stats-grid {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    /* Every inline multi-column grid collapses on phones */
+    [style*="grid-template-columns"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    [style*="grid-column: span"],
+    [style*="grid-column:span"] {
+        grid-column: auto !important;
+    }
+
+    /* Inline flex rows that carry buttons or are space-between headers may wrap */
+    [style*="display: flex"][style*="space-between"],
+    [style*="display:flex"][style*="space-between"],
+    [style*="flex"]:has(> .btn),
+    [style*="flex"]:has(> form > .btn),
+    [style*="flex"]:has(> .dropdown) {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    /* …but not inside table cells, where the row scrolls horizontally instead */
+    :is(td, th) [style*="flex"]:has(> .btn),
+    :is(td, th) [style*="flex"]:has(> form > .btn),
+    :is(td, th) [style*="flex"]:has(> .dropdown),
+    :is(td, th) [style*="flex"][style*="space-between"] {
+        flex-wrap: nowrap;
+    }
+
+    /* Inline filter/form grids: two columns on tablets, one on phones */
+    [style*="grid-template-columns"][style*="align-items: end"],
+    [style*="grid-template-columns: repeat(5, 1fr)"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Action clusters in page headers span the full width and wrap */
+    .page-header-row > div:last-child:not(:first-child) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .page-header-row > div:last-child:not(:first-child) > .btn {
+        flex: 1 1 auto;
+    }
+
+    .card {
+        margin-bottom: 16px;
+    }
+
+    .card-header {
+        padding: 14px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Inputs sitting in an inline flex row (date ranges etc.) may shrink */
+    [style*="flex"] > .form-control,
+    [style*="flex"] > .header-search {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"] {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .member-chip-card {
+        flex-wrap: wrap;
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    .member-chip-card > [style*="flex: 1"] > [style*="gap: 40px"] {
+        gap: 16px !important;
+        flex-wrap: wrap;
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    .card-footer {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .filter-bar {
+        flex-direction: row;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .filter-item {
+        min-width: 0;
+        width: auto;
+        flex: 1 1 calc(50% - 10px) !important;
+    }
+
+    .filter-bar > .btn,
+    .filter-bar > form,
+    .filter-bar > div:not(.filter-item) {
+        flex: 1 1 100%;
+    }
+
+    .action-toolbar-left,
+    .action-toolbar-right {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .data-table th,
+    .data-table td {
+        white-space: nowrap;
+    }
+
+    .pagination-wrapper {
+        justify-content: center;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bar-chart {
+        gap: 2px;
+    }
+
+    .bar-chart-bar {
+        width: 4px;
+    }
+
+    .pagination-info {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Prevent iOS zoom-on-focus */
+    .form-control,
+    .header-search input,
+    .filter-item select,
+    .filter-item input,
+    textarea,
+    select {
+        font-size: 16px;
+    }
+
+    .btn {
+        min-height: 40px;
+    }
+
+    .btn-sm {
+        min-height: 34px;
+    }
+
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        max-height: 92vh;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .steps-wizard {
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .step-label {
+        font-size: 10px;
+    }
+
+    .wizard-nav {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-bottom: 20px;
+    }
+
+    .content-grid {
+        gap: 16px;
+    }
+
+    .chart-container {
+        height: 240px;
+    }
+
+    .payment-mode-grid,
+    .template-grid,
+    .quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .radio-card-group > * {
+        flex: 1 1 100%;
+    }
+
+    .settings-grid,
+    .settings-2col,
+    .settings-3col-uneven {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .review-row,
+    .detail-row {
+        flex-wrap: wrap;
+    }
+
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: block !important; }
+}
+
+@media (max-width: 480px) {
+    .page-content {
+        padding: 12px;
+    }
+
+    .filter-item {
+        flex: 1 1 100% !important;
+    }
+
+    [style*="grid-template-columns"][style*="align-items: end"],
+    [style*="grid-template-columns: repeat(5, 1fr)"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .stat-card {
+        gap: 10px;
+    }
+
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .steps-wizard .step-item:not(.active) .step-label {
+        display: none;
+    }
+
+    .modules-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .top-header .notification-dropdown .dropdown-menu,
+    .top-header .profile-dropdown .dropdown-menu {
+        position: fixed;
+        top: 56px;
+        right: 8px;
+        left: auto;
+        width: calc(100vw - 16px);
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 360px) {
+    .stats-grid,
+    .stats-grid-2,
+    .stats-grid-3,
+    .stats-grid-4,
+    .stats-grid-5,
+    .stats-grid-6,
+    .stats-grid[style*="grid-template-columns"],
+    .units-stats-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}

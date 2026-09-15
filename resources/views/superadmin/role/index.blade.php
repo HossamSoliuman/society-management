@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 400px;">
+<div class="stats-grid stats-grid-2" style="max-width: 400px;">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-user-tag"></i></div>
         <div class="stat-info">

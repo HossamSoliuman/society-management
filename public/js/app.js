@@ -1,20 +1,60 @@
 document.addEventListener('DOMContentLoaded', function() {
     var sidebarToggle = document.getElementById('sidebarToggle');
     var sidebar = document.getElementById('sidebar');
+    var sidebarOverlay = document.getElementById('sidebarOverlay');
+    var mobileQuery = window.matchMedia('(max-width: 768px)');
+
+    function setSidebar(open) {
+        if (!sidebar) { return; }
+        sidebar.classList.toggle('open', open);
+        document.body.classList.toggle('sidebar-open', open);
+        if (sidebarToggle) { sidebarToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    }
 
     if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('open');
+        sidebarToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setSidebar(!sidebar.classList.contains('open'));
         });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() { setSidebar(false); });
     }
 
     document.addEventListener('click', function(e) {
         if (sidebar && sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && sidebarToggle && !sidebarToggle.contains(e.target)) {
-                sidebar.classList.remove('open');
+                setSidebar(false);
             }
         }
     });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+            setSidebar(false);
+        }
+    });
+
+    // On phones, following a sidebar link closes the drawer
+    if (sidebar) {
+        sidebar.addEventListener('click', function(e) {
+            var link = e.target.closest('a.nav-item');
+            if (link && !link.classList.contains('nav-group-toggle') && mobileQuery.matches) {
+                setSidebar(false);
+            }
+        });
+    }
+
+    // Leaving the mobile breakpoint resets the drawer state
+    var onBreakpointChange = function(e) {
+        if (!e.matches) { setSidebar(false); }
+    };
+    if (mobileQuery.addEventListener) {
+        mobileQuery.addEventListener('change', onBreakpointChange);
+    } else if (mobileQuery.addListener) {
+        mobileQuery.addListener(onBreakpointChange);
+    }
 
     // Sidebar accordion
     var navGroups = document.querySelectorAll('.nav-group');

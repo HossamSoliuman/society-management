@@ -29,7 +29,7 @@
 @include('society.billing.settings._tabs')
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     @include('society.partials.stat-card', ['icon' => 'fa-calendar-days', 'iconVariant' => 'purple', 'label' => 'Active Numbering Series', 'value' => number_format($stats['active_series']), 'trend' => 'Total Active Series', 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-file-circle-check', 'iconVariant' => 'success', 'label' => 'Unused Numbers (This Month)', 'value' => number_format($stats['unused_this_month']), 'trend' => 'Across all series', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-arrow-right-arrow-left', 'iconVariant' => 'warning', 'label' => 'Last Number Generated', 'value' => $stats['last_generated'] ?? '—', 'trend' => 'On '.$stats['last_generated_date'], 'trendType' => 'muted'])

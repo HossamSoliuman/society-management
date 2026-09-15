@@ -33,7 +33,7 @@
 </div>
 
 {{-- Row A — Stats --}}
-<div class="stats-grid" id="dash-stats" style="grid-template-columns: repeat(5, 1fr);">
+<div class="stats-grid stats-grid-5" id="dash-stats">
     @include('society.partials.dashboard.stats', ['d' => $d])
 </div>
 
@@ -78,7 +78,7 @@
 </div>
 
 {{-- Row C — 2fr / 1fr --}}
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;" class="dashboard-row-c">
+<div class="dashboard-row-c">
     <div>
         {{-- Quick Actions --}}
         <div class="card">

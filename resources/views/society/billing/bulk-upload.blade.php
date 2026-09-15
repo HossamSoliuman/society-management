@@ -111,6 +111,7 @@
         <div class="card" style="margin-bottom: 0;">
             <div class="card-header"><div class="card-title">Required Columns</div></div>
             <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -141,6 +142,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
             <div class="card-footer" style="padding: 16px 20px;">
                 <a href="{{ route('society.billing.bulk-upload.sample') }}" class="btn btn-outline-primary" style="width: 100%;">
@@ -160,6 +162,7 @@
         </div>
     </div>
     <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
         <table class="data-table">
             <thead>
                 <tr>
@@ -204,6 +207,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

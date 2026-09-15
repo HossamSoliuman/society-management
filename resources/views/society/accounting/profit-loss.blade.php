@@ -58,7 +58,7 @@
 </div>
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     <div class="kpi-tinted income">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
             <span class="rli-ico" style="width: 38px; height: 38px; border-radius: 50%; background: var(--success-light); color: var(--success);"><i class="fas fa-arrow-up"></i></span>
@@ -217,6 +217,7 @@
 <div class="card">
     <div class="card-header"><div class="card-title">Profit &amp; Loss Statement</div></div>
     <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
         <table class="fin-table">
             <thead>
                 <tr>
@@ -273,6 +274,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

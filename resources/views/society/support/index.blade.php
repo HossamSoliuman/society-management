@@ -22,7 +22,7 @@
 <div class="content-grid">
     <div>
         {{-- Stat cards --}}
-        <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="stats-grid stats-grid-5">
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="fas fa-headset"></i></div>
                 <div class="stat-info">

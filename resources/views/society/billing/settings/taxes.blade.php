@@ -30,7 +30,7 @@
 @include('society.billing.settings._tabs')
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'purple', 'label' => 'Total Taxes', 'value' => number_format($stats['total']), 'trend' => 'Configured Taxes', 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Active Taxes', 'value' => number_format($stats['active']), 'trend' => $activePct.'% of total', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-percent', 'iconVariant' => 'danger', 'label' => 'Total Tax Rate', 'value' => number_format($stats['total_rate'], 2).'%', 'trend' => 'Overall Tax Percentage', 'trendType' => 'muted'])

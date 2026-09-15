@@ -203,7 +203,7 @@
 @push('scripts')
 <script>
 (function () {
-    const fmt = (n) => '&#8377; ' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const $ = (id) => document.getElementById(id);
     const selText = (sel) => (sel.value ? sel.options[sel.selectedIndex].text : '-');
     const statusClass = { paid: 'paid', pending: 'pending', overdue: 'overdue', cancelled: 'cancelled' };

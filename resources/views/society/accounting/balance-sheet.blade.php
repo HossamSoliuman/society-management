@@ -53,7 +53,7 @@
 </div>
 
 {{-- Stat cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     <div class="stat-card">
         <div class="stat-icon green"><i class="fas fa-users"></i></div>
         <div class="stat-info">
@@ -97,6 +97,7 @@
                     {{-- ASSETS pane --}}
                     <div style="border-right: 1px solid var(--border-color);">
                         <div class="bs-head-assets">ASSETS</div>
+                        <div class="table-responsive">
                         <table class="fin-table">
                             <thead>
                                 <tr>
@@ -123,11 +124,13 @@
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                     {{-- LIABILITIES & EQUITY pane --}}
                     <div>
                         <div class="bs-head-liab">LIABILITIES &amp; EQUITY</div>
+                        <div class="table-responsive">
                         <table class="fin-table">
                             <thead>
                                 <tr>
@@ -154,6 +157,7 @@
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

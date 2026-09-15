@@ -16,8 +16,8 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding', 'value' => '&#8377; '.format_inr($stats['outstanding'])])
+<div class="stats-grid stats-grid-4">
+    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding', 'value' => '₹ '.format_inr($stats['outstanding'])])
     @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Open Bills', 'value' => $stats['open']])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-xmark', 'iconVariant' => 'danger', 'label' => 'Overdue', 'value' => $stats['overdue']])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid Bills', 'value' => $stats['paid']])

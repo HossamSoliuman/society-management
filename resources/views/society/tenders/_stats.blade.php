@@ -1,5 +1,5 @@
 {{-- @param array<int, array{label:string,value:string,sub:string,icon:string,color:string}> $stats --}}
-<div class="stats-grid" style="grid-template-columns: repeat({{ count($stats) }}, 1fr);">
+<div class="stats-grid stats-grid-{{ count($stats) }}">
     @foreach($stats as $s)
         <div class="stat-card">
             <div class="stat-icon {{ $s['color'] }}"><i class="fas {{ $s['icon'] }}"></i></div>

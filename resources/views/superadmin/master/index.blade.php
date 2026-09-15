@@ -30,6 +30,7 @@
             <button class="btn btn-primary btn-sm" onclick="document.getElementById('addSocietyType').style.display='block'"><i class="fas fa-plus"></i> Add Society Type</button>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -63,6 +64,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <div class="card-footer">
             @include('superadmin.components.pagination', ['items' => $societyTypes])
@@ -107,6 +109,7 @@
             <button class="btn btn-primary btn-sm" onclick="document.getElementById('addUnitType').style.display='block'"><i class="fas fa-plus"></i> Add Unit Type</button>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -140,6 +143,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -181,6 +185,7 @@
             <button class="btn btn-primary btn-sm" onclick="document.getElementById('addPaymentMode').style.display='block'"><i class="fas fa-plus"></i> Add Payment Mode</button>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -214,6 +219,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

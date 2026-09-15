@@ -30,7 +30,7 @@
 @include('society.billing.settings._tabs')
 
 {{-- KPI cards --}}
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     @include('society.partials.stat-card', ['icon' => 'fa-list-check', 'iconVariant' => 'primary', 'label' => 'Total Charge Heads', 'value' => number_format($stats['total']), 'trend' => 'All Charge Heads', 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Active Charge Heads', 'value' => number_format($stats['active']), 'trend' => $activePct.'% of total', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-ban', 'iconVariant' => 'warning', 'label' => 'Inactive Charge Heads', 'value' => number_format($stats['inactive']), 'trend' => $inactivePct.'% of total', 'trendType' => 'warning'])

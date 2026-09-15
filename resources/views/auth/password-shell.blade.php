@@ -24,6 +24,12 @@
         .notice,.errors { margin:18px 0; padding:11px 13px; border-radius:9px; font-size:12px; line-height:1.5; }
         .notice { color:#166534; background:#dcfce7; }
         .errors { color:#991b1b; background:#fee2e2; }
+        @media (max-width: 480px) {
+            body { padding:16px; }
+            .shell { padding:26px 20px; border-radius:14px; }
+            h1 { font-size:28px; }
+            input, button { font-size:16px; }
+        }
     </style>
 </head>
 <body>

@@ -26,7 +26,7 @@
     <div class="alert alert-success" style="margin-bottom: 20px;">{{ session('success') }}</div>
 @endif
 
-<div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+<div class="stats-grid stats-grid-5">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-file-lines"></i></div>
         <div class="stat-info">

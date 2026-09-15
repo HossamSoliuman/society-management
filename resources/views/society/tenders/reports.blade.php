@@ -31,8 +31,8 @@
 @include('society.tenders._stats', ['stats' => [
     ['label' => 'Tenders Created', 'value' => (string) $total, 'sub' => 'In selected period', 'icon' => 'fa-clipboard-list', 'color' => 'blue'],
     ['label' => 'Awarded', 'value' => (string) (int) ($byStatus['awarded']->c ?? 0), 'sub' => 'Vendor selected', 'icon' => 'fa-trophy', 'color' => 'green'],
-    ['label' => 'Estimated Value', 'value' => '&#8377; '.number_format($estimated), 'sub' => 'Sum of estimates', 'icon' => 'fa-calculator', 'color' => 'orange'],
-    ['label' => 'Contracted Value', 'value' => '&#8377; '.number_format($contracted), 'sub' => 'Awarded + closed', 'icon' => 'fa-file-signature', 'color' => 'purple'],
+    ['label' => 'Estimated Value', 'value' => '₹ '.number_format($estimated), 'sub' => 'Sum of estimates', 'icon' => 'fa-calculator', 'color' => 'orange'],
+    ['label' => 'Contracted Value', 'value' => '₹ '.number_format($contracted), 'sub' => 'Awarded + closed', 'icon' => 'fa-file-signature', 'color' => 'purple'],
 ]])
 
 <div class="content-grid">
@@ -40,6 +40,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">By Department</div>
+                <div class="table-responsive">
                 <table class="data-table">
                     <thead><tr><th>Department</th><th style="text-align: right;">Tenders</th><th style="text-align: right;">Contract Value</th></tr></thead>
                     <tbody>
@@ -50,12 +51,14 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">By Vendor</div>
+                <div class="table-responsive">
                 <table class="data-table">
                     <thead><tr><th>Vendor</th><th style="text-align: right;">Awards</th><th style="text-align: right;">Contract Value</th></tr></thead>
                     <tbody>
@@ -66,12 +69,14 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">Recent Tenders</div>
+                <div class="table-responsive">
                 <table class="data-table">
                     <thead><tr><th>Reference</th><th>Title</th><th>Status</th><th style="text-align: right;">Value</th></tr></thead>
                     <tbody>
@@ -85,6 +90,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

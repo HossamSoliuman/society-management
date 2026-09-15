@@ -21,7 +21,7 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+<div class="stats-grid stats-grid-4">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div>
         <div class="stat-info">
@@ -83,12 +83,12 @@
                     <span>Outstanding</span>
                 </div>
             </div>
-            <div style="height: 240px; display: flex; align-items: flex-end; gap: 6px; padding: 10px 0;">
+            <div class="bar-chart">
                 @for($i = 0; $i < 30; $i++)
                     @php $h1 = rand(30, 100); $h2 = rand(20, $h1 - 10); @endphp
-                    <div style="flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 1px; height: 200px;">
-                        <div style="width: 6px; background: var(--primary); border-radius: 2px 2px 0 0; height: {{ $h1 * 1.8 }}px; opacity: 0.8;"></div>
-                        <div style="width: 6px; background: var(--gray-300); border-radius: 2px 2px 0 0; height: {{ $h2 * 1.8 }}px;"></div>
+                    <div class="bar-chart-col">
+                        <div class="bar-chart-bar" style="background: var(--primary); height: {{ $h1 * 1.8 }}px; opacity: 0.8;"></div>
+                        <div class="bar-chart-bar" style="background: var(--gray-300); height: {{ $h2 * 1.8 }}px;"></div>
                     </div>
                 @endfor
             </div>
@@ -148,6 +148,7 @@
             <div class="card-title">Recent Invoices</div>
         </div>
         <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -181,6 +182,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <div class="card-footer">
             <a href="{{ route('superadmin.billing.invoices') }}" class="btn-link" style="display: flex; align-items: center; gap: 6px;">

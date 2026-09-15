@@ -261,11 +261,11 @@
                         <div class="file-upload-hint">JPG, PNG, WEBP up to 5MB each. You can upload up to 5 images.</div>
                         <input type="file" id="assetImages" name="images[]" accept=".jpg,.jpeg,.png,.webp" multiple style="display: none;">
                     </label>
-                    <div id="imageStrip" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px;">
+                    <div id="imageStrip" class="image-strip">
                         @for($i = 0; $i < 4; $i++)
                             <div style="aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--gray-100); display: flex; align-items: center; justify-content: center; color: var(--text-muted);"><i class="fas fa-image"></i></div>
                         @endfor
-                        <div style="aspect-ratio: 1; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; grid-column: span 4; height: 32px; aspect-ratio: auto;"><i class="fas fa-plus" style="margin-right: 4px;"></i> More</div>
+                        <div class="image-strip-add" style="aspect-ratio: 1; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; height: 32px; aspect-ratio: auto;"><i class="fas fa-plus" style="margin-right: 4px;"></i> More</div>
                     </div>
                 </div>
             </div>

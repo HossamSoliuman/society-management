@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<div class="stats-grid" style="grid-template-columns: repeat({{ count($data['summary']) }}, 1fr);">
+<div class="stats-grid stats-grid-{{ count($data['summary']) }}">
     @foreach($data['summary'] as $label => $value)
         <div class="stat-card">
             <div class="stat-info">

@@ -249,6 +249,7 @@
                             <div class="wizard-section-title">Officials Contact Information</div>
                             <div class="wizard-section-subtitle">Enter the details of key officials of the society.</div>
 
+                            <div class="table-responsive">
                             <table class="officials-table">
                                 <thead>
                                     <tr>
@@ -309,6 +310,7 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
