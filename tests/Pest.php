@@ -52,7 +52,11 @@ expect()->extend('toBeOne', function () {
  */
 function seededRole(string $name): Role
 {
-    if (! Role::where('name', $name)->whereHas('permissions')->exists() && $name !== 'member') {
+    $seeded = $name === 'member'
+        ? Role::where('name', $name)->exists()
+        : Role::where('name', $name)->whereHas('permissions')->exists();
+
+    if (! $seeded) {
         (new RoleSeeder)->run();
     }
 

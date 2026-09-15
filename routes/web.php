@@ -2,6 +2,14 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Member\BillController as MemberBillController;
+use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
+use App\Http\Controllers\Member\FamilyMemberController as MemberFamilyController;
+use App\Http\Controllers\Member\NoticeController as MemberNoticeController;
+use App\Http\Controllers\Member\PaymentController as MemberPaymentController;
+use App\Http\Controllers\Member\ProfileController as MemberProfileController;
+use App\Http\Controllers\Member\SupportController as MemberSupportController;
+use App\Http\Controllers\Member\VehicleController as MemberVehicleController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\AmcController;
@@ -206,6 +214,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
         Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
         Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
+        Route::post('/members/{member}/invite', [MemberController::class, 'invite'])->name('members.invite');
 
         Route::get('/units', [UnitController::class, 'index'])->name('units.index');
         Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
@@ -420,4 +429,52 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Member portal (residents). Every row is checked against the signed-in
+| member record, on top of the society-level route-binding scope.
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'active', 'role:member', 'member.access'])->prefix('member')->name('member.')->group(function () {
+    Route::get('/dashboard', [MemberDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/bills', [MemberBillController::class, 'index'])->name('bills.index');
+    Route::get('/bills/{bill}', [MemberBillController::class, 'show'])->name('bills.show');
+    Route::get('/bills/{bill}/pdf', [MemberBillController::class, 'pdf'])->name('bills.pdf');
+    Route::post('/bills/{bill}/pay', [MemberBillController::class, 'pay'])->name('bills.pay');
+    Route::get('/checkout/{order}', [MemberBillController::class, 'checkout'])->name('bills.checkout');
+
+    Route::get('/payments', [MemberPaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{payment}', [MemberPaymentController::class, 'show'])->name('payments.show');
+    Route::get('/payments/{payment}/pdf', [MemberPaymentController::class, 'pdf'])->name('payments.pdf');
+
+    Route::get('/support/create', [MemberSupportController::class, 'create'])->name('support.create');
+    Route::get('/support', [MemberSupportController::class, 'index'])->name('support.index');
+    Route::post('/support', [MemberSupportController::class, 'store'])->name('support.store');
+    Route::get('/support/{ticket}', [MemberSupportController::class, 'show'])->name('support.show');
+    Route::post('/support/{ticket}/reply', [MemberSupportController::class, 'reply'])->name('support.reply');
+
+    Route::get('/family', [MemberFamilyController::class, 'index'])->name('family.index');
+    Route::get('/family/create', [MemberFamilyController::class, 'create'])->name('family.create');
+    Route::post('/family', [MemberFamilyController::class, 'store'])->name('family.store');
+    Route::get('/family/{familyMember}/edit', [MemberFamilyController::class, 'edit'])->name('family.edit');
+    Route::put('/family/{familyMember}', [MemberFamilyController::class, 'update'])->name('family.update');
+    Route::delete('/family/{familyMember}', [MemberFamilyController::class, 'destroy'])->name('family.destroy');
+
+    Route::get('/vehicles', [MemberVehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/vehicles/create', [MemberVehicleController::class, 'create'])->name('vehicles.create');
+    Route::post('/vehicles', [MemberVehicleController::class, 'store'])->name('vehicles.store');
+    Route::get('/vehicles/{vehicle}/edit', [MemberVehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::put('/vehicles/{vehicle}', [MemberVehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('/vehicles/{vehicle}', [MemberVehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+    Route::get('/notices', [MemberNoticeController::class, 'index'])->name('notices.index');
+    Route::get('/notices/{notice}', [MemberNoticeController::class, 'show'])->name('notices.show');
+    Route::post('/notices/{notice}/acknowledge', [MemberNoticeController::class, 'acknowledge'])->name('notices.acknowledge');
+
+    Route::get('/profile', [MemberProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [MemberProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [MemberProfileController::class, 'updatePassword'])->name('profile.password');
 });

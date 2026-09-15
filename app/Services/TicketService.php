@@ -35,8 +35,11 @@ class TicketService
             ]));
         });
 
-        foreach ($this->superAdmins() as $admin) {
-            $admin->notify(new TicketCreated($ticket));
+        // Resident complaints go to the society office; society tickets go to
+        // the platform support desk.
+        $recipients = $createdBy?->hasRole('member') ? $this->societyAdmins($ticket) : $this->superAdmins();
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new TicketCreated($ticket));
         }
 
         return $ticket;
@@ -109,7 +112,29 @@ class TicketService
             return $this->societyAdmins($ticket);
         }
 
-        return $this->superAdmins();
+        if ($actor->hasRole('member')) {
+            return $this->societyAdmins($ticket);
+        }
+
+        // Society staff acting on a resident's ticket talk to the resident,
+        // otherwise (a platform ticket) to the support desk.
+        $memberUser = $this->memberUser($ticket);
+
+        return $memberUser ? new Collection([$memberUser]) : $this->superAdmins();
+    }
+
+    /**
+     * The portal login of the resident who raised the ticket, if any.
+     */
+    private function memberUser(SupportTicket $ticket): ?User
+    {
+        if ($ticket->raised_by_type !== 'member' || ! $ticket->member_id) {
+            return null;
+        }
+
+        $user = $ticket->member?->user;
+
+        return $user && $user->status === 'active' ? $user : null;
     }
 
     /**

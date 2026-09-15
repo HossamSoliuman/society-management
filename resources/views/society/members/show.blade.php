@@ -16,6 +16,12 @@
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
+            <form method="POST" action="{{ route('society.members.invite', $member) }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary" {{ $member->email ? '' : 'disabled title=Add an email address first' }}>
+                    <i class="fas fa-paper-plane"></i> {{ $member->hasPortalAccess() ? 'Resend portal invite' : 'Invite to portal' }}
+                </button>
+            </form>
             <a href="{{ route('society.members.edit', $member) }}" class="btn btn-primary"><i class="fas fa-pencil"></i> Edit</a>
             <form method="POST" action="{{ route('society.members.destroy', $member) }}" data-confirm="Delete this member?">
                 @csrf @method('DELETE')
@@ -48,6 +54,9 @@
                 ['fa-envelope', 'Email', $member->email],
                 ['fa-user-tag', 'Member Type', $member->typeLabel()],
                 ['fa-calendar', 'Join Date', optional($member->join_date)->format('d M Y')],
+                ['fa-mobile-screen', 'Portal Access', $member->hasPortalAccess()
+                    ? 'Invited '.optional($member->invited_at)->format('d M Y').' · login '.($member->user?->status ?? '—')
+                    : 'Not invited'],
             ];
         @endphp
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 32px;">
@@ -58,6 +67,37 @@
                     <div class="detail-row-value">{{ $value }}</div>
                 </div>
             @endforeach
+        </div>
+    </div>
+</div>
+
+<div class="content-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Family Members ({{ $member->familyMembers->count() }})</h3></div>
+        <div class="card-body">
+            @forelse($member->familyMembers as $family)
+                <div class="detail-row">
+                    <div class="detail-row-icon"><i class="fas fa-user"></i></div>
+                    <div class="detail-row-label">{{ $family->name }}</div>
+                    <div class="detail-row-value">{{ $family->relation ?? '—' }}{{ $family->mobile ? ' · '.$family->mobile : '' }}</div>
+                </div>
+            @empty
+                <div style="font-size: 13px; color: var(--text-muted);">No family members recorded.</div>
+            @endforelse
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Vehicles ({{ $member->vehicles->count() }})</h3></div>
+        <div class="card-body">
+            @forelse($member->vehicles as $vehicle)
+                <div class="detail-row">
+                    <div class="detail-row-icon"><i class="fas fa-car"></i></div>
+                    <div class="detail-row-label">{{ $vehicle->registration_no }}</div>
+                    <div class="detail-row-value">{{ $vehicle->typeLabel() }}{{ $vehicle->make ? ' · '.$vehicle->make.' '.$vehicle->model : '' }}</div>
+                </div>
+            @empty
+                <div style="font-size: 13px; color: var(--text-muted);">No vehicles recorded.</div>
+            @endforelse
         </div>
     </div>
 </div>

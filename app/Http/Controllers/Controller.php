@@ -19,13 +19,15 @@ abstract class Controller
      */
     protected function currentSociety(): Society
     {
-        if ($this->resolvedSociety instanceof Society) {
-            return $this->resolvedSociety;
-        }
-
         $user = auth()->user();
 
         abort_if($user === null || $user->society_id === null, 403, 'Your account is not linked to a society.');
+
+        // The controller instance is cached on the route, so the memo must be
+        // re-validated against the current user rather than trusted blindly.
+        if ($this->resolvedSociety instanceof Society && $this->resolvedSociety->id === $user->society_id) {
+            return $this->resolvedSociety;
+        }
 
         return $this->resolvedSociety = $user->society()->firstOrFail();
     }

@@ -4,7 +4,16 @@ namespace App\Http\Controllers\Society;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\Role;
+use App\Models\User;
+use App\Notifications\MemberPortalInvitation;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class MemberController extends Controller
 {
@@ -83,7 +92,61 @@ class MemberController extends Controller
 
     public function show(Member $member)
     {
+        $member->load(['user', 'familyMembers', 'vehicles']);
+
         return view('society.members.show', compact('member'));
+    }
+
+    /**
+     * "Invite to portal": create (or reuse) a member-role login for this
+     * member and email a password-setup link.
+     */
+    public function invite(Member $member): RedirectResponse
+    {
+        $society = $this->currentSociety();
+
+        if (! $member->email) {
+            throw ValidationException::withMessages(['email' => 'Add an email address to this member before inviting them.']);
+        }
+
+        $user = DB::transaction(function () use ($member, $society): User {
+            $user = $member->user;
+
+            if (! $user) {
+                $existing = User::where('email', $member->email)->first();
+                if ($existing && ($existing->society_id !== $society->id || ! $existing->hasRole('member') || $existing->member()->exists())) {
+                    throw ValidationException::withMessages(['email' => 'This email already belongs to another account.']);
+                }
+
+                $user = $existing ?? User::create([
+                    'society_id' => $society->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'mobile' => $member->mobile,
+                    'password' => Str::random(64),
+                    'status' => 'active',
+                ]);
+
+                $memberRole = Role::where('name', 'member')->firstOrFail();
+                $user->roles()->syncWithoutDetaching([$memberRole->id]);
+            }
+
+            $user->update(['status' => 'active']);
+            $member->forceFill(['user_id' => $user->id, 'invited_at' => now()])->save();
+
+            return $user;
+        });
+
+        try {
+            $token = Password::broker()->createToken($user);
+            $user->notify(new MemberPortalInvitation($token, $society->name));
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()->with('error', 'The portal account was created but the invitation email could not be sent. Try again.');
+        }
+
+        return back()->with('success', "Portal invitation sent to {$user->email}.");
     }
 
     public function edit(Member $member)

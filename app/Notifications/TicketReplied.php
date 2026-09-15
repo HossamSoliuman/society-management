@@ -49,8 +49,16 @@ class TicketReplied extends Notification implements ShouldQueue
 
     private function urlFor(object $notifiable): string
     {
-        return method_exists($notifiable, 'hasRole') && $notifiable->hasRole('super_admin')
-            ? route('superadmin.tickets.show', $this->ticket)
+        if (! method_exists($notifiable, 'hasRole')) {
+            return route('society.support.show', $this->ticket);
+        }
+
+        if ($notifiable->hasRole('super_admin')) {
+            return route('superadmin.tickets.show', $this->ticket);
+        }
+
+        return $notifiable->hasRole('member')
+            ? route('member.support.show', $this->ticket)
             : route('society.support.show', $this->ticket);
     }
 }

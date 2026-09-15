@@ -39,6 +39,14 @@ class User extends Authenticatable
         return $this->belongsTo(Society::class);
     }
 
+    /**
+     * Member record for portal ("member" role) logins.
+     */
+    public function member()
+    {
+        return $this->hasOne(Member::class);
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_role');

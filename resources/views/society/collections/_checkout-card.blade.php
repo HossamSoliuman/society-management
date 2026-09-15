@@ -6,8 +6,10 @@
      * @var array<string, mixed> $checkout   provider payload from PaymentGateway::createOrder()
      * @var string $returnUrl
      * @var string $webhookUrl
+     * @var string|null $receiptUrl  overrides the society receipt link (member portal)
      */
     $provider = $checkout['provider'] ?? $order->provider;
+    $receiptUrl = $receiptUrl ?? ($order->payment ? route('society.collections.receipts.show', $order->payment) : null);
 @endphp
 <div class="content-grid" style="grid-template-columns: 1fr 360px;">
     <div class="card">
@@ -26,8 +28,8 @@
                     <i class="fas fa-check-circle"></i>
                     Payment received. Receipt {{ $order->payment?->receipt_number }} has been issued.
                 </div>
-                @if($order->payment)
-                    <a href="{{ route('society.collections.receipts.show', $order->payment) }}" class="btn btn-secondary btn-sm"><i class="fas fa-receipt"></i> View receipt</a>
+                @if($receiptUrl)
+                    <a href="{{ $receiptUrl }}" class="btn btn-secondary btn-sm"><i class="fas fa-receipt"></i> View receipt</a>
                 @endif
             @elseif($provider === 'razorpay')
                 <button type="button" id="rzp-button" class="btn btn-primary" style="margin-top: 16px;"><i class="fas fa-lock"></i> Pay {{ format_inr($order->amount) }} securely</button>

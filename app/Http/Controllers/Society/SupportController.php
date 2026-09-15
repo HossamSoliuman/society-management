@@ -19,14 +19,14 @@ use Illuminate\View\View;
 class SupportController extends Controller
 {
     /** Request categories for the filter and the Raise New Request form. */
-    private const CATEGORIES = [
+    public const CATEGORIES = [
         'Maintenance', 'Lift', 'Electrical', 'Housekeeping',
         'Security', 'Garden', 'Access Control', 'Billing', 'Technical', 'Others',
     ];
 
-    private const PRIORITIES = ['high' => 'High', 'medium' => 'Medium', 'low' => 'Low'];
+    public const PRIORITIES = ['high' => 'High', 'medium' => 'Medium', 'low' => 'Low'];
 
-    private const CONTACT_METHODS = ['Phone', 'Email', 'WhatsApp', 'SMS'];
+    public const CONTACT_METHODS = ['Phone', 'Email', 'WhatsApp', 'SMS'];
 
     /** Colours for the category donut, keyed by category. */
     private const CATEGORY_COLORS = [

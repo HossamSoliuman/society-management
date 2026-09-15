@@ -12,15 +12,44 @@ class Member extends Model
     use BelongsToSociety, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'society_id', 'name', 'member_type', 'flat_unit', 'tower_wing',
-        'mobile', 'email', 'status', 'avatar', 'join_date',
+        'society_id', 'user_id', 'name', 'member_type', 'flat_unit', 'tower_wing',
+        'mobile', 'email', 'status', 'avatar', 'join_date', 'invited_at',
     ];
 
     protected function casts(): array
     {
         return [
             'join_date' => 'date',
+            'invited_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Portal login linked to this member (null until invited).
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function familyMembers()
+    {
+        return $this->hasMany(FamilyMember::class);
+    }
+
+    public function vehicles()
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function hasPortalAccess(): bool
+    {
+        return $this->user_id !== null;
     }
 
     public function society()

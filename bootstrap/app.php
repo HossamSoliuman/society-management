@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveAccount;
+use App\Http\Middleware\EnsureMemberAccess;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\EnsureRoleOrPermission;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => EnsurePermission::class,
             'role_or_permission' => EnsureRoleOrPermission::class,
             'society.access' => EnsureSocietyAccess::class,
+            'member.access' => EnsureMemberAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
