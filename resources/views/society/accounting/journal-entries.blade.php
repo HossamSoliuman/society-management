@@ -16,7 +16,6 @@
             </div>
         </div>
         <div style="display: inline-flex; gap: 12px;">
-            <a href="{{ route('society.accounting.journal-entries') }}" class="btn btn-secondary"><i class="fas fa-file-export"></i> Export</a>
             <a href="{{ route('society.accounting.journal-entries.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Journal Entry</a>
         </div>
     </div>

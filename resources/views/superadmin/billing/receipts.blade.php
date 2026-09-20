@@ -9,7 +9,6 @@
             <h1 class="page-title">Receipts</h1>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Create Receipt</a>
         </div>
     </div>

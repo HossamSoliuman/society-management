@@ -107,7 +107,6 @@
                             </select>
                         </div>
                         <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button>
-                        <a href="{{ route('society.assets.index') }}" class="btn btn-secondary"><i class="fas fa-file-export"></i> Export</a>
                     </div>
                 </form>
             </div>

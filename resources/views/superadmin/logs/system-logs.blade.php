@@ -10,7 +10,6 @@
             <p class="page-subtitle">View system logs and monitor platform health.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="#" class="btn btn-outline-danger"><i class="fas fa-trash"></i> Clear Logs</a>
         </div>
     </div>

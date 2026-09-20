@@ -10,7 +10,6 @@
             <p class="page-subtitle">Create, manage and track all invoices.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="{{ route('superadmin.billing.invoices.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create Invoice</a>
         </div>
     </div>

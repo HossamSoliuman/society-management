@@ -10,7 +10,6 @@
             <p class="page-subtitle">Manage all society subscriptions, track renewal dates, and monitor subscription status.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="{{ route('superadmin.subscription.subscriptions.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Subscription</a>
         </div>
     </div>

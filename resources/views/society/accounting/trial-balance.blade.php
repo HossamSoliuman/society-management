@@ -17,7 +17,6 @@
         </div>
         <div style="display: inline-flex; gap: 12px;">
             <a href="{{ route('society.accounting.trial-balance') }}" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-print"></i> Print</a>
-            <a href="{{ route('society.accounting.trial-balance') }}" class="btn btn-secondary"><i class="fas fa-file-export"></i> Export</a>
         </div>
     </div>
 </div>

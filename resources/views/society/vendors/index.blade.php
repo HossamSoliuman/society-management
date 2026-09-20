@@ -124,7 +124,6 @@
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
             <div class="section-title" style="font-size: 16px; margin-bottom: 0;">Vendors List</div>
             <div style="display: inline-flex; gap: 10px;">
-                <button type="button" class="btn btn-secondary btn-sm"><i class="fas fa-file-export"></i> Export</button>
                 <button type="button" class="btn btn-secondary btn-sm"><i class="fas fa-table-columns"></i> Columns</button>
             </div>
         </div>

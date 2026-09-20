@@ -35,7 +35,6 @@
                 <div style="font-size: 12px; color: var(--text-muted);">List of all active and ongoing tenders</div>
             </div>
             <div style="display: inline-flex; gap: 8px;">
-                <button type="button" class="btn btn-secondary btn-sm"><i class="fas fa-upload"></i> Export</button>
                 <button type="button" class="btn btn-secondary btn-sm"><i class="fas fa-table-columns"></i> Columns</button>
             </div>
         </div>

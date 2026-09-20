@@ -80,14 +80,6 @@
                 entries
             </div>
             <div class="action-toolbar-right">
-                <div class="dropdown">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle"><i class="fas fa-download"></i> Export <i class="fas fa-chevron-down" style="font-size: 9px;"></i></button>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item"><i class="fas fa-file-csv"></i> CSV</a>
-                        <a href="#" class="dropdown-item"><i class="fas fa-file-excel"></i> Excel</a>
-                        <a href="#" class="dropdown-item"><i class="fas fa-file-pdf"></i> PDF</a>
-                    </div>
-                </div>
                 <button type="button" class="btn btn-outline-secondary btn-icon"><i class="fas fa-gear"></i></button>
             </div>
         </div>

@@ -9,7 +9,6 @@
             <h1 class="page-title">Outstanding</h1>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="#" class="btn btn-primary"><i class="fas fa-bell"></i> Send Reminder</a>
         </div>
     </div>
@@ -129,7 +128,7 @@
         <div class="card">
             <div class="card-header"><div class="card-title">Quick Actions</div></div>
             <div class="card-body" style="padding: 12px;">
-                @foreach(['Send Reminder' => 'fa-bell', 'Record Payment' => 'fa-money-bill-wave', 'View Reports' => 'fa-chart-bar', 'Export Data' => 'fa-download'] as $label => $icon)
+                @foreach(['Send Reminder' => 'fa-bell', 'Record Payment' => 'fa-money-bill-wave', 'View Reports' => 'fa-chart-bar'] as $label => $icon)
                 <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: var(--radius); text-decoration: none; color: var(--text-primary); font-size: 13px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px;">
                     <span style="display: flex; align-items: center; gap: 10px;"><i class="fas {{ $icon }}" style="color: var(--primary);"></i> {{ $label }}</span>
                     <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 10px;"></i>

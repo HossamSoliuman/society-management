@@ -11,7 +11,6 @@
         </div>
         <div class="action-toolbar-right">
             <a href="{{ route('superadmin.reports.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Reports</a>
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
         </div>
     </div>
     <div class="breadcrumb">

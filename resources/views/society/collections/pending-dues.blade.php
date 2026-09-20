@@ -35,7 +35,6 @@
                 <span>Pending Dues</span>
             </div>
         </div>
-        <a href="#" class="btn btn-outline-secondary"><i class="fas fa-download"></i> Export Report</a>
     </div>
 </div>
 

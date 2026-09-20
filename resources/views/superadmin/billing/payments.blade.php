@@ -9,7 +9,6 @@
             <h1 class="page-title">Payments</h1>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="{{ route('superadmin.billing.payments.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment</a>
         </div>
     </div>

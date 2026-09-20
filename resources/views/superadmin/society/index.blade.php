@@ -10,7 +10,6 @@
             <p class="page-subtitle">Manage all registered societies in the platform.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="{{ route('superadmin.societies.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Society</a>
         </div>
     </div>

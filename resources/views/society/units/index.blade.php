@@ -122,14 +122,6 @@
             </div>
             <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-filter"></i> Filter</button>
             <a href="{{ route('society.units.index') }}" class="btn btn-outline-secondary"><i class="fas fa-rotate"></i> Reset</a>
-            <div class="dropdown">
-                <button type="button" class="btn btn-outline-secondary dropdown-toggle"><i class="fas fa-download"></i> Export <i class="fas fa-chevron-down" style="font-size: 9px;"></i></button>
-                <div class="dropdown-menu">
-                    <a href="#" class="dropdown-item"><i class="fas fa-file-csv"></i> CSV</a>
-                    <a href="#" class="dropdown-item"><i class="fas fa-file-excel"></i> Excel</a>
-                    <a href="#" class="dropdown-item"><i class="fas fa-file-pdf"></i> PDF</a>
-                </div>
-            </div>
         </div>
     </div>
 </form>

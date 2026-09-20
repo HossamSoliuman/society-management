@@ -17,7 +17,6 @@
         </div>
         <div style="display: inline-flex; gap: 12px;">
             <a href="{{ route('society.accounting.chart-of-accounts') }}" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-file-import"></i> Import Accounts</a>
-            <a href="{{ route('society.accounting.chart-of-accounts') }}" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="{{ route('society.accounting.chart-of-accounts.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Account</a>
         </div>
     </div>

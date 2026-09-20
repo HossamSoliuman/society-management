@@ -17,7 +17,6 @@
         </div>
         <div style="display: inline-flex; gap: 12px;">
             <a href="{{ route('society.accounting.receipts') }}" class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</a>
-            <a href="{{ route('society.accounting.receipts') }}" class="btn btn-secondary"><i class="fas fa-file-export"></i> Export</a>
             <a href="{{ route('society.accounting.receipts.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Receipt</a>
         </div>
     </div>

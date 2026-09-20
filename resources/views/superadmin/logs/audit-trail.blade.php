@@ -10,7 +10,6 @@
             <p class="page-subtitle">Complete record of all system changes and administrative actions.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
         </div>
     </div>
     <div class="breadcrumb">

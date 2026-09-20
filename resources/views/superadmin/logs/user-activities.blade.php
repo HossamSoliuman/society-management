@@ -10,7 +10,6 @@
             <p class="page-subtitle">Track and monitor all user activities across the platform.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
         </div>
     </div>
     <div class="breadcrumb">

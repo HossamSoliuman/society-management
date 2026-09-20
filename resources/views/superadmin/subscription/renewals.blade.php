@@ -10,7 +10,6 @@
             <p class="page-subtitle">Monitor and manage upcoming subscription renewals.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
             <a href="#" class="btn btn-primary"><i class="fas fa-bell"></i> Send Reminders</a>
         </div>
     </div>

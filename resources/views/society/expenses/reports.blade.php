@@ -20,8 +20,6 @@
             </div>
         </div>
         <div class="action-toolbar-right" style="display: flex; gap: 8px;">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Export PDF</a>
-            <a href="#" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Export Excel</a>
             <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
         </div>
     </div>
@@ -154,6 +152,6 @@
 
 <div class="tip-banner blue">
     <i class="fas fa-circle-info"></i>
-    <span>Use the filters above to narrow the report by date range, category or vendor, then export or print the result.</span>
+    <span>Use the filters above to narrow the report by date range, category or vendor, then print the result.</span>
 </div>
 @endsection

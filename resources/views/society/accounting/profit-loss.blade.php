@@ -16,8 +16,6 @@
             </div>
         </div>
         <div style="display: inline-flex; gap: 12px;">
-            <a href="{{ route('society.accounting.profit-loss') }}" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Export PDF</a>
-            <a href="{{ route('society.accounting.profit-loss') }}" class="btn btn-secondary" style="color: var(--success); border-color: var(--success);"><i class="fas fa-file-excel"></i> Export Excel</a>
             <a href="{{ route('society.accounting.profit-loss') }}" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-print"></i> Print</a>
         </div>
     </div>
