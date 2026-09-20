@@ -313,12 +313,17 @@ body {
 
 .icon-btn {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     background: none;
     border: none;
     color: var(--gray-600);
     font-size: 18px;
+    line-height: 1;
     cursor: pointer;
-    padding: 8px;
     border-radius: var(--radius);
     transition: all 0.2s ease;
 }
@@ -329,16 +334,23 @@ body {
 
 .notification-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 7px;
+    right: 7px;
+    transform: translate(50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 16px;
+    min-width: 16px;
+    padding: 0 4px;
     background: var(--danger);
     color: var(--white);
     font-size: 9px;
     font-weight: 700;
-    padding: 1px 4px;
+    line-height: 1;
     border-radius: var(--radius-full);
-    min-width: 16px;
-    text-align: center;
+    box-shadow: 0 0 0 2px var(--white);
+    pointer-events: none;
 }
 
 .profile-btn {
@@ -2577,6 +2589,69 @@ select.form-control {
     border: none;
     border-top: 1px solid var(--border-color);
     margin: 4px 0;
+}
+
+/* === Header notification bell === */
+.notification-menu {
+    min-width: 300px;
+    max-width: 340px;
+}
+
+.notification-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.notification-read-all {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.notification-read-all:hover {
+    text-decoration: underline;
+}
+
+.notification-item {
+    align-items: flex-start;
+}
+
+.notification-item i {
+    margin-top: 2px;
+}
+
+.notification-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.notification-item-title {
+    font-weight: 500;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.notification-item-time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.notification-empty {
+    padding: 18px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
 }
 
 /* === Wizard === */

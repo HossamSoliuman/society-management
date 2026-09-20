@@ -10,6 +10,7 @@ use App\Http\Controllers\Member\PaymentController as MemberPaymentController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 use App\Http\Controllers\Member\SupportController as MemberSupportController;
 use App\Http\Controllers\Member\VehicleController as MemberVehicleController;
+use App\Http\Controllers\NotificationController as HeaderNotificationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\AmcController;
@@ -66,6 +67,12 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Payment-provider callbacks: signature-verified inside the gateway driver.
 Route::post('/webhooks/payments', PaymentWebhookController::class)->name('webhooks.payments');
+
+// Header bell: shared by every signed-in panel.
+Route::middleware(['auth', 'active'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/{notification}/open', [HeaderNotificationController::class, 'open'])->name('open');
+    Route::post('/read-all', [HeaderNotificationController::class, 'readAll'])->name('read-all');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [PasswordController::class, 'request'])->name('password.request');

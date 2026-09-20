@@ -402,23 +402,20 @@
                 </div>
 
                 <div class="header-actions">
-                    <div class="notification-dropdown">
-                        <button class="icon-btn">
-                            <i class="far fa-bell"></i>
-                            <span class="notification-badge">12</span>
-                        </button>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-header">Notifications</div>
-                            <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="dropdown-menu-item">
+                    <x-notification-bell>
+                        <x-slot:links>
+                            <a href="{{ route('society.notices.index') }}" class="dropdown-menu-item">
                                 <i class="fas fa-bullhorn"></i>
-                                <span>View all notifications</span>
+                                <span>View all notices</span>
                             </a>
-                            <a href="{{ route('society.placeholder', ['page' => 'Complaint Management']) }}" class="dropdown-menu-item">
-                                <i class="fas fa-triangle-exclamation"></i>
-                                <span>Open complaints</span>
+                            @if(auth()->user()?->hasAnyPermission('support.manage'))
+                            <a href="{{ route('society.support.index') }}" class="dropdown-menu-item">
+                                <i class="fas fa-headset"></i>
+                                <span>Support tickets</span>
                             </a>
-                        </div>
-                    </div>
+                            @endif
+                        </x-slot:links>
+                    </x-notification-bell>
 
                     <div class="profile-dropdown">
                         <button class="profile-btn">

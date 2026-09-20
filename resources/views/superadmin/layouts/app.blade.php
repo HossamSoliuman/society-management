@@ -293,13 +293,8 @@
                 </div>
 
                 <div class="header-actions">
-                    <div class="notification-dropdown">
-                        <button class="icon-btn">
-                            <i class="far fa-bell"></i>
-                            <span class="notification-badge">12</span>
-                        </button>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-header">Notifications</div>
+                    <x-notification-bell>
+                        <x-slot:links>
                             <a href="{{ route('superadmin.notification.announcements') }}" class="dropdown-menu-item">
                                 <i class="fas fa-bullhorn"></i>
                                 <span>View all announcements</span>
@@ -308,8 +303,8 @@
                                 <i class="fas fa-rotate"></i>
                                 <span>Renewal alerts</span>
                             </a>
-                        </div>
-                    </div>
+                        </x-slot:links>
+                    </x-notification-bell>
 
                     <div class="profile-dropdown">
                         <button class="profile-btn">
