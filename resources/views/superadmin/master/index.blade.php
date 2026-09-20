@@ -17,12 +17,13 @@
     </div>
 </div>
 
-<div class="tabs">
-    <a href="#" class="tab active">Society Types</a>
-    <a href="#" class="tab">Unit Types</a>
-    <a href="#" class="tab">Payment Modes</a>
+<div class="tabs" style="overflow-x: auto; margin-bottom: 20px;">
+    @foreach($tabs as $key => $label)
+        <a href="{{ route('superadmin.masters.index', ['tab' => $key]) }}" class="tab {{ $tab === $key ? 'active' : '' }}" style="white-space: nowrap;">{{ $label }}</a>
+    @endforeach
 </div>
 
+@if($tab === 'society-types')
 <div class="grid-2">
     <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -102,7 +103,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-top: 20px;">
+@elseif($tab === 'unit-types')
+<div class="grid-2">
     <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="card-title"><i class="fas fa-th-large" style="color: var(--success); margin-right: 8px;"></i>Unit Types</div>
@@ -145,6 +147,9 @@
             </table>
             </div>
         </div>
+        <div class="card-footer">
+            @include('superadmin.components.pagination', ['items' => $unitTypes])
+        </div>
     </div>
 
     <div id="addUnitType" style="display: none;">
@@ -178,7 +183,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-top: 20px;">
+@elseif($tab === 'payment-modes')
+<div class="grid-2">
     <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="card-title"><i class="fas fa-credit-card" style="color: var(--purple); margin-right: 8px;"></i>Payment Modes</div>
@@ -221,6 +227,9 @@
             </table>
             </div>
         </div>
+        <div class="card-footer">
+            @include('superadmin.components.pagination', ['items' => $paymentModes])
+        </div>
     </div>
 
     <div id="addPaymentMode" style="display: none;">
@@ -253,4 +262,5 @@
         </div>
     </div>
 </div>
+@endif
 @endsection

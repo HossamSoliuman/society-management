@@ -3,20 +3,44 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\PaymentMode;
 use App\Models\SocietyType;
 use App\Models\UnitType;
-use App\Models\PaymentMode;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class MasterController extends Controller
 {
-    public function index()
-    {
-        $societyTypes = SocietyType::latest()->paginate(10, ['*'], 'society_types_page');
-        $unitTypes = UnitType::latest()->paginate(10, ['*'], 'unit_types_page');
-        $paymentModes = PaymentMode::latest()->paginate(10, ['*'], 'payment_modes_page');
+    /** @var array<string, string> */
+    private const TABS = [
+        'society-types' => 'Society Types',
+        'unit-types' => 'Unit Types',
+        'payment-modes' => 'Payment Modes',
+    ];
 
-        return view('superadmin.master.index', compact('societyTypes', 'unitTypes', 'paymentModes'));
+    public function index(Request $request)
+    {
+        $tab = $request->string('tab')->toString();
+        if (! array_key_exists($tab, self::TABS)) {
+            $tab = array_key_first(self::TABS);
+        }
+
+        $societyTypes = SocietyType::latest()->paginate(10, ['*'], 'society_types_page')->withQueryString();
+        $unitTypes = UnitType::latest()->paginate(10, ['*'], 'unit_types_page')->withQueryString();
+        $paymentModes = PaymentMode::latest()->paginate(10, ['*'], 'payment_modes_page')->withQueryString();
+
+        return view('superadmin.master.index', [
+            'tabs' => self::TABS,
+            'tab' => $tab,
+            'societyTypes' => $societyTypes,
+            'unitTypes' => $unitTypes,
+            'paymentModes' => $paymentModes,
+        ]);
+    }
+
+    private function redirectToTab(string $tab, string $message): RedirectResponse
+    {
+        return redirect()->route('superadmin.masters.index', ['tab' => $tab])->with('success', $message);
     }
 
     public function storeSocietyType(Request $request)
@@ -28,7 +52,8 @@ class MasterController extends Controller
         ]);
 
         SocietyType::create($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Society type created');
+
+        return $this->redirectToTab('society-types', 'Society type created');
     }
 
     public function updateSocietyType(Request $request, SocietyType $societyType)
@@ -40,13 +65,15 @@ class MasterController extends Controller
         ]);
 
         $societyType->update($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Society type updated');
+
+        return $this->redirectToTab('society-types', 'Society type updated');
     }
 
     public function destroySocietyType(SocietyType $societyType)
     {
         $societyType->delete();
-        return redirect()->route('superadmin.masters.index')->with('success', 'Society type deleted');
+
+        return $this->redirectToTab('society-types', 'Society type deleted');
     }
 
     public function storeUnitType(Request $request)
@@ -58,7 +85,8 @@ class MasterController extends Controller
         ]);
 
         UnitType::create($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Unit type created');
+
+        return $this->redirectToTab('unit-types', 'Unit type created');
     }
 
     public function updateUnitType(Request $request, UnitType $unitType)
@@ -70,13 +98,15 @@ class MasterController extends Controller
         ]);
 
         $unitType->update($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Unit type updated');
+
+        return $this->redirectToTab('unit-types', 'Unit type updated');
     }
 
     public function destroyUnitType(UnitType $unitType)
     {
         $unitType->delete();
-        return redirect()->route('superadmin.masters.index')->with('success', 'Unit type deleted');
+
+        return $this->redirectToTab('unit-types', 'Unit type deleted');
     }
 
     public function storePaymentMode(Request $request)
@@ -88,7 +118,8 @@ class MasterController extends Controller
         ]);
 
         PaymentMode::create($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Payment mode created');
+
+        return $this->redirectToTab('payment-modes', 'Payment mode created');
     }
 
     public function updatePaymentMode(Request $request, PaymentMode $paymentMode)
@@ -100,12 +131,14 @@ class MasterController extends Controller
         ]);
 
         $paymentMode->update($validated);
-        return redirect()->route('superadmin.masters.index')->with('success', 'Payment mode updated');
+
+        return $this->redirectToTab('payment-modes', 'Payment mode updated');
     }
 
     public function destroyPaymentMode(PaymentMode $paymentMode)
     {
         $paymentMode->delete();
-        return redirect()->route('superadmin.masters.index')->with('success', 'Payment mode deleted');
+
+        return $this->redirectToTab('payment-modes', 'Payment mode deleted');
     }
 }
