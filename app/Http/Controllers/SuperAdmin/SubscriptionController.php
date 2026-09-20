@@ -10,6 +10,7 @@ use App\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SubscriptionController extends Controller
@@ -30,9 +31,76 @@ class SubscriptionController extends Controller
 
     public function storePlan(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validated = $this->validatePlan($request);
+        $modules = $validated['modules'] ?? [];
+        unset($validated['modules']);
+
+        $plan = SubscriptionPlan::create($validated);
+        $plan->syncModules($modules);
+
+        return redirect()->route('superadmin.subscription.plans')->with('success', 'Plan created successfully');
+    }
+
+    public function showPlan(SubscriptionPlan $plan): View
+    {
+        $plan->load('modules')->loadCount([
+            'subscriptions',
+            'subscriptions as active_subscriptions_count' => fn ($q) => $q->whereIn('status', ['active', 'expiring_soon']),
+        ]);
+
+        $recentSubscriptions = $plan->subscriptions()->with('society')->latest('id')->limit(10)->get();
+
+        return view('superadmin.subscription.show-plan', compact('plan', 'recentSubscriptions'));
+    }
+
+    public function editPlan(SubscriptionPlan $plan): View
+    {
+        $plan->load('modules');
+
+        return view('superadmin.subscription.edit-plan', compact('plan'));
+    }
+
+    public function updatePlan(Request $request, SubscriptionPlan $plan): RedirectResponse
+    {
+        $validated = $this->validatePlan($request, $plan);
+        $modules = $validated['modules'] ?? [];
+        unset($validated['modules']);
+
+        $plan->update($validated);
+        $plan->syncModules($modules);
+
+        return redirect()->route('superadmin.subscription.plans.show', $plan)->with('success', 'Plan updated successfully');
+    }
+
+    public function togglePlanStatus(SubscriptionPlan $plan): RedirectResponse
+    {
+        $plan->update(['status' => $plan->status === 'active' ? 'inactive' : 'active']);
+
+        return back()->with('success', "Plan {$plan->name} is now {$plan->status}.");
+    }
+
+    /**
+     * Plans referenced by any subscription are kept for history; deactivate those instead.
+     */
+    public function destroyPlan(SubscriptionPlan $plan): RedirectResponse
+    {
+        if ($plan->subscriptions()->exists()) {
+            return back()->with('error', "Plan {$plan->name} has subscriptions and cannot be deleted. Mark it inactive instead.");
+        }
+
+        $plan->delete();
+
+        return redirect()->route('superadmin.subscription.plans')->with('success', 'Plan deleted successfully');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatePlan(Request $request, ?SubscriptionPlan $plan = null): array
+    {
+        return $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:subscription_plans,code|max:50',
+            'code' => ['required', 'string', 'max:50', Rule::unique('subscription_plans', 'code')->ignore($plan)],
             'plan_type' => 'required|in:basic,standard,premium,enterprise',
             'description' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
@@ -44,11 +112,9 @@ class SubscriptionController extends Controller
             'color' => 'nullable|string|max:7',
             'priority' => 'integer|min:0',
             'status' => 'required|in:active,inactive',
+            'modules' => 'nullable|array',
+            'modules.*' => ['string', Rule::in(array_keys(SubscriptionPlan::MODULES))],
         ]);
-
-        SubscriptionPlan::create($validated);
-
-        return redirect()->route('superadmin.subscription.plans')->with('success', 'Plan created successfully');
     }
 
     public function subscriptions(Request $request): View

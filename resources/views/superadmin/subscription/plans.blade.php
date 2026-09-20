@@ -60,7 +60,21 @@
                         <td>{{ ucfirst($plan->billing_cycle) }}</td>
                         <td>{{ ucfirst(str_replace('_', ' ', $plan->plan_duration)) }}</td>
                         <td><span class="status-badge {{ $plan->status }}">{{ ucfirst($plan->status) }}</span></td>
-                        <td><div style="display: flex; gap: 4px;"><button class="action-btn view"><i class="fas fa-eye"></i></button><button class="action-btn edit"><i class="fas fa-pen"></i></button><button class="action-btn"><i class="fas fa-ellipsis-h"></i></button></div></td>
+                        <td>
+                            <div style="display: flex; gap: 4px;">
+                                <a href="{{ route('superadmin.subscription.plans.show', $plan) }}" class="action-btn view" title="View"><i class="fas fa-eye"></i></a>
+                                <a href="{{ route('superadmin.subscription.plans.edit', $plan) }}" class="action-btn edit" title="Edit"><i class="fas fa-pen"></i></a>
+                                <form action="{{ route('superadmin.subscription.plans.toggle-status', $plan) }}" method="POST" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="action-btn" title="{{ $plan->status === 'active' ? 'Deactivate' : 'Activate' }}"><i class="fas {{ $plan->status === 'active' ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i></button>
+                                </form>
+                                <form action="{{ route('superadmin.subscription.plans.destroy', $plan) }}" method="POST" style="display: inline;" data-confirm="Delete plan {{ $plan->name }}?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>

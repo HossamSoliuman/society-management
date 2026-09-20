@@ -100,6 +100,11 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
     Route::get('/subscription/plans/create', [SubscriptionController::class, 'createPlan'])->name('subscription.plans.create');
     Route::post('/subscription/plans', [SubscriptionController::class, 'storePlan'])->name('subscription.plans.store');
+    Route::get('/subscription/plans/{plan}', [SubscriptionController::class, 'showPlan'])->name('subscription.plans.show');
+    Route::get('/subscription/plans/{plan}/edit', [SubscriptionController::class, 'editPlan'])->name('subscription.plans.edit');
+    Route::put('/subscription/plans/{plan}', [SubscriptionController::class, 'updatePlan'])->name('subscription.plans.update');
+    Route::post('/subscription/plans/{plan}/toggle-status', [SubscriptionController::class, 'togglePlanStatus'])->name('subscription.plans.toggle-status');
+    Route::delete('/subscription/plans/{plan}', [SubscriptionController::class, 'destroyPlan'])->name('subscription.plans.destroy');
     Route::get('/subscription/subscriptions', [SubscriptionController::class, 'subscriptions'])->name('subscription.subscriptions');
     Route::get('/subscription/subscriptions/create', [SubscriptionController::class, 'createSubscription'])->name('subscription.subscriptions.create');
     Route::post('/subscription/subscriptions', [SubscriptionController::class, 'storeSubscription'])->name('subscription.subscriptions.store');
