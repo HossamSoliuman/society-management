@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Announcement;
 use App\Models\Notice;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
@@ -12,9 +13,10 @@ use Illuminate\Support\Str;
 /**
  * Delivered per recipient for both announcements and notices. Channels come
  * from the source row (in-app always for notices; per delivery_channel for
- * announcements).
+ * announcements). Queued so each channel is its own job: a failing SMTP or
+ * SMS gateway cannot block in-app delivery or re-create rows on retry.
  */
-class AnnouncementPublished extends Notification
+class AnnouncementPublished extends Notification implements ShouldQueue
 {
     use Queueable;
 

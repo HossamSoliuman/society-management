@@ -287,11 +287,6 @@
                     <i class="fas fa-bars"></i>
                 </button>
 
-                <div class="header-search">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Search society, flat, member, invoice...">
-                </div>
-
                 <div class="header-actions">
                     <x-notification-bell>
                         <x-slot:links>
