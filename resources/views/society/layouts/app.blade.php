@@ -332,7 +332,7 @@
                     <i class="fas fa-bullhorn"></i>
                     <span>Notices</span>
                 </a>
-                <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="nav-item">
+                <a href="{{ route('society.notifications.index') }}" class="nav-item {{ request()->routeIs('society.notifications.*') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>
                 </a>
@@ -404,6 +404,10 @@
                 <div class="header-actions">
                     <x-notification-bell>
                         <x-slot:links>
+                            <a href="{{ route('society.notifications.index') }}" class="dropdown-menu-item">
+                                <i class="fas fa-bell"></i>
+                                <span>View all notifications</span>
+                            </a>
                             <a href="{{ route('society.notices.index') }}" class="dropdown-menu-item">
                                 <i class="fas fa-bullhorn"></i>
                                 <span>View all notices</span>

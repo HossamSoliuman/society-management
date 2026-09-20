@@ -123,7 +123,7 @@
     <div class="card" style="display: flex; flex-direction: column;">
         <div class="card-header">
             <div class="card-title">Notice Board</div>
-            <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="btn-link">View All</a>
+            <a href="{{ route('society.notices.index') }}" class="btn-link">View All</a>
         </div>
         <div class="card-body" style="flex: 1;">
             <div style="display: flex; flex-direction: column; gap: 18px;">
@@ -144,7 +144,7 @@
             </div>
         </div>
         <div class="card-footer" style="padding: 12px 20px;">
-            <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="btn btn-outline-primary" style="width: 100%;">View All Notices <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
+            <a href="{{ route('society.notices.index') }}" class="btn btn-outline-primary" style="width: 100%;">View All Notices <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
         </div>
     </div>
 </div>

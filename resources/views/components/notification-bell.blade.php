@@ -23,13 +23,7 @@
 
         @forelse($recent as $notification)
             <a href="{{ route('notifications.open', $notification->id) }}" class="dropdown-menu-item notification-item">
-                <i class="fas {{ match($notification->data['type'] ?? '') {
-                    'ticket_created', 'ticket_replied', 'ticket_status' => 'fa-headset',
-                    'subscription_renewal' => 'fa-rotate',
-                    'amc_expiry' => 'fa-file-contract',
-                    'notice' => 'fa-clipboard-list',
-                    default => 'fa-bullhorn',
-                } }}"></i>
+                <i class="fas {{ \App\Support\NotificationKind::icon($notification->data['type'] ?? null) }}"></i>
                 <span class="notification-item-body">
                     <span class="notification-item-title">{{ $notification->data['title'] ?? 'Notification' }}</span>
                     <span class="notification-item-time">{{ $notification->created_at->diffForHumans() }}</span>

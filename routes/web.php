@@ -27,6 +27,7 @@ use App\Http\Controllers\Society\ExpenseCategoryController;
 use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
 use App\Http\Controllers\Society\NoticeController as SocietyNoticeController;
+use App\Http\Controllers\Society\NotificationController as SocietyNotificationController;
 use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\OnlinePaymentController;
 use App\Http\Controllers\Society\PaymentReceiptController;
@@ -72,6 +73,9 @@ Route::post('/webhooks/payments', PaymentWebhookController::class)->name('webhoo
 Route::middleware(['auth', 'active'])->prefix('notifications')->name('notifications.')->group(function () {
     Route::get('/{notification}/open', [HeaderNotificationController::class, 'open'])->name('open');
     Route::post('/read-all', [HeaderNotificationController::class, 'readAll'])->name('read-all');
+    Route::delete('/clear-read', [HeaderNotificationController::class, 'clearRead'])->name('clear-read');
+    Route::post('/{notification}/read', [HeaderNotificationController::class, 'read'])->name('read');
+    Route::delete('/{notification}', [HeaderNotificationController::class, 'destroy'])->name('destroy');
 });
 
 Route::middleware('guest')->group(function () {
@@ -211,6 +215,9 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::get('/notices', [SocietyNoticeController::class, 'index'])->name('notices.index');
     Route::get('/notices/{notice}', [SocietyNoticeController::class, 'show'])->name('notices.show');
     Route::post('/notices/{notice}/acknowledge', [SocietyNoticeController::class, 'acknowledge'])->name('notices.acknowledge');
+
+    // Notification inbox for the signed-in user (every society role)
+    Route::get('/notifications', [SocietyNotificationController::class, 'index'])->name('notifications.index');
 
     // Members & Units
     Route::middleware('permission:members.manage')->group(function () {
