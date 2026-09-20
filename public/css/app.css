@@ -2626,7 +2626,9 @@ select.form-control {
 }
 
 .notification-item i {
+    flex: 0 0 16px;
     margin-top: 2px;
+    text-align: center;
 }
 
 .notification-item-body {
