@@ -99,6 +99,16 @@ it('flags subscriptions as expiring soon within 30 days', function () {
     $this->actingAs($this->admin)->get(route('society.dashboard'))->assertOk();
 });
 
+it('renders the superadmin renewals page with due counts', function () {
+    activeSubscription($this->society, $this->plan, Carbon::today()->subMonths(11), Carbon::today()->addDays(20));
+
+    $this->actingAs($this->superAdmin)->get(route('superadmin.subscription.renewals'))
+        ->assertOk()
+        ->assertViewHas('totalRenewals', 1)
+        ->assertViewHas('dueIn30Days', 1)
+        ->assertSee('Harbor Heights');
+});
+
 it('renews a subscription into a new linked row that extends access', function () {
     $old = activeSubscription($this->society, $this->plan, Carbon::today()->subYear(), Carbon::today()->subDays(2));
     $this->artisan('subscriptions:refresh-status');

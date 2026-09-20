@@ -235,12 +235,21 @@ class SubscriptionController extends Controller
 
     public function renewals(): View
     {
-        $upcomingRenewals = Subscription::with(['society', 'plan'])
+        $totalRenewals = Subscription::where('end_date', '<=', now()->addDays(60))
+            ->where('status', '!=', 'cancelled')->count();
+        $dueIn7Days = Subscription::whereBetween('end_date', [now(), now()->addDays(7)])->count();
+        $dueIn30Days = Subscription::whereBetween('end_date', [now()->addDays(8), now()->addDays(30)])->count();
+        $dueIn60Days = Subscription::whereBetween('end_date', [now()->addDays(31), now()->addDays(60)])->count();
+        $overdue = Subscription::where('end_date', '<', now())->where('status', '!=', 'cancelled')->count();
+
+        $renewals = Subscription::with(['society', 'plan'])
             ->where('end_date', '<=', now()->addDays(60))
             ->where('status', '!=', 'cancelled')
             ->orderBy('end_date')
             ->paginate(10);
 
-        return view('superadmin.subscription.renewals', compact('upcomingRenewals'));
+        return view('superadmin.subscription.renewals', compact(
+            'totalRenewals', 'dueIn7Days', 'dueIn30Days', 'dueIn60Days', 'overdue', 'renewals'
+        ));
     }
 }
