@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Member\AnnouncementController as MemberAnnouncementController;
 use App\Http\Controllers\Member\BillController as MemberBillController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\FamilyMemberController as MemberFamilyController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\NotificationController as HeaderNotificationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\AmcController;
+use App\Http\Controllers\Society\AnnouncementController as SocietyAnnouncementController;
 use App\Http\Controllers\Society\AssetCategoryController;
 use App\Http\Controllers\Society\AssetController;
 use App\Http\Controllers\Society\BillController;
@@ -220,6 +222,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::get('/notices', [SocietyNoticeController::class, 'index'])->name('notices.index');
     Route::get('/notices/{notice}', [SocietyNoticeController::class, 'show'])->name('notices.show');
     Route::post('/notices/{notice}/acknowledge', [SocietyNoticeController::class, 'acknowledge'])->name('notices.acknowledge');
+    Route::get('/announcements/{announcement}', [SocietyAnnouncementController::class, 'show'])->name('announcements.show');
 
     // Notification inbox for the signed-in user (every society role)
     Route::get('/notifications', [SocietyNotificationController::class, 'index'])->name('notifications.index');
@@ -492,6 +495,7 @@ Route::middleware(['auth', 'active', 'role:member', 'member.access'])->prefix('m
     Route::get('/notices', [MemberNoticeController::class, 'index'])->name('notices.index');
     Route::get('/notices/{notice}', [MemberNoticeController::class, 'show'])->name('notices.show');
     Route::post('/notices/{notice}/acknowledge', [MemberNoticeController::class, 'acknowledge'])->name('notices.acknowledge');
+    Route::get('/announcements/{announcement}', [MemberAnnouncementController::class, 'show'])->name('announcements.show');
 
     Route::get('/profile', [MemberProfileController::class, 'show'])->name('profile');
     Route::put('/profile', [MemberProfileController::class, 'update'])->name('profile.update');

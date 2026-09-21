@@ -42,7 +42,7 @@ class AnnouncementPublished extends Notification implements ShouldQueue
             ->line($body);
 
         if ($notifiable->society_id) {
-            $mail->action('Open notices', route('society.notices.index'));
+            $mail->action('Open '.strtolower($this->kindLabel()), self::targetUrl($this->type(), $this->item->id, $notifiable));
         }
 
         return $mail;
@@ -63,12 +63,28 @@ class AnnouncementPublished extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => $this->item instanceof Notice ? 'notice' : 'announcement',
+            'type' => $this->type(),
             'title' => $this->item->title,
             'priority' => $this->item->priority,
             'item_id' => $this->item->id,
-            'url' => route('society.notices.index'),
+            'url' => self::targetUrl($this->type(), $this->item->id, $notifiable),
         ];
+    }
+
+    /**
+     * Page showing one announcement or notice in the recipient's own panel:
+     * the member portal for residents, the society panel for every other role.
+     */
+    public static function targetUrl(string $type, int $itemId, object $notifiable): string
+    {
+        $panel = method_exists($notifiable, 'hasRole') && $notifiable->hasRole('member') ? 'member' : 'society';
+
+        return route("{$panel}.".($type === 'notice' ? 'notices' : 'announcements').'.show', $itemId);
+    }
+
+    private function type(): string
+    {
+        return $this->item instanceof Notice ? 'notice' : 'announcement';
     }
 
     private function kindLabel(): string

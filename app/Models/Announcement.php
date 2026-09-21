@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TargetsAudience;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,23 @@ class Announcement extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Already delivered to its audience.
+     */
+    public function scopeSent(Builder $query): Builder
+    {
+        return $query->where('status', 'sent');
+    }
+
+    public function priorityBadgeClass(): string
+    {
+        return match ($this->priority) {
+            'urgent' => 'badge-danger',
+            'high' => 'badge-warning',
+            default => 'badge-secondary',
+        };
     }
 
     /**

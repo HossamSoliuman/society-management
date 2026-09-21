@@ -2,6 +2,7 @@
 
 use App\Models\Account;
 use App\Models\AccountGroup;
+use App\Models\Announcement;
 use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Models\BankStatementLine;
@@ -74,6 +75,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
         'tender' => Tender::factory()->create($sid),
         'notice' => Notice::factory()->create($sid + ['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'target_roles' => null]),
+        'announcement' => Announcement::create($sid + ['title' => 'iso', 'message' => 'iso', 'recipient_type' => 'all_staff', 'target_roles' => null, 'priority' => 'normal', 'delivery_channel' => 'in_app', 'send_type' => 'now', 'status' => 'sent', 'sent_at' => now(), 'created_by' => User::factory()->create()->id]),
         'teamUser' => tap(User::factory()->create($sid), fn (User $u) => $u->roles()->sync([seededRole('staff')->id])),
         'order' => PaymentGatewayOrder::create($sid + ['provider' => 'fake', 'provider_order_id' => 'iso_'.uniqid(), 'amount' => 100, 'status' => 'created']),
         'line' => BankStatementLine::create($sid + [

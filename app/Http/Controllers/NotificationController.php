@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\AnnouncementPublished;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -21,9 +22,25 @@ class NotificationController extends Controller
 
         $item->markAsRead();
 
-        $url = $item->data['url'] ?? null;
+        $url = $this->targetUrl($request, $item);
 
         return is_string($url) && $url !== '' ? redirect()->to($url) : back();
+    }
+
+    /**
+     * Announcement and notice payloads are re-resolved from their item id so
+     * rows stored before per-item pages existed still land on the right page.
+     */
+    private function targetUrl(Request $request, DatabaseNotification $item): ?string
+    {
+        $data = $item->data;
+        $type = $data['type'] ?? null;
+
+        if (in_array($type, ['announcement', 'notice'], true) && ! empty($data['item_id'])) {
+            return AnnouncementPublished::targetUrl($type, (int) $data['item_id'], $request->user());
+        }
+
+        return $data['url'] ?? null;
     }
 
     public function readAll(Request $request): RedirectResponse

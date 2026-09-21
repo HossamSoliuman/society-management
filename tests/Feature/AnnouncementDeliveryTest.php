@@ -3,6 +3,7 @@
 use App\Contracts\SmsGateway;
 use App\Jobs\DeliverAnnouncement;
 use App\Models\Announcement;
+use App\Models\Member;
 use App\Models\Notice;
 use App\Models\Society;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Services\Sms\FakeSmsGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -158,4 +160,72 @@ it('creates a notice targeted at one society and shows real status counts', func
         ->assertOk()
         ->assertSee('Water cut');
     expect(Notice::where('status', 'draft')->count())->toBe(2);
+});
+
+it('opens an announcement notification on the announcement page instead of the empty notices list', function () {
+    $announcement = Announcement::create([
+        'title' => 'Lift maintenance', 'message' => "Lift B is down on Sunday.\nUse lift A.", 'recipient_type' => 'all_staff', 'target_roles' => null,
+        'society_id' => $this->societyA->id, 'priority' => 'high', 'category' => 'Maintenance', 'delivery_channel' => 'in_app',
+        'send_type' => 'now', 'status' => 'sent', 'sent_at' => now(), 'created_by' => $this->superAdmin->id,
+    ]);
+
+    (new DeliverAnnouncement($announcement))->handle();
+
+    $notification = $this->adminA->notifications()->firstOrFail();
+    expect($notification->data['url'])->toBe(route('society.announcements.show', $announcement));
+
+    $this->actingAs($this->adminA)->get(route('notifications.open', $notification->id))
+        ->assertRedirect(route('society.announcements.show', $announcement));
+    expect($notification->fresh()->read_at)->not->toBeNull();
+
+    $this->actingAs($this->adminA)->get(route('society.announcements.show', $announcement))
+        ->assertOk()
+        ->assertSee('Lift maintenance')
+        ->assertSee('Lift B is down on Sunday.')
+        ->assertSee('High priority')
+        ->assertSee('Maintenance');
+
+    $this->actingAs($this->adminB)->get(route('society.announcements.show', $announcement))->assertNotFound();
+});
+
+it('re-resolves announcement and notice notifications stored with the old list URL', function () {
+    $announcement = Announcement::create([
+        'title' => 'Old announcement', 'message' => 'Body', 'recipient_type' => 'all_staff', 'target_roles' => null,
+        'society_id' => null, 'priority' => 'normal', 'delivery_channel' => 'in_app',
+        'send_type' => 'now', 'status' => 'sent', 'sent_at' => now(), 'created_by' => $this->superAdmin->id,
+    ]);
+    $notice = Notice::factory()->create(['status' => 'published', 'publish_at' => now()->subDay(), 'expires_at' => null, 'society_id' => null, 'target_roles' => null]);
+
+    $legacy = fn (string $type, int $id) => $this->adminA->notifications()->create([
+        'id' => (string) Str::uuid(), 'type' => AnnouncementPublished::class,
+        'data' => ['type' => $type, 'title' => 'x', 'priority' => 'normal', 'item_id' => $id, 'url' => route('society.notices.index')],
+    ]);
+
+    $this->actingAs($this->adminA)->get(route('notifications.open', $legacy('announcement', $announcement->id)->id))
+        ->assertRedirect(route('society.announcements.show', $announcement));
+    $this->actingAs($this->adminA)->get(route('notifications.open', $legacy('notice', $notice->id)->id))
+        ->assertRedirect(route('society.notices.show', $notice));
+});
+
+it('sends members to the portal announcement page', function () {
+    $resident = User::factory()->create(['mobile' => '9000000009']);
+    linkSocietyUser($resident, $this->societyA, 'member');
+    Member::factory()->create(['society_id' => $this->societyA->id, 'user_id' => $resident->id]);
+
+    $announcement = Announcement::create([
+        'title' => 'Pool closed', 'message' => 'Cleaning week.', 'recipient_type' => 'all_members', 'target_roles' => ['member'],
+        'society_id' => $this->societyA->id, 'priority' => 'urgent', 'delivery_channel' => 'in_app',
+        'send_type' => 'now', 'status' => 'sent', 'sent_at' => now(), 'created_by' => $this->superAdmin->id,
+    ]);
+
+    (new DeliverAnnouncement($announcement))->handle();
+
+    $notification = $resident->notifications()->firstOrFail();
+    expect($notification->data['url'])->toBe(route('member.announcements.show', $announcement));
+
+    $this->actingAs($resident)->get(route('member.announcements.show', $announcement))
+        ->assertOk()
+        ->assertSee('Pool closed')
+        ->assertSee('Urgent priority');
+    $this->actingAs($this->adminA)->get(route('society.announcements.show', $announcement))->assertNotFound();
 });
