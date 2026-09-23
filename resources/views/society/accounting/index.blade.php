@@ -24,7 +24,7 @@
 <div class="content-grid">
     <div>
         {{-- Stat cards --}}
-        <div class="stats-grid stats-grid-5">
+        <div class="stats-grid stats-grid-5 stats-grid-stacked">
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="fas fa-indian-rupee-sign"></i></div>
                 <div class="stat-info">

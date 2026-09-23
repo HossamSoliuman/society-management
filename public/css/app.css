@@ -4303,28 +4303,28 @@ body.sidebar-open .sidebar-overlay {
     white-space: nowrap;
 }
 
-/* Assets index: five KPI cards beside the categories aside — stack icon above text */
-.assets-stats-grid > .stat-card {
+/* Narrow KPI cards (e.g. five beside an aside): stack icon above text */
+.stats-grid-stacked > .stat-card {
     flex-direction: column;
     gap: 10px;
     padding: 16px 18px;
 }
 
-.assets-stats-grid > .stat-card .stat-info {
+.stats-grid-stacked > .stat-card .stat-info {
     min-width: 0;
 }
 
-.assets-stats-grid > .stat-card .stat-label {
+.stats-grid-stacked > .stat-card .stat-label {
     white-space: normal;
 }
 
-.assets-stats-grid > .stat-card .stat-value {
-    font-size: 24px;
+.stats-grid-stacked > .stat-card .stat-value {
+    font-size: 22px;
     margin: 2px 0 4px;
     white-space: nowrap;
 }
 
-.assets-stats-grid > .stat-card .stat-trend span {
+.stats-grid-stacked > .stat-card .stat-trend span {
     white-space: nowrap;
 }
 
