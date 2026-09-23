@@ -533,6 +533,8 @@ class AccountingService
 
         $change = fn (float $now, float $then) => '₹'.number_format(abs($now - $then)).' ('.($then != 0 ? round(abs($now - $then) / abs($then) * 100, 2) : 0).'%)';
 
+        $direction = fn (float $now, float $then): string => abs($now - $then) < 0.005 ? 'flat' : ($now > $then ? 'up' : 'down');
+
         return [
             'as_on' => $asOn->toDateString(),
             'compare_on' => $compareOn->toDateString(),
@@ -555,9 +557,9 @@ class AccountingService
             ],
             'total_liab_row' => [number_format($totalLiabilities + $totalEquity, 2), number_format($totalLiabilitiesPrev + $totalEquityPrev, 2)],
             'insights' => [
-                ['label' => 'Total Assets', 'change' => $change($totalAssets, $totalAssetsPrev), 'dir' => $totalAssets >= $totalAssetsPrev ? 'up' : 'down'],
-                ['label' => 'Total Liabilities', 'change' => $change($totalLiabilities, $totalLiabilitiesPrev), 'dir' => $totalLiabilities >= $totalLiabilitiesPrev ? 'up' : 'down'],
-                ['label' => 'Equity & Surplus', 'change' => $change($totalEquity, $totalEquityPrev), 'dir' => $totalEquity >= $totalEquityPrev ? 'up' : 'down'],
+                ['label' => 'Total Assets', 'change' => $change($totalAssets, $totalAssetsPrev), 'dir' => $direction($totalAssets, $totalAssetsPrev)],
+                ['label' => 'Total Liabilities', 'change' => $change($totalLiabilities, $totalLiabilitiesPrev), 'dir' => $direction($totalLiabilities, $totalLiabilitiesPrev)],
+                ['label' => 'Equity & Surplus', 'change' => $change($totalEquity, $totalEquityPrev), 'dir' => $direction($totalEquity, $totalEquityPrev)],
             ],
             'balanced' => abs($totalAssets - ($totalLiabilities + $totalEquity)) < 0.01,
             'total_assets_value' => $totalAssets,

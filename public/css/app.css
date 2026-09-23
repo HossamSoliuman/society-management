@@ -3887,6 +3887,23 @@ select.form-control {
 /* --- Balance sheet two-pane headers --- */
 .bs-head-assets { background: var(--success-light); color: #065f46; font-weight: 700; padding: 12px 16px; }
 .bs-head-liab   { background: var(--orange-light);  color: #9a3412; font-weight: 700; padding: 12px 16px; }
+.bs-head-assets, .bs-head-liab { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bs-head-note { font-size: 11px; font-weight: 500; opacity: .75; white-space: nowrap; }
+.bs-panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bs-pane { display: flex; flex-direction: column; min-width: 0; }
+.bs-pane + .bs-pane { border-left: 1px solid var(--border-color); }
+.bs-pane-footer { margin-top: auto; }
+.bs-table { table-layout: fixed; }
+.bs-table .bs-col-amount { width: 110px; }
+.bs-table th, .bs-table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-table td.bs-item { padding-left: 28px; white-space: normal; }
+.bs-table td.bs-empty { color: var(--text-muted); font-style: italic; }
+.bs-pane-footer .fin-total-row td { border-bottom: 0; }
+.bs-pane-footer .fin-total-row td:first-child { white-space: normal; }
+@media (max-width: 1280px) {
+    .bs-panes { grid-template-columns: minmax(0, 1fr); }
+    .bs-pane + .bs-pane { border-left: 0; border-top: 1px solid var(--border-color); }
+}
 
 /* --- Tinted KPI cards (P&L top row) --- */
 .kpi-tinted { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; }

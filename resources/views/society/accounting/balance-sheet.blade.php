@@ -3,6 +3,10 @@
 @section('title', 'Balance Sheet')
 
 @section('content')
+@php
+    $asOnLabel = \Illuminate\Support\Carbon::parse($bs['as_on'])->format('d M Y');
+    $compareOnLabel = \Illuminate\Support\Carbon::parse($bs['compare_on'])->format('d M Y');
+@endphp
 <div class="page-header">
     <div class="page-header-row">
         <div>
@@ -54,11 +58,11 @@
 {{-- Stat cards --}}
 <div class="stats-grid stats-grid-4">
     <div class="stat-card">
-        <div class="stat-icon green"><i class="fas fa-users"></i></div>
+        <div class="stat-icon green"><i class="fas fa-building-columns"></i></div>
         <div class="stat-info">
             <div class="stat-label">Total Assets</div>
             <div class="stat-value">&#8377; {{ $bs['stats']['total_assets'] }}</div>
-            <div class="stat-trend" style="color: var(--text-muted);"><span>As on 30 May 2025</span></div>
+            <div class="stat-trend" style="color: var(--text-muted);"><span>As on {{ $asOnLabel }}</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -66,7 +70,7 @@
         <div class="stat-info">
             <div class="stat-label">Total Liabilities</div>
             <div class="stat-value">&#8377; {{ $bs['stats']['total_liabilities'] }}</div>
-            <div class="stat-trend" style="color: var(--text-muted);"><span>As on 30 May 2025</span></div>
+            <div class="stat-trend" style="color: var(--text-muted);"><span>As on {{ $asOnLabel }}</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -74,7 +78,7 @@
         <div class="stat-info">
             <div class="stat-label">Total Equity</div>
             <div class="stat-value">&#8377; {{ $bs['stats']['total_equity'] }}</div>
-            <div class="stat-trend" style="color: var(--text-muted);"><span>As on 30 May 2025</span></div>
+            <div class="stat-trend" style="color: var(--text-muted);"><span>As on {{ $asOnLabel }}</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -92,30 +96,39 @@
         {{-- Two-pane balance sheet --}}
         <div class="card">
             <div class="card-body" style="padding: 0;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr;">
-                    {{-- ASSETS pane --}}
-                    <div style="border-right: 1px solid var(--border-color);">
-                        <div class="bs-head-assets">ASSETS</div>
+                <div class="bs-panes">
+                    <div class="bs-pane">
+                        <div class="bs-head-assets"><span>ASSETS</span><span class="bs-head-note">Amounts in &#8377;</span></div>
                         <div class="table-responsive">
-                        <table class="fin-table">
+                        <table class="fin-table bs-table">
+                            <colgroup><col><col class="bs-col-amount"><col class="bs-col-amount"></colgroup>
                             <thead>
                                 <tr>
                                     <th>Particulars</th>
-                                    <th class="num">As On 30 May 2025 (&#8377;)</th>
-                                    <th class="num">As On 31 Mar 2025 (&#8377;)</th>
+                                    <th class="num">{{ $asOnLabel }}</th>
+                                    <th class="num">{{ $compareOnLabel }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($bs['assets'] as $section)
                                     <tr class="fin-section-row income"><td colspan="3">{{ $section['group'] }}</td></tr>
-                                    @foreach($section['rows'] as $row)
+                                    @forelse($section['rows'] as $row)
                                         <tr>
-                                            <td style="padding-left: 28px;">{{ $row[0] }}</td>
+                                            <td class="bs-item">{{ $row[0] }}</td>
                                             <td class="num">{{ $row[1] }}</td>
                                             <td class="num">{{ $row[2] }}</td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr><td colspan="3" class="bs-item bs-empty">No balances</td></tr>
+                                    @endforelse
                                 @endforeach
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="table-responsive bs-pane-footer">
+                        <table class="fin-table bs-table">
+                            <colgroup><col><col class="bs-col-amount"><col class="bs-col-amount"></colgroup>
+                            <tbody>
                                 <tr class="fin-total-row income">
                                     <td>TOTAL ASSETS</td>
                                     <td class="num">{{ $bs['total_assets_row'][0] }}</td>
@@ -126,29 +139,38 @@
                         </div>
                     </div>
 
-                    {{-- LIABILITIES & EQUITY pane --}}
-                    <div>
-                        <div class="bs-head-liab">LIABILITIES &amp; EQUITY</div>
+                    <div class="bs-pane">
+                        <div class="bs-head-liab"><span>LIABILITIES &amp; EQUITY</span><span class="bs-head-note">Amounts in &#8377;</span></div>
                         <div class="table-responsive">
-                        <table class="fin-table">
+                        <table class="fin-table bs-table">
+                            <colgroup><col><col class="bs-col-amount"><col class="bs-col-amount"></colgroup>
                             <thead>
                                 <tr>
                                     <th>Particulars</th>
-                                    <th class="num">As On 30 May 2025 (&#8377;)</th>
-                                    <th class="num">As On 31 Mar 2025 (&#8377;)</th>
+                                    <th class="num">{{ $asOnLabel }}</th>
+                                    <th class="num">{{ $compareOnLabel }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($bs['liabilities'] as $section)
                                     <tr class="fin-section-row {{ $section['color'] === 'red' ? 'expense' : 'income' }}"><td colspan="3" style="{{ $section['color'] === 'orange' ? 'color: var(--orange);' : '' }}">{{ $section['group'] }}</td></tr>
-                                    @foreach($section['rows'] as $row)
+                                    @forelse($section['rows'] as $row)
                                         <tr>
-                                            <td style="padding-left: 28px;">{{ $row[0] }}</td>
+                                            <td class="bs-item">{{ $row[0] }}</td>
                                             <td class="num">{{ $row[1] }}</td>
                                             <td class="num">{{ $row[2] }}</td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr><td colspan="3" class="bs-item bs-empty">No balances</td></tr>
+                                    @endforelse
                                 @endforeach
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="table-responsive bs-pane-footer">
+                        <table class="fin-table bs-table">
+                            <colgroup><col><col class="bs-col-amount"><col class="bs-col-amount"></colgroup>
+                            <tbody>
                                 <tr class="fin-total-row expense">
                                     <td>TOTAL LIABILITIES &amp; EQUITY</td>
                                     <td class="num">{{ $bs['total_liab_row'][0] }}</td>
@@ -162,7 +184,7 @@
             </div>
         </div>
 
-        <div class="tip-banner blue"><i class="fas fa-circle-info"></i><span>Balance Sheet shows the financial position of the society as on 30 May 2025.</span></div>
+        <div class="tip-banner blue"><i class="fas fa-circle-info"></i><span>Balance Sheet shows the financial position of the society as on {{ $asOnLabel }}, compared with {{ $compareOnLabel }}.</span></div>
     </div>
 
     {{-- Right rail --}}
@@ -180,7 +202,7 @@
                 @foreach($bs['insights'] as $insight)
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px;">
                         <span style="color: var(--text-secondary);">{{ $insight['label'] }}</span>
-                        <span class="{{ $insight['dir'] === 'up' ? 'chg-up' : 'chg-down' }}" style="font-weight: 600;"><i class="fas fa-arrow-{{ $insight['dir'] === 'up' ? 'up' : 'down' }}"></i> {{ $insight['change'] }}</span>
+                        <span class="{{ ['up' => 'chg-up', 'down' => 'chg-down'][$insight['dir']] ?? '' }}" style="font-weight: 600; white-space: nowrap;{{ $insight['dir'] === 'flat' ? ' color: var(--text-muted);' : '' }}"><i class="fas fa-{{ ['up' => 'arrow-up', 'down' => 'arrow-down'][$insight['dir']] ?? 'minus' }}"></i> {{ $insight['change'] }}</span>
                     </div>
                 @endforeach
             </div>
