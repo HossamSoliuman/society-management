@@ -45,10 +45,10 @@
                     ],
                     'centerValue' => number_format($stats['total']),
                     'centerLabel' => 'Total Units',
-                    'size' => 110,
+                    'size' => 100,
                     'stroke' => 14,
                 ])
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                <div class="units-summary-legend" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
                         <span class="legend-dot" style="background: #10B981;"></span>
                         <span style="color: var(--text-secondary);">Occupied</span>
