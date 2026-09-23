@@ -28,7 +28,7 @@
 <div class="content-grid">
     <div>
         {{-- Stat cards --}}
-        <div class="stats-grid stats-grid-5">
+        <div class="stats-grid stats-grid-5 assets-stats-grid">
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-cube"></i></div>
                 <div class="stat-info">
