@@ -7,10 +7,11 @@
      */
     $primary = $design->primary_color ?: '#FF6A00';
     $text = $design->text_color ?: '#374151';
+    $template = in_array($design->template, ['modern', 'classic', 'compact', 'minimal'], true) ? $design->template : 'modern';
     $bill = $bill ?? [];
     $items = $bill['items'] ?? [];
 @endphp
-<div class="bill-doc" style="--bill-primary: {{ $primary }}; --bill-primary-light: {{ $primary }}1f; --bill-text: {{ $text }};">
+<div class="bill-doc bill-doc--{{ $template }}" style="--bill-primary: {{ $primary }}; --bill-primary-light: {{ $primary }}1f; --bill-text: {{ $text }};">
     {{-- Header band --}}
     <div class="bill-doc-header">
         <div>

@@ -2977,6 +2977,76 @@ select.form-control {
     width: 50%;
 }
 
+/* Per-template thumbnail sketches */
+.template-thumb .thumb-preview .bar.head {
+    background: var(--primary-light);
+}
+
+.template-thumb .thumb-preview .bar.short {
+    width: 70%;
+}
+
+.template-thumb .thumb-classic {
+    align-items: center;
+    border: 3px double var(--gray-400, #9ca3af);
+}
+
+.template-thumb .thumb-classic .bar {
+    width: 90%;
+}
+
+.template-thumb .thumb-classic .bar.accent {
+    width: 55%;
+    background: var(--gray-400, #9ca3af);
+}
+
+.template-thumb .thumb-classic .bar.head {
+    background: var(--primary);
+}
+
+.template-thumb .thumb-classic .bar.short {
+    width: 60%;
+}
+
+.template-thumb .thumb-compact {
+    gap: 2px;
+    padding: 6px;
+}
+
+.template-thumb .thumb-compact .bar {
+    height: 4px;
+}
+
+.template-thumb .thumb-compact .bar.accent {
+    width: 35%;
+}
+
+.template-thumb .thumb-compact .bar.short {
+    background: var(--primary);
+    width: 45%;
+    margin-left: auto;
+}
+
+.template-thumb .thumb-minimal {
+    background: #fff;
+    gap: 7px;
+}
+
+.template-thumb .thumb-minimal .bar {
+    height: 2px;
+    background: var(--gray-200);
+}
+
+.template-thumb .thumb-minimal .bar.accent {
+    height: 5px;
+    width: 40%;
+    background: var(--gray-300, #d1d5db);
+}
+
+.template-thumb .thumb-minimal .bar.head {
+    background: var(--gray-400, #9ca3af);
+}
+
 .template-thumb .thumb-label {
     font-size: 12px;
     font-weight: 600;
@@ -3160,6 +3230,254 @@ select.form-control {
 .bill-terms ul {
     padding-left: 16px;
     margin-top: 6px;
+}
+
+/* Bill template: Classic — serif letterhead, centered header, ruled table */
+.bill-doc--classic {
+    font-family: Georgia, 'Times New Roman', serif;
+    border: 3px double var(--bill-text, #374151);
+    padding: 20px;
+}
+
+.bill-doc--classic .bill-doc-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    border-bottom: 3px double var(--bill-text, #374151);
+}
+
+.bill-doc--classic .bill-doc-header > div:first-child > div:first-child {
+    justify-content: center;
+}
+
+.bill-doc--classic .bill-doc-header > div:last-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bill-doc--classic .bill-doc-title {
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-align: center;
+    border-top: 1px solid var(--bill-primary, #FF6A00);
+    border-bottom: 1px solid var(--bill-primary, #FF6A00);
+    padding: 4px 16px;
+}
+
+.bill-doc--classic .bill-doc-meta {
+    text-align: center;
+}
+
+.bill-doc--classic .bill-charges-table {
+    border: 1px solid var(--bill-text, #374151);
+}
+
+.bill-doc--classic .bill-charges-table thead th {
+    background: var(--bill-primary, #FF6A00);
+    color: #fff;
+    border: 1px solid var(--bill-text, #374151);
+}
+
+.bill-doc--classic .bill-charges-table tbody td {
+    border: 1px solid var(--border-color);
+}
+
+.bill-doc--classic .bill-totals {
+    border: 1px solid var(--bill-text, #374151);
+    padding: 6px 0;
+    gap: 2px;
+}
+
+.bill-doc--classic .bill-totals .row.grand {
+    border-top: 1px solid var(--bill-text, #374151);
+    margin-top: 4px;
+    padding-top: 8px;
+}
+
+/* Bill template: Compact — dense, fits more on one page */
+.bill-doc--compact {
+    font-size: 11px;
+}
+
+.bill-doc--compact .bill-doc-header {
+    padding-bottom: 10px;
+    align-items: center;
+}
+
+.bill-doc--compact .bill-doc-society-name,
+.bill-doc--compact .bill-doc-title {
+    font-size: 16px;
+}
+
+.bill-doc--compact .bill-doc-header .fa-building {
+    font-size: 22px !important;
+}
+
+.bill-doc--compact .bill-doc-meta {
+    margin-top: 4px;
+    line-height: 1.5;
+    font-size: 10px;
+}
+
+.bill-doc--compact .bill-doc-contact {
+    margin-top: 3px;
+    line-height: 1.5;
+    font-size: 10px;
+}
+
+.bill-doc--compact .bill-parties {
+    padding: 10px 0;
+    gap: 12px;
+}
+
+.bill-doc--compact .bill-parties .block-label {
+    margin-bottom: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bill-doc--compact .bill-charges-table {
+    margin: 10px 0;
+}
+
+.bill-doc--compact .bill-charges-table thead th {
+    padding: 5px 8px;
+    font-size: 10px;
+}
+
+.bill-doc--compact .bill-charges-table tbody td {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-bottom: none;
+}
+
+.bill-doc--compact .bill-charges-table tbody tr:nth-child(even) td {
+    background: var(--gray-50, #f9fafb);
+}
+
+.bill-doc--compact .bill-totals {
+    gap: 0;
+    width: 220px;
+    font-size: 11px;
+}
+
+.bill-doc--compact .bill-totals .row {
+    padding: 2px 8px;
+}
+
+.bill-doc--compact .bill-totals .row.grand {
+    background: var(--bill-primary, #FF6A00);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+    margin-top: 4px;
+}
+
+.bill-doc--compact .bill-payment-row {
+    margin-top: 10px;
+    padding-top: 10px;
+    font-size: 10px;
+}
+
+.bill-doc--compact .bill-qr-box {
+    padding: 6px;
+}
+
+.bill-doc--compact .bill-qr-box .fa-qrcode {
+    font-size: 34px !important;
+}
+
+.bill-doc--compact .bill-terms {
+    margin-top: 10px;
+    padding-top: 8px;
+    font-size: 10px;
+}
+
+.bill-doc--compact .bill-terms ul {
+    margin-top: 3px;
+}
+
+/* Bill template: Minimal — no fills, hairlines, restrained colour */
+.bill-doc--minimal .bill-doc-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+}
+
+.bill-doc--minimal .bill-doc-society-name {
+    color: var(--bill-text, #374151) !important;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+}
+
+.bill-doc--minimal .bill-doc-header .fa-building {
+    color: var(--bill-text, #374151) !important;
+    font-size: 24px !important;
+}
+
+.bill-doc--minimal .bill-doc-title {
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--bill-text, #374151);
+}
+
+.bill-doc--minimal .bill-parties {
+    padding: 20px 0;
+}
+
+.bill-doc--minimal .bill-parties .block-label {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    font-size: 10px;
+}
+
+.bill-doc--minimal .bill-charges-table {
+    margin: 20px 0;
+}
+
+.bill-doc--minimal .bill-charges-table thead th {
+    background: none;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    font-size: 10px;
+    border-bottom: 1px solid var(--bill-text, #374151);
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.bill-doc--minimal .bill-charges-table tbody td {
+    padding-left: 0;
+    padding-right: 0;
+    border-bottom-color: var(--gray-100, #f3f4f6);
+}
+
+.bill-doc--minimal .bill-totals .row,
+.bill-doc--minimal .bill-totals .row.highlight {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.bill-doc--minimal .bill-totals .row.highlight {
+    background: none;
+}
+
+.bill-doc--minimal .bill-totals .row.grand {
+    color: var(--bill-text, #374151);
+    border-top: 1px solid var(--bill-text, #374151);
+    padding-top: 10px;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.bill-doc--minimal .bill-qr-box {
+    border: none;
 }
 
 /* Create Bill — input with trailing icon */

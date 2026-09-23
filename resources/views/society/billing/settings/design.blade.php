@@ -71,11 +71,12 @@
                     @foreach($templates as $key => $label)
                         <div class="template-thumb {{ $settings->template === $key ? 'active' : '' }}" data-template="{{ $key }}" onclick="selectTemplate('{{ $key }}', this)">
                             <div class="thumb-check"><i class="fas fa-check"></i></div>
-                            <div class="thumb-preview">
+                            <div class="thumb-preview thumb-{{ $key }}">
                                 <div class="bar accent"></div>
+                                <div class="bar head"></div>
                                 <div class="bar"></div>
                                 <div class="bar"></div>
-                                <div class="bar" style="width: 70%;"></div>
+                                <div class="bar short"></div>
                             </div>
                             <div class="thumb-label">{{ $label }}</div>
                         </div>
@@ -213,6 +214,11 @@
         document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
         document.getElementById('tpl_input').value = key;
+        const doc = document.querySelector('#billPreview .bill-doc');
+        if (doc) {
+            doc.classList.remove('bill-doc--modern', 'bill-doc--classic', 'bill-doc--compact', 'bill-doc--minimal');
+            doc.classList.add('bill-doc--' + key);
+        }
     }
     function setPreview(field, value) {
         const node = document.querySelector('#billPreview [data-bill="' + field + '"]');
