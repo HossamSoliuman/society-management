@@ -396,10 +396,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
 
-                <div class="header-search">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Search member, flat, invoice, complaint...">
-                </div>
+                <div class="header-search" style="visibility: hidden;"></div>
 
                 <div class="header-actions">
                     <x-notification-bell>
