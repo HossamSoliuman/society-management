@@ -3,6 +3,7 @@
 use App\Models\BillSetting;
 use App\Models\ChargeHead;
 use App\Models\LateFeeSetting;
+use App\Models\Member;
 use App\Models\NumberingSeries;
 use App\Models\Society;
 use App\Models\Tax;
@@ -157,6 +158,36 @@ it('persists late fee settings', function () {
     expect($setting->grace_period_days)->toBe(10)
         ->and($setting->late_fee_type)->toBe('flat')
         ->and($setting->interest_calc_type)->toBe('compound');
+});
+
+it('persists late fee exemptions scoped to the society', function () {
+    $member = Member::factory()->create(['society_id' => $this->society->id]);
+    $head = ChargeHead::factory()->create(['society_id' => $this->society->id]);
+    $payload = [
+        'grace_period_days' => 10,
+        'late_fee_type' => 'percentage',
+        'interest_calc_type' => 'simple',
+        'apply_interest_after_days' => 30,
+        'exempt_members' => [(string) $member->id],
+        'exempt_charge_heads' => [(string) $head->id],
+        'exempt_bill_types' => ['Special Assessment'],
+    ];
+
+    $this->actingAs($this->user)->put(route('society.billing.settings.late-fee.update'), $payload)
+        ->assertSessionHasNoErrors();
+
+    $setting = LateFeeSetting::where('society_id', $this->society->id)->first();
+    expect($setting->exempt_members)->toBe([$member->id])
+        ->and($setting->exempt_charge_heads)->toBe([$head->id])
+        ->and($setting->exempt_bill_types)->toBe(['Special Assessment']);
+
+    $this->actingAs($this->user)->get(route('society.billing.settings.late-fee'))
+        ->assertOk()
+        ->assertSee('1 selected');
+
+    $foreign = Member::factory()->create(['society_id' => Society::create(['name' => 'Other', 'prefix' => 'OTH', 'status' => 'active'])->id]);
+    $this->actingAs($this->user)->put(route('society.billing.settings.late-fee.update'), [...$payload, 'exempt_members' => [$foreign->id]])
+        ->assertSessionHasErrors('exempt_members.0');
 });
 
 it('persists bill design settings', function () {

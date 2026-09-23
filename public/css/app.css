@@ -5047,3 +5047,167 @@ body.sidebar-open .sidebar-overlay {
         width: 100%;
     }
 }
+
+/* Late-fee exemption pickers */
+.exempt-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.exempt-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--gray-50, #f8fafc);
+}
+
+.exempt-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.exempt-picker-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.exempt-picker-title i {
+    color: var(--primary);
+    margin-right: 4px;
+}
+
+.exempt-picker-count {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--gray-100);
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.exempt-picker-count.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.exempt-picker-search {
+    position: relative;
+}
+
+.exempt-picker-search i {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.exempt-picker-search .form-control {
+    padding-left: 32px;
+}
+
+.exempt-picker-list {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #fff;
+}
+
+.exempt-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.exempt-picker-item:last-of-type {
+    border-bottom: none;
+}
+
+.exempt-picker-item[hidden] {
+    display: none;
+}
+
+.exempt-picker-item:hover {
+    background: var(--gray-50, #f8fafc);
+}
+
+.exempt-picker-item:has(input:checked) {
+    background: var(--primary-light);
+}
+
+.exempt-picker-item .form-check-input {
+    flex-shrink: 0;
+}
+
+.exempt-picker-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-primary);
+}
+
+.exempt-picker-meta {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 4px;
+    background: var(--gray-100);
+    color: var(--text-secondary);
+}
+
+.exempt-picker-empty {
+    padding: 16px 12px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.exempt-picker-actions {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.exempt-picker-actions .link-btn {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.exempt-picker-actions .link-btn:hover {
+    text-decoration: underline;
+}
+
+.exempt-picker .form-text {
+    margin-top: 0;
+}
+
+@media (max-width: 1100px) {
+    .exempt-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -217,7 +217,7 @@
                         </div>
                     @endforeach
                     <div style="display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Late Fee (<span id="pv_pct_label">{{ number_format($lateFee->late_fee_percent, 2) }}</span>%)<br><span class="note-text" id="pv_fee_note">(Not yet applicable)</span></span>
+                        <span style="color: var(--text-secondary);">Late Fee (<span id="pv_pct_label">{{ number_format($lateFee->late_fee_percent, 2) }}%</span>)<br><span class="note-text" id="pv_fee_note">(Not yet applicable)</span></span>
                         <span style="font-weight: 600;" id="pv_fee">₹0.00</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--border-color);">
@@ -240,34 +240,36 @@
             <div class="card-title" style="font-size: 16px;">Exemptions</div>
             <div class="card-subtitle">Configure exemptions for late fees and interest.</div>
 
-            <div class="form-row-3">
-                <div class="form-group">
-                    <label class="form-label">Exempt Members</label>
-                    <select name="exempt_members[]" class="form-control" multiple size="4">
-                        @foreach($members as $member)
-                            <option value="{{ $member->id }}" {{ in_array((string) $member->id, (array) $lateFee->exempt_members, true) ? 'selected' : '' }}>{{ $member->name }} ({{ $member->flat_unit }})</option>
-                        @endforeach
-                    </select>
-                    <div class="form-text">Selected members will not be charged late fee or interest</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Exempt Charge Heads</label>
-                    <select name="exempt_charge_heads[]" class="form-control" multiple size="4">
-                        @foreach($chargeHeads as $ch)
-                            <option value="{{ $ch->id }}" {{ in_array((string) $ch->id, (array) $lateFee->exempt_charge_heads, true) ? 'selected' : '' }}>{{ $ch->name }}</option>
-                        @endforeach
-                    </select>
-                    <div class="form-text">Selected charge heads will be exempt from late fee and interest</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Exempt Bill Types</label>
-                    <select name="exempt_bill_types[]" class="form-control" multiple size="4">
-                        @foreach(['Monthly Maintenance', 'Quarterly Maintenance', 'Special Assessment', 'One-time'] as $bt)
-                            <option value="{{ $bt }}" {{ in_array($bt, (array) $lateFee->exempt_bill_types, true) ? 'selected' : '' }}>{{ $bt }}</option>
-                        @endforeach
-                    </select>
-                    <div class="form-text">Selected bill types will be exempt from late fee and interest</div>
-                </div>
+            <div class="exempt-grid">
+                @include('society.billing.settings._exempt-picker', [
+                    'name' => 'exempt_members',
+                    'label' => 'Exempt Members',
+                    'icon' => 'fa-user-shield',
+                    'help' => 'Selected members will not be charged late fee.',
+                    'options' => $members->map(fn ($m) => ['value' => $m->id, 'label' => $m->name, 'meta' => $m->flat_unit])->all(),
+                    'selected' => (array) $lateFee->exempt_members,
+                    'searchable' => true,
+                    'empty' => 'No members found for this society.',
+                ])
+                @include('society.billing.settings._exempt-picker', [
+                    'name' => 'exempt_charge_heads',
+                    'label' => 'Exempt Charge Heads',
+                    'icon' => 'fa-layer-group',
+                    'help' => 'Amounts under these charge heads are excluded from the late fee.',
+                    'options' => $chargeHeads->map(fn ($ch) => ['value' => $ch->id, 'label' => $ch->name])->all(),
+                    'selected' => (array) $lateFee->exempt_charge_heads,
+                    'searchable' => $chargeHeads->count() > 6,
+                    'empty' => 'No charge heads configured yet.',
+                ])
+                @include('society.billing.settings._exempt-picker', [
+                    'name' => 'exempt_bill_types',
+                    'label' => 'Exempt Bill Types',
+                    'icon' => 'fa-file-invoice',
+                    'help' => 'Bills of these types will not be charged late fee.',
+                    'options' => collect($billTypes)->map(fn ($bt) => ['value' => $bt, 'label' => $bt])->all(),
+                    'selected' => (array) $lateFee->exempt_bill_types,
+                    'empty' => 'No bill types available.',
+                ])
             </div>
         </div>
     </div>
@@ -278,20 +280,59 @@
     function recalcPreview() {
         const billAmount = 3500;
         const overdueDays = 3;
+        const num = (sel) => parseFloat(document.querySelector(sel)?.value || '0') || 0;
         const grace = parseInt(document.getElementById('lf_grace').value || '0', 10);
-        const pct = parseFloat(document.getElementById('lf_percent').value || '0');
-        document.getElementById('pv_grace').textContent = grace + ' Days';
-        document.getElementById('pv_pct_label').textContent = pct.toFixed(2);
+        const pct = num('#lf_percent');
+        const type = document.querySelector('input[name="late_fee_type"]:checked')?.value || 'percentage';
+        const cap = num('input[name="max_late_fee_cap"]');
+        const labels = { percentage: pct.toFixed(2) + '%', flat: 'Flat', per_day: 'Per Day' };
 
+        document.getElementById('pv_grace').textContent = grace + ' Days';
+        document.getElementById('pv_pct_label').textContent = labels[type];
+
+        const applicable = overdueDays > grace;
         let fee = 0;
-        let applicable = overdueDays > grace;
         if (applicable) {
-            fee = billAmount * pct / 100;
+            fee = type === 'flat' ? num('input[name="late_fee_flat"]')
+                : type === 'per_day' ? num('input[name="late_fee_per_day"]') * (overdueDays - grace)
+                : billAmount * pct / 100;
+            if (cap > 0) {
+                fee = Math.min(fee, cap);
+            }
         }
-        document.getElementById('pv_fee').textContent = '₹' + fee.toFixed(2);
+        const money = (v) => '₹' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('pv_fee').textContent = money(fee);
         document.getElementById('pv_fee_note').textContent = applicable ? '' : '(Not yet applicable)';
-        document.getElementById('pv_total').textContent = '₹' + (billAmount + fee).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        document.getElementById('pv_total').textContent = money(billAmount + fee);
     }
+
+    document.querySelectorAll('input[name="late_fee_type"], input[name="late_fee_flat"], input[name="late_fee_per_day"], input[name="max_late_fee_cap"]')
+        .forEach((el) => el.addEventListener('input', recalcPreview));
+    recalcPreview();
+
+    document.querySelectorAll('[data-exempt-picker]').forEach((picker) => {
+        const boxes = () => [...picker.querySelectorAll('input[type="checkbox"]')];
+        const visible = () => boxes().filter((b) => !b.closest('.exempt-picker-item').hidden);
+        const count = picker.querySelector('[data-count]');
+        const refresh = () => {
+            const n = boxes().filter((b) => b.checked).length;
+            count.textContent = n + ' selected';
+            count.classList.toggle('active', n > 0);
+        };
+
+        picker.addEventListener('change', refresh);
+        picker.querySelector('[data-select-all]')?.addEventListener('click', () => { visible().forEach((b) => b.checked = true); refresh(); });
+        picker.querySelector('[data-clear]')?.addEventListener('click', () => { boxes().forEach((b) => b.checked = false); refresh(); });
+        picker.querySelector('[data-search]')?.addEventListener('input', (e) => {
+            const q = e.target.value.trim().toLowerCase();
+            let shown = 0;
+            picker.querySelectorAll('.exempt-picker-item').forEach((item) => {
+                item.hidden = q !== '' && !item.dataset.label.includes(q);
+                shown += item.hidden ? 0 : 1;
+            });
+            picker.querySelector('[data-no-results]').hidden = shown > 0;
+        });
+    });
 </script>
 @endpush
 @endsection

@@ -175,6 +175,21 @@ it('marks bills overdue and applies late fees once after the grace period', func
     expect((float) $bill->fresh()->late_fee)->toBe(200.0); // never twice
 });
 
+it('excludes exempt charge heads from the percentage late fee base', function () {
+    LateFeeSetting::create(['society_id' => $this->society->id, 'enable_late_fee' => true, 'grace_period_days' => 0, 'late_fee_type' => 'percentage', 'late_fee_percent' => 10, 'exempt_charge_heads' => [$this->sinking->id]]);
+    $bill = MaintenanceBill::factory()->create(['society_id' => $this->society->id, 'status' => 'overdue', 'total_amount' => 2000, 'collected_amount' => 0, 'outstanding_amount' => 2000, 'late_fee' => 0, 'due_date' => Carbon::today()->subDays(5), 'bill_date' => Carbon::today()->subDays(20)]);
+    $bill->items()->create(['charge_head_id' => $this->maintenance->id, 'charge_head_name' => 'Maintenance', 'amount' => 1500]);
+    $bill->items()->create(['charge_head_id' => $this->sinking->id, 'charge_head_name' => 'Sinking Fund', 'amount' => 500]);
+
+    $fullyExempt = MaintenanceBill::factory()->create(['society_id' => $this->society->id, 'status' => 'overdue', 'total_amount' => 500, 'collected_amount' => 0, 'outstanding_amount' => 500, 'late_fee' => 0, 'due_date' => Carbon::today()->subDays(5), 'bill_date' => Carbon::today()->subDays(20)]);
+    $fullyExempt->items()->create(['charge_head_id' => $this->sinking->id, 'charge_head_name' => 'Sinking Fund', 'amount' => 500]);
+
+    app(BillingService::class)->applyLateFees();
+
+    expect((float) $bill->fresh()->late_fee)->toBe(150.0)
+        ->and((float) $fullyExempt->fresh()->late_fee)->toBe(0.0);
+});
+
 it('downloads the bill as a PDF with society bank details', function () {
     $bill = app(BillingService::class)->generateForPeriod($this->society, 'June 2026', [$this->maintenance->id])->first();
 

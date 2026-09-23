@@ -273,6 +273,7 @@ class BillingService
                 ->whereDate('due_date', '<', $cutoff->toDateString())
                 ->when($setting->exempt_bill_types, fn ($q) => $q->whereNotIn('billing_type', $setting->exempt_bill_types))
                 ->when($setting->exempt_members, fn ($q) => $q->where(fn ($s) => $s->whereNull('member_id')->orWhereNotIn('member_id', $setting->exempt_members)))
+                ->when($setting->exempt_charge_heads, fn ($q) => $q->with('items'))
                 ->orderBy('id')
                 ->each(function (MaintenanceBill $bill) use ($setting, $asOf, &$applied) {
                     $fee = $this->lateFeeAmount($bill, $setting, $asOf);
@@ -494,6 +495,19 @@ class BillingService
     private function lateFeeAmount(MaintenanceBill $bill, LateFeeSetting $setting, Carbon $asOf): float
     {
         $base = (float) $bill->outstanding_amount;
+
+        $exemptHeads = array_map('intval', (array) $setting->exempt_charge_heads);
+        if ($exemptHeads !== [] && $bill->relationLoaded('items') && $bill->items->isNotEmpty()) {
+            $itemsTotal = (float) $bill->items->sum('amount');
+            $exemptTotal = (float) $bill->items->whereIn('charge_head_id', $exemptHeads)->sum('amount');
+
+            if ($itemsTotal <= 0 || $exemptTotal >= $itemsTotal) {
+                return 0.0;
+            }
+
+            $base *= 1 - $exemptTotal / $itemsTotal;
+        }
+
         $daysLate = max(0, (int) $bill->due_date->copy()->addDays((int) $setting->grace_period_days)->diffInDays($asOf, false));
 
         $fee = match ($setting->late_fee_type) {

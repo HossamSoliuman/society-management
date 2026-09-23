@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\BillSetting;
 use App\Models\ChargeHead;
 use App\Models\LateFeeSetting;
+use App\Models\MaintenanceBill;
 use App\Models\Member;
 use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BillSettingController extends Controller
@@ -139,12 +141,16 @@ class BillSettingController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('society.billing.settings.late-fee', compact('society', 'lateFee', 'members', 'chargeHeads'));
+        $billTypes = $this->billTypes($society, $lateFee);
+
+        return view('society.billing.settings.late-fee', compact('society', 'lateFee', 'members', 'chargeHeads', 'billTypes'));
     }
 
     public function updateLateFee(Request $request): RedirectResponse
     {
-        $lateFee = $this->lateFeeSettings($this->currentSociety());
+        $society = $this->currentSociety();
+        $lateFee = $this->lateFeeSettings($society);
+        $scoped = fn (string $table) => Rule::exists($table, 'id')->when($society, fn ($rule) => $rule->where('society_id', $society->id));
 
         $data = $request->validate([
             'enable_late_fee' => ['nullable', 'boolean'],
@@ -162,14 +168,17 @@ class BillSettingController extends Controller
             'interest_calc_on' => ['nullable', 'string'],
             'round_off_interest' => ['nullable', 'string'],
             'exempt_members' => ['nullable', 'array'],
+            'exempt_members.*' => ['integer', $scoped('members')],
             'exempt_charge_heads' => ['nullable', 'array'],
+            'exempt_charge_heads.*' => ['integer', $scoped('charge_heads')],
             'exempt_bill_types' => ['nullable', 'array'],
+            'exempt_bill_types.*' => ['string', 'max:255'],
         ]);
 
         $data = $this->withToggleDefaults($data, ['enable_late_fee', 'enable_interest']);
-        $data['exempt_members'] = $request->input('exempt_members', []);
-        $data['exempt_charge_heads'] = $request->input('exempt_charge_heads', []);
-        $data['exempt_bill_types'] = $request->input('exempt_bill_types', []);
+        $data['exempt_members'] = array_values(array_unique(array_map('intval', $data['exempt_members'] ?? [])));
+        $data['exempt_charge_heads'] = array_values(array_unique(array_map('intval', $data['exempt_charge_heads'] ?? [])));
+        $data['exempt_bill_types'] = array_values(array_unique($data['exempt_bill_types'] ?? []));
 
         $lateFee->update($data);
 
@@ -243,6 +252,30 @@ class BillSettingController extends Controller
     private function lateFeeSettings(?Society $society): LateFeeSetting
     {
         return LateFeeSetting::firstOrCreate(['society_id' => $society?->id]);
+    }
+
+    /**
+     * Bill types offered for exemption: the standard types plus any the society
+     * actually uses (default type, existing bills, previously saved exemptions).
+     *
+     * @return array<int, string>
+     */
+    private function billTypes(?Society $society, LateFeeSetting $lateFee): array
+    {
+        $used = MaintenanceBill::query()
+            ->when($society, fn ($q) => $q->where('society_id', $society->id))
+            ->whereNotNull('billing_type')
+            ->distinct()
+            ->pluck('billing_type');
+
+        return collect(['Monthly Maintenance', 'Quarterly Maintenance', 'Special Assessment', 'Ad-hoc Charges'])
+            ->push($this->settings($society)->default_bill_type)
+            ->merge($used)
+            ->merge((array) $lateFee->exempt_bill_types)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
