@@ -14,6 +14,9 @@ class Document extends Model
     /** @use HasFactory<DocumentFactory> */
     use BelongsToSociety, HasFactory, LogsActivity;
 
+    /** @var array<int, string> */
+    protected array $activityIgnoredAttributes = ['downloads'];
+
     protected $fillable = [
         'society_id', 'name', 'document_category_id', 'type', 'description',
         'related_to', 'tags', 'expiry_date', 'confidentiality', 'uploaded_by',
