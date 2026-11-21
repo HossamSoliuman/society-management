@@ -225,6 +225,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::post('/settings/prefix', [SettingController::class, 'storePrefix'])->name('settings.prefix.store');
     Route::get('/settings/smtp', [SettingController::class, 'smtpSettings'])->name('settings.smtp');
     Route::put('/settings/smtp', [SettingController::class, 'updateSmtp'])->name('settings.smtp.update');
+    Route::post('/settings/smtp/test', [SettingController::class, 'sendTestEmail'])->middleware('throttle:5,1')->name('settings.smtp.test');
     Route::get('/settings/backup', [SettingController::class, 'backupSettings'])->name('settings.backup');
     Route::put('/settings/backup', [SettingController::class, 'updateBackup'])->name('settings.backup.update');
     Route::get('/settings/security', [SettingController::class, 'securitySettings'])->name('settings.security');

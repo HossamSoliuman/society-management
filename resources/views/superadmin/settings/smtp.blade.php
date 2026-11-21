@@ -7,7 +7,6 @@
     <div class="page-header-row">
         <div>
             <h1 class="page-title">SMTP Settings</h1>
-            <p class="page-subtitle">Configure SMTP settings for email notifications.</p>
         </div>
     </div>
     <div class="breadcrumb">
@@ -63,7 +62,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">SMTP Password</label>
-                        <input type="password" name="smtp_password" class="form-control" value="{{ $smtp->smtp_password ?? '' }}" required>
+                        <input type="password" name="smtp_password" class="form-control @error('smtp_password') is-invalid @enderror" value="" autocomplete="new-password" placeholder="{{ filled($smtp?->smtp_password) ? 'Leave blank to keep the saved password' : '' }}" @required(blank($smtp?->smtp_password))>
+                        @error('smtp_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -101,9 +101,25 @@
         </div>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-bottom: 40px;">
-        <button type="button" class="btn btn-outline-primary"><i class="fas fa-paper-plane"></i> Send Test Email</button>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+    </div>
+</form>
+
+<form action="{{ route('superadmin.settings.smtp.test') }}" method="POST" style="margin-top: 20px; padding-bottom: 40px;">
+    @csrf
+    <div class="card">
+        <div class="card-body">
+            <div class="section-title"><i class="fas fa-paper-plane"></i> Send Test Email</div>
+            <div style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+                <div class="form-group" style="margin-bottom: 0; flex: 1 1 260px;">
+                    <label class="form-label">Recipient</label>
+                    <input type="email" name="test_email" class="form-control @error('test_email') is-invalid @enderror" value="{{ old('test_email', auth()->user()->email) }}" required>
+                    @error('test_email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <button type="submit" class="btn btn-outline-primary" style="margin-top: 26px;"><i class="fas fa-paper-plane"></i> Send Test Email</button>
+            </div>
+        </div>
     </div>
 </form>
 @endsection

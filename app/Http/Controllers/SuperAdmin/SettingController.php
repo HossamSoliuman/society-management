@@ -3,18 +3,23 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\CompanyProfile;
-use App\Models\SmtpSetting;
 use App\Models\BackupSetting;
-use App\Models\SecuritySetting;
+use App\Models\CompanyProfile;
 use App\Models\PrefixSetting;
+use App\Models\SecuritySetting;
+use App\Models\SmtpSetting;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class SettingController extends Controller
 {
     public function companyProfile()
     {
         $company = CompanyProfile::first();
+
         return view('superadmin.settings.company-profile', compact('company'));
     }
 
@@ -32,12 +37,14 @@ class SettingController extends Controller
         ]);
 
         CompanyProfile::first()->update($validated);
+
         return redirect()->back()->with('success', 'Company profile updated');
     }
 
     public function prefixSettings()
     {
         $prefixes = PrefixSetting::latest()->paginate(10);
+
         return view('superadmin.settings.prefix', compact('prefixes'));
     }
 
@@ -54,12 +61,14 @@ class SettingController extends Controller
         $validated['status'] = 'active';
 
         PrefixSetting::create($validated);
+
         return redirect()->back()->with('success', 'Prefix setting created');
     }
 
     public function smtpSettings()
     {
         $smtp = SmtpSetting::first();
+
         return view('superadmin.settings.smtp', compact('smtp'));
     }
 
@@ -71,7 +80,7 @@ class SettingController extends Controller
             'encryption' => 'required|string|max:50',
             'authentication' => 'required|string|max:50',
             'smtp_username' => 'required|string|max:255',
-            'smtp_password' => 'required|string|max:255',
+            'smtp_password' => 'nullable|string|max:255',
             'from_email' => 'required|email|max:255',
             'from_name' => 'required|string|max:255',
             'reply_to_email' => 'nullable|email|max:255',
@@ -82,13 +91,48 @@ class SettingController extends Controller
         $validated['enable_ssl_tls'] = $request->boolean('enable_ssl_tls');
         $validated['enable_email_logging'] = $request->boolean('enable_email_logging');
 
-        SmtpSetting::first()->update($validated);
+        $smtp = SmtpSetting::query()->firstOrNew();
+
+        // A blank password field keeps the stored one; it is never echoed back to the page.
+        if (blank($validated['smtp_password'] ?? null)) {
+            unset($validated['smtp_password']);
+            if (! $smtp->exists || blank($smtp->smtp_password)) {
+                return redirect()->back()->withInput()->withErrors(['smtp_password' => 'The SMTP password is required.']);
+            }
+        }
+
+        $smtp->fill($validated)->save();
+
         return redirect()->back()->with('success', 'SMTP settings updated');
+    }
+
+    /**
+     * Send a plain test message through the saved SMTP settings.
+     */
+    public function sendTestEmail(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'test_email' => ['required', 'email', 'max:255'],
+        ]);
+
+        try {
+            Mail::raw(
+                'This is a test email from '.config('app.name').'. If you received it, the SMTP settings are working.',
+                fn (Message $message) => $message->to($validated['test_email'])->subject(config('app.name').' SMTP test'),
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()->back()->withInput()->with('error', 'Test email could not be sent: '.$e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Test email sent to '.$validated['test_email'].'.');
     }
 
     public function backupSettings()
     {
         $backup = BackupSetting::first();
+
         return view('superadmin.settings.backup', compact('backup'));
     }
 
@@ -112,12 +156,14 @@ class SettingController extends Controller
         }
 
         BackupSetting::first()->update($validated);
+
         return redirect()->back()->with('success', 'Backup settings updated');
     }
 
     public function securitySettings()
     {
         $security = SecuritySetting::first();
+
         return view('superadmin.settings.security', compact('security'));
     }
 
@@ -143,6 +189,7 @@ class SettingController extends Controller
         }
 
         SecuritySetting::first()->update($validated);
+
         return redirect()->back()->with('success', 'Security settings updated');
     }
 }
