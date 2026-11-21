@@ -24,45 +24,16 @@
     <a href="{{ route('superadmin.settings.security') }}" class="sub-nav-tab">Security Settings</a>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom: 40px;">
     <div class="card-body">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div class="section-title" style="margin: 0;"><i class="fas fa-tags"></i> Auto-Generated Prefix Settings</div>
-            <a href="#" class="btn btn-primary btn-sm" onclick="document.getElementById('addPrefix').style.display='block';"><i class="fas fa-plus"></i> Add Prefix</a>
-        </div>
+        <div class="section-title"><i class="fas fa-tags"></i> Platform Document Numbering</div>
 
-        <div id="addPrefix" style="display: none; margin-bottom: 20px;">
-            <form action="{{ route('superadmin.settings.prefix.store') }}" method="POST">
+        @foreach($prefixes as $prefix)
+            <form id="prefix-form-{{ $prefix->id }}" action="{{ route('superadmin.settings.prefix.update', $prefix) }}" method="POST">
                 @csrf
-                <div class="card" style="background: var(--gray-50);">
-                    <div class="card-body">
-                        <div class="form-row-3">
-                            <div class="form-group">
-                                <label class="form-label">Module <span class="required">*</span></label>
-                                <input type="text" name="module" class="form-control" placeholder="e.g. Invoice, Receipt" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Prefix <span class="required">*</span></label>
-                                <input type="text" name="prefix" class="form-control" placeholder="e.g. INV, RCPT" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Starting Number <span class="required">*</span></label>
-                                <input type="number" name="starting_number" class="form-control" value="1" min="1" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Number Padding</label>
-                            <input type="number" name="padding" class="form-control" value="4" min="1" max="10">
-                            <div class="form-text">Number of digits for auto-generated numbers (e.g., 4 = 0001)</div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button type="submit" class="btn btn-primary">Save Prefix</button>
-                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('addPrefix').style.display='none';">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+                @method('PUT')
             </form>
-        </div>
+        @endforeach
 
         <div class="table-responsive">
             <table class="data-table">
@@ -70,31 +41,38 @@
                     <tr>
                         <th style="padding-left: 20px;">Module</th>
                         <th>Prefix</th>
-                        <th>Starting Number</th>
-                        <th>Current Number</th>
-                        <th>Padding</th>
-                        <th>Format Example</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Next Number</th>
+                        <th>Digits</th>
+                        <th>Next Number Preview</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($prefixes as $prefix)
-                    <tr>
-                        <td style="padding-left: 20px;">{{ $prefix->module }}</td>
-                        <td><span class="prefix-tag">{{ $prefix->prefix }}</span></td>
-                        <td>{{ $prefix->starting_number }}</td>
-                        <td>{{ $prefix->current_number }}</td>
-                        <td>{{ $prefix->padding }}</td>
-                        <td style="font-size: 12px; color: var(--text-muted);">{{ $prefix->prefix }}-{{ str_pad($prefix->current_number, $prefix->padding, '0', STR_PAD_LEFT) }}</td>
-                        <td><span class="status-badge {{ $prefix->status }}">{{ ucfirst($prefix->status) }}</span></td>
-                        <td><div style="display: flex; gap: 4px;"><button class="action-btn edit"><i class="fas fa-pen"></i></button><button class="action-btn delete"><i class="fas fa-trash"></i></button></div></td>
-                    </tr>
+                        @php
+                            $bag = $errors->getBag('prefix'.$prefix->id);
+                        @endphp
+                        <tr>
+                            <td style="padding-left: 20px; font-weight: 600;">{{ $prefix->module }}</td>
+                            <td>
+                                <input type="text" name="prefix" form="prefix-form-{{ $prefix->id }}" class="form-control {{ $bag->has('prefix') ? 'is-invalid' : '' }}" value="{{ $bag->any() ? old('prefix', $prefix->prefix) : $prefix->prefix }}" maxlength="20" required style="max-width: 120px;">
+                                @if($bag->has('prefix'))<div class="invalid-feedback">{{ $bag->first('prefix') }}</div>@endif
+                            </td>
+                            <td>
+                                <input type="number" name="next_number" form="prefix-form-{{ $prefix->id }}" class="form-control {{ $bag->has('next_number') ? 'is-invalid' : '' }}" value="{{ $bag->any() ? old('next_number', $prefix->nextNumber()) : $prefix->nextNumber() }}" min="1" required style="max-width: 130px;">
+                                @if($bag->has('next_number'))<div class="invalid-feedback">{{ $bag->first('next_number') }}</div>@endif
+                            </td>
+                            <td>
+                                <input type="number" name="padding" form="prefix-form-{{ $prefix->id }}" class="form-control {{ $bag->has('padding') ? 'is-invalid' : '' }}" value="{{ $bag->any() ? old('padding', $prefix->padding) : $prefix->padding }}" min="1" max="10" required style="max-width: 90px;">
+                                @if($bag->has('padding'))<div class="invalid-feedback">{{ $bag->first('padding') }}</div>@endif
+                            </td>
+                            <td><span class="prefix-tag">{{ $prefix->format($prefix->nextNumber()) }}</span></td>
+                            <td style="text-align: right;"><button type="submit" form="prefix-form-{{ $prefix->id }}" class="btn btn-secondary btn-sm"><i class="fas fa-save"></i> Save</button></td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-        @include('superadmin.components.pagination', ['items' => $prefixes])
     </div>
 </div>
 @endsection

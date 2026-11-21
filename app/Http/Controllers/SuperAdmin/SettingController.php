@@ -49,28 +49,43 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Company profile updated');
     }
 
-    public function prefixSettings()
+    public function prefixSettings(): View
     {
-        $prefixes = PrefixSetting::latest()->paginate(10);
+        $prefixes = collect(array_keys(PrefixSetting::MODULES))
+            ->map(fn (string $module) => PrefixSetting::forModule($module));
 
         return view('superadmin.settings.prefix', compact('prefixes'));
     }
 
-    public function storePrefix(Request $request)
+    public function updatePrefix(Request $request, PrefixSetting $prefixSetting): RedirectResponse
     {
-        $validated = $request->validate([
-            'module' => 'required|string|max:100',
-            'prefix' => 'required|string|max:20',
-            'starting_number' => 'required|integer|min:1',
-            'padding' => 'required|integer|min:1',
+        $validated = $request->validateWithBag('prefix'.$prefixSetting->id, [
+            'prefix' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9\/_-]+$/'],
+            'padding' => ['required', 'integer', 'min:1', 'max:10'],
+            'next_number' => ['required', 'integer', 'min:1', 'max:99999999'],
+        ], [
+            'prefix.regex' => 'Use letters, numbers, slashes, dashes or underscores only.',
         ]);
 
-        $validated['current_number'] = $validated['starting_number'];
-        $validated['status'] = 'active';
+        $prefix = strtoupper($validated['prefix']);
+        $next = (int) $validated['next_number'];
 
-        PrefixSetting::create($validated);
+        // Moving the counter backwards under the same prefix would reissue numbers already used.
+        if ($prefix === $prefixSetting->prefix && $next < $prefixSetting->nextNumber()) {
+            return redirect()->back()->withErrors(
+                ['next_number' => 'Next number cannot go below '.$prefixSetting->nextNumber().' while the prefix stays the same.'],
+                'prefix'.$prefixSetting->id,
+            );
+        }
 
-        return redirect()->back()->with('success', 'Prefix setting created');
+        $prefixSetting->update([
+            'prefix' => $prefix,
+            'padding' => (int) $validated['padding'],
+            'starting_number' => $next,
+            'current_number' => $next - 1,
+        ]);
+
+        return redirect()->back()->with('success', $prefixSetting->module.' numbering updated');
     }
 
     public function smtpSettings()

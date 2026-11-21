@@ -222,7 +222,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/settings/company-profile', [SettingController::class, 'companyProfile'])->name('settings.company-profile');
     Route::put('/settings/company-profile', [SettingController::class, 'updateCompanyProfile'])->name('settings.company-profile.update');
     Route::get('/settings/prefix', [SettingController::class, 'prefixSettings'])->name('settings.prefix');
-    Route::post('/settings/prefix', [SettingController::class, 'storePrefix'])->name('settings.prefix.store');
+    Route::put('/settings/prefix/{prefixSetting}', [SettingController::class, 'updatePrefix'])->name('settings.prefix.update');
     Route::get('/settings/smtp', [SettingController::class, 'smtpSettings'])->name('settings.smtp');
     Route::put('/settings/smtp', [SettingController::class, 'updateSmtp'])->name('settings.smtp.update');
     Route::post('/settings/smtp/test', [SettingController::class, 'sendTestEmail'])->middleware('throttle:5,1')->name('settings.smtp.test');

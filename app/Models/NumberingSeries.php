@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class NumberingSeries extends Model
 {
@@ -35,14 +36,21 @@ class NumberingSeries extends Model
     }
 
     /**
-     * Build the next document number, then advance the sequence.
+     * Advance the sequence and build the number it reserved. The counter is bumped
+     * with a single UPDATE before it is read back, so the row stays write-locked
+     * until commit and concurrent requests never share a number.
      */
     public function generateNext(): string
     {
-        $number = $this->buildNumber($this->next_number);
-        $this->increment('next_number');
+        return DB::transaction(function (): string {
+            static::query()->whereKey($this->getKey())->increment('next_number');
 
-        return $number;
+            $next = (int) static::query()->whereKey($this->getKey())->value('next_number');
+
+            $this->forceFill(['next_number' => $next])->syncOriginalAttribute('next_number');
+
+            return $this->buildNumber($next - 1);
+        });
     }
 
     /**
