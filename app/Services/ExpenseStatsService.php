@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\ExpenseBudget;
 use App\Models\ExpenseCategory;
 use App\Models\Society;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
 /**
@@ -70,7 +71,7 @@ class ExpenseStatsService
      *
      * @return array<int, array{category_id: ?int, label: string, value: float, amount: string, pct: string, width: int, color: string}>
      */
-    public function byCategory(Society $society, ?Carbon $from = null, ?Carbon $to = null, int $limit = 8): array
+    public function byCategory(Society $society, ?CarbonInterface $from = null, ?CarbonInterface $to = null, int $limit = 8): array
     {
         $rows = Expense::query()
             ->forSociety($society)
@@ -107,7 +108,7 @@ class ExpenseStatsService
      *
      * @return array<string, mixed>
      */
-    public function categoryDonut(Society $society, ?Carbon $from = null, ?Carbon $to = null, string $centerLabel = 'Total'): array
+    public function categoryDonut(Society $society, ?CarbonInterface $from = null, ?CarbonInterface $to = null, string $centerLabel = 'Total'): array
     {
         $segments = $this->byCategory($society, $from, $to);
 

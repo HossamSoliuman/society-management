@@ -419,6 +419,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         // Collections. Static routes precede the {payment} wildcard.
         Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
         Route::get('collections/online', [CollectionController::class, 'online'])->name('collections.online');
+        Route::get('collections/overview-data', [CollectionController::class, 'overviewData'])->name('collections.overview-data');
         Route::get('collections/pending-dues', [CollectionController::class, 'pendingDues'])->name('collections.pending-dues');
         Route::get('collections/record', [CollectionController::class, 'create'])->name('collections.create');
         Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
@@ -434,6 +435,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::middleware('permission:expenses.manage')->group(function () {
         Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
         Route::get('expenses/reports', [ExpenseController::class, 'reports'])->name('expenses.reports');
+        Route::get('expenses/category-donut-data', [ExpenseController::class, 'categoryDonutData'])->name('expenses.category-donut-data');
 
         Route::get('expenses/categories', [ExpenseCategoryController::class, 'index'])->name('expenses.categories.index');
         Route::get('expenses/categories/create', [ExpenseCategoryController::class, 'create'])->name('expenses.categories.create');
@@ -490,6 +492,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     // Priority Support. Static segment precedes the {request} wildcard.
     Route::middleware('permission:support.manage')->group(function () {
         Route::get('support/create', [SupportController::class, 'create'])->name('support.create');
+        Route::get('support/categories-data', [SupportController::class, 'categoriesData'])->name('support.categories-data');
         Route::get('support', [SupportController::class, 'index'])->name('support.index');
         Route::post('support', [SupportController::class, 'store'])->name('support.store');
         Route::get('support/{request}', [SupportController::class, 'show'])->name('support.show');

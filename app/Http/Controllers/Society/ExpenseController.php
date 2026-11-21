@@ -8,6 +8,8 @@ use App\Models\ExpenseCategory;
 use App\Models\Society;
 use App\Models\Vendor;
 use App\Services\ExpenseStatsService;
+use App\Support\Period;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -60,7 +62,7 @@ class ExpenseController extends Controller
             'expenses' => $expenses,
             'tab' => $tab,
             'kpis' => $this->stats->kpis($society),
-            'overview' => $this->stats->categoryDonut($society, now()->startOfMonth(), now()->endOfMonth(), 'This Month'),
+            'overview' => $this->categoryDonut($society, Period::fromKey($request->query('overview'), 'this_month')),
             'topCategories' => array_map(
                 fn (array $row) => $row + ['color_var' => $row['color']],
                 array_slice($this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear()), 0, 5)
@@ -69,6 +71,30 @@ class ExpenseController extends Controller
             'vendors' => $this->activeVendors($society),
             'paymentModes' => self::PAYMENT_MODES,
         ]);
+    }
+
+    /**
+     * AJAX endpoint: the spend-by-category donut card for another period.
+     */
+    public function categoryDonutData(Request $request): JsonResponse
+    {
+        $donut = $this->categoryDonut($this->currentSociety(), Period::fromKey($request->query('range')));
+
+        return response()->json([
+            'fragments' => [
+                'expense-categories' => view('society.expenses._category-donut', ['donut' => $donut])->render(),
+            ],
+        ]);
+    }
+
+    /**
+     * Spend per category for a period, tagged with the period key for its selector.
+     *
+     * @return array<string, mixed>
+     */
+    private function categoryDonut(Society $society, Period $period): array
+    {
+        return $this->stats->categoryDonut($society, $period->start, $period->end, $period->label()) + ['range' => $period->key];
     }
 
     public function create(): View

@@ -197,17 +197,12 @@
         {{-- Requests by Category --}}
         <div class="card">
             <div class="card-body">
-                <div class="section-title" style="font-size: 15px;">Requests by Category <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">(This Month)</span></div>
-                <x-chart type="doughnut" :size="170" format="number" :segments="$categoryDonut['segments']"
-                    :center-value="$categoryDonut['center_value']" :center-label="$categoryDonut['center_label']" />
-                <div class="chart-legend" style="margin-top: 20px;">
-                    @foreach($categoryDonut['segments'] as $seg)
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background: {{ $seg['color'] }};"></span>
-                            <span class="legend-label">{{ $seg['label'] }}</span>
-                            <span class="legend-value">{{ $seg['value'] }} ({{ $seg['pct'] }})</span>
-                        </div>
-                    @endforeach
+                <div class="card-title-row" style="margin-bottom: 12px;">
+                    <div class="section-title" style="font-size: 15px; margin: 0;">Requests by Category</div>
+                    <x-period-select :url="route('society.support.categories-data')" target="support-categories" :selected="$categoryDonut['range']" />
+                </div>
+                <div id="card-support-categories">
+                    @include('society.support._category-donut', ['donut' => $categoryDonut])
                 </div>
             </div>
         </div>

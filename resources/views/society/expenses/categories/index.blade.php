@@ -153,17 +153,12 @@
         {{-- Category Usage --}}
         <div class="card">
             <div class="card-body">
-                <div class="section-title" style="font-size: 15px;">Category Usage <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">(This Month)</span></div>
-                <x-chart type="doughnut" :size="170" format="inr" :segments="$usage['segments']"
-                    :center-value="$usage['center_value']" :center-label="$usage['center_label']" />
-                <div class="chart-legend" style="margin-top: 20px;">
-                    @foreach($usage['segments'] as $seg)
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background: {{ $seg['color'] }};"></span>
-                            <span class="legend-label">{{ $seg['label'] }}</span>
-                            <span class="legend-value">{!! $seg['amount'] !!} ({{ $seg['pct'] }})</span>
-                        </div>
-                    @endforeach
+                <div class="card-title-row" style="margin-bottom: 12px;">
+                    <div class="section-title" style="font-size: 15px; margin: 0;">Category Usage</div>
+                    <x-period-select :url="route('society.expenses.category-donut-data')" target="expense-categories" :selected="$usage['range']" />
+                </div>
+                <div id="card-expense-categories">
+                    @include('society.expenses._category-donut', ['donut' => $usage])
                 </div>
             </div>
         </div>

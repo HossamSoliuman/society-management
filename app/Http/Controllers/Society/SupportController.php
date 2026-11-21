@@ -10,6 +10,8 @@ use App\Models\Society;
 use App\Models\SupportTicket;
 use App\Models\Unit;
 use App\Services\TicketService;
+use App\Support\Period;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -73,7 +75,7 @@ class SupportController extends Controller
             'tab' => $tab,
             'tabs' => ['all' => 'All Requests'] + SupportTicket::STATUSES,
             'stats' => $this->stats($society),
-            'categoryDonut' => $this->categoryDonut($society),
+            'categoryDonut' => $this->categoryDonut($society, Period::fromKey($request->query('categories'))),
             'priorityBars' => $this->priorityBars($society),
             'categories' => self::CATEGORIES,
             'priorities' => self::PRIORITIES,
@@ -217,28 +219,31 @@ class SupportController extends Controller
     }
 
     /**
-     * "Requests by Category (This Month)" donut + legend.
+     * AJAX endpoint: the Requests by Category card for another period.
+     */
+    public function categoriesData(Request $request): JsonResponse
+    {
+        $donut = $this->categoryDonut($this->currentSociety(), Period::fromKey($request->query('range')));
+
+        return response()->json([
+            'fragments' => [
+                'support-categories' => view('society.support._category-donut', ['donut' => $donut])->render(),
+            ],
+        ]);
+    }
+
+    /**
+     * "Requests by Category" donut + legend for a period.
      *
      * @return array<string, mixed>
      */
-    private function categoryDonut(Society $society): array
+    private function categoryDonut(Society $society, Period $period): array
     {
-        $rows = SupportTicket::query()
-            ->forSociety($society)
-            ->whereBetween('raised_at', [now()->startOfMonth(), now()->endOfMonth()])
+        $rows = $period->within(SupportTicket::query()->forSociety($society), 'raised_at')
             ->selectRaw('category, COUNT(*) as c')
             ->groupBy('category')
             ->orderByDesc('c')
             ->pluck('c', 'category');
-
-        if ($rows->isEmpty()) {
-            $rows = SupportTicket::query()
-                ->forSociety($society)
-                ->selectRaw('category, COUNT(*) as c')
-                ->groupBy('category')
-                ->orderByDesc('c')
-                ->pluck('c', 'category');
-        }
 
         $total = (int) $rows->sum();
         $segments = [];
@@ -255,6 +260,7 @@ class SupportController extends Controller
             'center_value' => (string) $total,
             'center_label' => 'Total',
             'segments' => $segments,
+            'range' => $period->key,
         ];
     }
 

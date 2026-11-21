@@ -11,7 +11,9 @@ use App\Models\Society;
 use App\Models\Unit;
 use App\Models\User;
 use App\Services\PaymentAllocationService;
+use App\Support\Period;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -86,7 +88,7 @@ class CollectionController extends Controller
             'payments' => $payments,
             'tab' => $tab,
             'kpis' => $this->kpis($society),
-            'overview' => $this->overviewDonut($society),
+            'overview' => $this->overviewDonut($society, Period::fromKey($request->query('overview'), 'this_year')),
             'recent' => $this->recentTransactions($society),
             'collectors' => $this->collectors($society),
         ]);
@@ -263,18 +265,32 @@ class CollectionController extends Controller
     }
 
     /**
-     * Collection Overview donut: this year's demand split by state.
+     * AJAX endpoint: the Collection Overview card for another period.
+     */
+    public function overviewData(Request $request): JsonResponse
+    {
+        $overview = $this->overviewDonut($this->currentSociety(), Period::fromKey($request->query('range'), 'this_year'));
+
+        return response()->json([
+            'fragments' => [
+                'collections-overview' => view('society.collections._overview', ['overview' => $overview])->render(),
+            ],
+        ]);
+    }
+
+    /**
+     * Collection Overview donut: the period's demand split by state.
      *
      * @return array<string, mixed>
      */
-    private function overviewDonut(Society $society): array
+    private function overviewDonut(Society $society, Period $period): array
     {
-        $year = MaintenanceBill::query()->forSociety($society)->whereBetween('bill_date', [now()->startOfYear(), now()->endOfYear()]);
+        $year = $period->within(MaintenanceBill::query()->forSociety($society), 'bill_date');
         $collected = (float) (clone $year)->sum('collected_amount');
         $pending = (float) (clone $year)->whereIn('status', ['pending', 'partial'])->sum('outstanding_amount');
         $overdue = (float) (clone $year)->where('status', 'overdue')->sum('outstanding_amount');
-        $refunded = (float) CollectionPayment::query()->forSociety($society)->where('status', 'refunded')
-            ->whereBetween('receipt_date', [now()->startOfYear(), now()->endOfYear()])->sum('paid_amount');
+        $refunded = (float) $period->within(CollectionPayment::query()->forSociety($society)->where('status', 'refunded'), 'receipt_date')
+            ->sum('paid_amount');
         $total = $collected + $pending + $overdue + $refunded;
         $pct = fn (float $v) => $total > 0 ? round($v / $total * 100, 1).'%' : '0%';
 
@@ -286,8 +302,9 @@ class CollectionController extends Controller
                 ['label' => 'Refunded', 'value' => $refunded, 'pct' => $pct($refunded), 'amount' => '&#8377; '.$this->short($refunded), 'color' => '#7c3aed'],
             ],
             'center_value' => '&#8377; '.$this->short($collected),
-            'center_label' => 'This Year',
+            'center_label' => $period->label(),
             'total' => '&#8377; '.$this->short($total),
+            'range' => $period->key,
         ];
     }
 

@@ -61,7 +61,7 @@ class ExpenseCategoryController extends Controller
                 'inactive' => (clone $base)->where('status', 'inactive')->count(),
                 'top' => $this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear(), 1)[0]['label'] ?? '—',
             ],
-            'usage' => $this->stats->categoryDonut($society, now()->startOfYear(), now()->endOfYear(), 'This Year'),
+            'usage' => $this->stats->categoryDonut($society, now()->startOfYear(), now()->endOfYear(), 'This Year') + ['range' => 'this_year'],
             'budgets' => $this->stats->budgetUsage($society, (int) now()->year),
             'year' => (int) now()->year,
         ]);

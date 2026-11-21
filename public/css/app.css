@@ -1897,6 +1897,24 @@ select.form-control {
     pointer-events: none;
 }
 
+/* Card-level period selector (x-period-select component) */
+select.form-control.period-select {
+    width: auto;
+    min-width: 0;
+    height: 32px;
+    padding: 4px 28px 4px 10px;
+    font-size: 12px;
+    background-position: right 9px center;
+}
+
+.card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 /* Chart.js canvas wrapper (x-chart component) */
 .chart-box {
     position: relative;
