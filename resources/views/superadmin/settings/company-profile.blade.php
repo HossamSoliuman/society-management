@@ -7,7 +7,6 @@
     <div class="page-header-row">
         <div>
             <h1 class="page-title">Company Profile</h1>
-            <p class="page-subtitle">Manage your company profile information.</p>
         </div>
     </div>
     <div class="breadcrumb">
