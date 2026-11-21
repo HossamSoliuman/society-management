@@ -10,13 +10,13 @@
             <div class="breadcrumb" style="margin-top: 6px;">
                 <a href="{{ route('society.dashboard') }}">Home</a>
                 <span class="breadcrumb-separator">/</span>
-                <a href="{{ route('society.placeholder', ['page' => 'Maintenance Billing']) }}">Maintenance Billing</a>
+                <a href="{{ route('society.billing.bills.index') }}">Maintenance Billing</a>
                 <span class="breadcrumb-separator">/</span>
                 <span>Bulk Upload</span>
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
-            <a href="{{ route('society.placeholder', ['page' => 'Bill List']) }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to Bill List</a>
+            <a href="{{ route('society.billing.bills.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to Bill List</a>
             <a href="{{ route('society.billing.bulk-upload.sample') }}" class="btn btn-outline-secondary"><i class="fas fa-download"></i> Download Sample</a>
         </div>
     </div>

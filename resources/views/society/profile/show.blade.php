@@ -161,7 +161,7 @@
     <div class="card">
         <div class="card-header">
             <div class="card-title">Important Documents</div>
-            <a href="{{ route('society.placeholder', ['page' => 'Documents']) }}" class="btn btn-outline-primary btn-sm">View All</a>
+            <a href="{{ route('society.documents.index') }}" class="btn btn-outline-primary btn-sm">View All</a>
         </div>
         <div class="card-body" style="padding: 8px 20px;">
             @foreach($society->documents as $document)

@@ -353,15 +353,10 @@
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>
                 </a>
-                @if(Route::has('society.support.index'))
+                @if(auth()->user()?->hasAnyPermission('support.manage'))
                 <a href="{{ route('society.support.index') }}" class="nav-item {{ request()->routeIs('society.support.*') ? 'active' : '' }}">
                     <i class="fas fa-headset"></i>
                     <span>Priority Support</span>
-                </a>
-                @else
-                <a href="{{ route('society.placeholder', ['page' => 'Support Tickets']) }}" class="nav-item">
-                    <i class="fas fa-headset"></i>
-                    <span>Support Tickets</span>
                 </a>
                 @endif
                 @if(auth()->user()?->hasAnyPermission('logs.view'))
@@ -395,7 +390,7 @@
                         <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Need Help?</span>
                     </div>
                     <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 12px;">We're here to help you</div>
-                    <a href="{{ Route::has('society.support.create') ? route('society.support.create') : route('society.placeholder', ['page' => 'Support Tickets']) }}" class="btn btn-primary btn-sm" style="width: 100%;">Raise Support Ticket</a>
+                    <a href="{{ route('society.support.create') }}" class="btn btn-primary btn-sm" style="width: 100%;">Raise Support Ticket</a>
                 </div>
             </div>
 
