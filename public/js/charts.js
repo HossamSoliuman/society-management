@@ -84,6 +84,7 @@
                 out.backgroundColor = out.fill ? withAlpha(color, 0.1) : color;
                 out.borderWidth = 2.5;
                 out.tension = 0.35;
+                out.cubicInterpolationMode = 'monotone';
                 out.pointRadius = ds.points === false ? 0 : 3;
                 out.pointHoverRadius = 5;
                 out.pointBackgroundColor = '#fff';

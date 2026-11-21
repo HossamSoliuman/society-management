@@ -297,21 +297,22 @@ document.addEventListener('DOMContentLoaded', function() {
         showStep(0);
     });
 
-    // Dashboard period filter — fetch fresh figures/charts and swap fragments
-    var dashboardRange = document.getElementById('dashboardRange');
-    if (dashboardRange) {
-        var loader = document.getElementById('dashboardLoader');
-        var content = document.querySelector('.page-content');
+    // Period selectors: <select data-period-select data-url data-fragment-prefix data-loader>
+    // fetch fresh figures for the chosen range and swap the matching fragments.
+    document.querySelectorAll('select[data-period-select]').forEach(function (select) {
+        var prefix = select.getAttribute('data-fragment-prefix') || 'dash-';
+        var loader = select.getAttribute('data-loader') ? document.getElementById(select.getAttribute('data-loader')) : null;
+        var scope = select.getAttribute('data-scope') ? document.querySelector(select.getAttribute('data-scope')) : document.querySelector('.page-content');
 
-        dashboardRange.addEventListener('change', function () {
-            var url = dashboardRange.getAttribute('data-url');
-            var range = dashboardRange.value;
+        select.addEventListener('change', function () {
+            var url = select.getAttribute('data-url');
+            var separator = url.indexOf('?') === -1 ? '?' : '&';
 
             if (loader) { loader.style.display = 'inline-block'; }
-            if (content) { content.style.opacity = '0.6'; content.style.transition = 'opacity 0.15s ease'; }
-            dashboardRange.disabled = true;
+            if (scope) { scope.style.opacity = '0.6'; scope.style.transition = 'opacity 0.15s ease'; }
+            select.disabled = true;
 
-            fetch(url + '?range=' + encodeURIComponent(range), {
+            fetch(url + separator + 'range=' + encodeURIComponent(select.value), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })
                 .then(function (res) {
@@ -321,19 +322,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function (payload) {
                     var fragments = payload.fragments || {};
                     Object.keys(fragments).forEach(function (key) {
-                        var target = document.getElementById('dash-' + key);
-                        if (target) { target.innerHTML = fragments[key]; }
+                        var target = document.getElementById(prefix + key);
+                        if (!target) { return; }
+                        if (window.appCharts) { window.appCharts.destroy(target); }
+                        target.innerHTML = fragments[key];
+                        if (window.appCharts) { window.appCharts.init(target); }
                     });
                 })
                 .catch(function (err) {
-                    console.error('Dashboard update failed:', err);
-                    window.appToast('Could not update the dashboard. Please try again.', 'error');
+                    console.error('Period update failed:', err);
+                    window.appToast('Could not update the figures. Please try again.', 'error');
                 })
                 .finally(function () {
                     if (loader) { loader.style.display = 'none'; }
-                    if (content) { content.style.opacity = '1'; }
-                    dashboardRange.disabled = false;
+                    if (scope) { scope.style.opacity = '1'; }
+                    select.disabled = false;
                 });
         });
-    }
+    });
 });

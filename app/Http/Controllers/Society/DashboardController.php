@@ -261,7 +261,6 @@ class DashboardController extends Controller
             'revenue' => [
                 'points' => $points,
                 'months' => $months,
-                'max' => $this->niceCeil(max($points) ?: 1),
                 'ytd' => $ytd,
                 'ytd_fmt' => $this->inr($ytd),
                 'ref_year' => $window['refYear'],
@@ -292,24 +291,6 @@ class DashboardController extends Controller
                 'units' => $totalUnits ?: ($society->total_units ?: '—'),
             ],
         ];
-    }
-
-    /**
-     * Round a value up to a clean axis ceiling (1/2/2.5/5 × 10ⁿ).
-     */
-    private function niceCeil(float $value): float
-    {
-        if ($value <= 0) {
-            return 1;
-        }
-        $magnitude = 10 ** floor(log10($value));
-        foreach ([1, 2, 2.5, 5, 10] as $factor) {
-            if ($value <= $factor * $magnitude) {
-                return $factor * $magnitude;
-            }
-        }
-
-        return 10 * $magnitude;
     }
 
     /**

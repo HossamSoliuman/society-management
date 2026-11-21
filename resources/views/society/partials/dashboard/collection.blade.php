@@ -1,17 +1,10 @@
 @php($c = $d['collection'])
 <div class="card-header"><div class="card-title">Collection Overview</div></div>
 <div class="card-body" style="flex: 1; display: flex; align-items: center; gap: 16px;">
-    @include('society.partials.donut', [
-        'segments' => [
-            ['value' => $c['collected'], 'color' => '#10B981'],
-            ['value' => $c['pending'], 'color' => '#F59E0B'],
-            ['value' => $c['overdue'], 'color' => '#EF4444'],
-        ],
-        'centerValue' => $c['collected_pct'].'%',
-        'centerLabel' => 'Collected',
-        'size' => 150,
-        'stroke' => 13,
-    ])
+    <x-chart type="doughnut" :size="150" format="inr" label="Collection overview"
+        :labels="['Collected', 'Pending', 'Overdue']"
+        :datasets="[['data' => [$c['collected'], $c['pending'], $c['overdue']], 'colors' => ['#10B981', '#F59E0B', '#EF4444']]]"
+        :center-value="$c['collected_pct'].'%'" center-label="Collected" />
     <div class="chart-legend" style="flex: 1;">
         <div class="legend-item">
             <span class="legend-dot" style="background: #10B981;"></span>

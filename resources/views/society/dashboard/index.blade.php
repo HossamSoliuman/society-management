@@ -19,7 +19,7 @@
             </span>
             <div class="header-search" style="max-width: 200px;">
                 <i class="fas fa-calendar search-icon"></i>
-                <select id="dashboardRange"
+                <select id="dashboardRange" data-period-select data-loader="dashboardLoader"
                         data-url="{{ route('society.dashboard.data') }}"
                         class="form-control"
                         style="padding-left: 36px; -webkit-appearance: none; appearance: none;">
