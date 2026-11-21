@@ -53,6 +53,16 @@ class Member extends Model
         return $this->user_id !== null;
     }
 
+    /**
+     * The member's home unit: a unit linked by member_id, else the unit
+     * whose number matches the member's recorded flat.
+     */
+    public function primaryUnit(): ?Unit
+    {
+        return $this->units()->orderBy('unit_number')->first()
+            ?? ($this->flat_unit ? Unit::query()->where('society_id', $this->society_id)->where('unit_number', $this->flat_unit)->first() : null);
+    }
+
     public function society()
     {
         return $this->belongsTo(Society::class);

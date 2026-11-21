@@ -129,18 +129,20 @@
                 </div>
                 @endif
 
-                {{-- Visitor Management (group, stub) --}}
-                <div class="nav-group">
+                {{-- Visitor Management (group) --}}
+                @if(auth()->user()?->hasAnyPermission('visitors.manage'))
+                <div class="nav-group {{ request()->routeIs('society.visitors.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-id-badge"></i>
                         <span>Visitor Management</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'Visitor Logs']) }}" class="nav-item"><i class="fas fa-list"></i><span>Visitor Logs</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Pre-Approvals']) }}" class="nav-item"><i class="fas fa-user-check"></i><span>Pre-Approvals</span></a>
+                        <a href="{{ route('society.visitors.index') }}" class="nav-item {{ request()->routeIs('society.visitors.index') || request()->routeIs('society.visitors.create') ? 'active' : '' }}"><i class="fas fa-list"></i><span>Visitor Logs</span></a>
+                        <a href="{{ route('society.visitors.pre-approvals') }}" class="nav-item {{ request()->routeIs('society.visitors.pre-approvals*') ? 'active' : '' }}"><i class="fas fa-user-check"></i><span>Pre-Approvals</span></a>
                     </div>
                 </div>
+                @endif
 
                 {{-- Vehicle Management (group, stub) --}}
                 <div class="nav-group">

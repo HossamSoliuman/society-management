@@ -28,6 +28,8 @@ use App\Models\Tender;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Visitor;
+use App\Models\VisitorPreApproval;
 use App\Services\AccountingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RouteInstance;
@@ -78,6 +80,8 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'complaint' => SupportTicket::factory()->create($sid + ['raised_by_type' => 'member']),
         'tenant' => Tenant::factory()->create($sid),
         'staff' => Staff::factory()->create($sid),
+        'visitor' => Visitor::factory()->create($sid),
+        'preApproval' => VisitorPreApproval::factory()->create($sid),
         'agreement' => TenantAgreement::factory()->create($sid + ['tenant_id' => Tenant::factory()->create($sid)->id]),
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
         'tender' => Tender::factory()->create($sid),

@@ -11,6 +11,7 @@ use App\Http\Controllers\Member\PaymentController as MemberPaymentController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 use App\Http\Controllers\Member\SupportController as MemberSupportController;
 use App\Http\Controllers\Member\VehicleController as MemberVehicleController;
+use App\Http\Controllers\Member\VisitorController as MemberVisitorController;
 use App\Http\Controllers\NotificationController as HeaderNotificationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
@@ -53,6 +54,8 @@ use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\Society\UnitDirectoryController;
 use App\Http\Controllers\Society\UserController as SocietyUserController;
 use App\Http\Controllers\Society\VendorController;
+use App\Http\Controllers\Society\VisitorController;
+use App\Http\Controllers\Society\VisitorPreApprovalController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BillingController;
@@ -297,6 +300,19 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('/staff/{staff}/edit', [StaffController::class, 'edit'])->name('staff.edit');
         Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
         Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
+    });
+
+    // Visitors & gate passes. Static segments precede the {visitor} / {preApproval} wildcards.
+    Route::middleware('permission:visitors.manage')->group(function () {
+        Route::get('/visitors', [VisitorController::class, 'index'])->name('visitors.index');
+        Route::get('/visitors/check-in', [VisitorController::class, 'create'])->name('visitors.create');
+        Route::post('/visitors', [VisitorController::class, 'store'])->name('visitors.store');
+        Route::get('/visitors/pre-approvals', [VisitorPreApprovalController::class, 'index'])->name('visitors.pre-approvals');
+        Route::post('/visitors/pre-approvals', [VisitorPreApprovalController::class, 'store'])->name('visitors.pre-approvals.store');
+        Route::post('/visitors/pre-approvals/verify', [VisitorPreApprovalController::class, 'verify'])->name('visitors.pre-approvals.verify');
+        Route::post('/visitors/pre-approvals/{preApproval}/check-in', [VisitorPreApprovalController::class, 'checkIn'])->name('visitors.pre-approvals.check-in');
+        Route::post('/visitors/pre-approvals/{preApproval}/cancel', [VisitorPreApprovalController::class, 'cancel'])->name('visitors.pre-approvals.cancel');
+        Route::post('/visitors/{visitor}/check-out', [VisitorController::class, 'checkout'])->name('visitors.check-out');
     });
 
     // Maintenance Billing & Collections
@@ -563,6 +579,10 @@ Route::middleware(['auth', 'active', 'role:member', 'member.access'])->prefix('m
     Route::get('/vehicles/{vehicle}/edit', [MemberVehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('/vehicles/{vehicle}', [MemberVehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{vehicle}', [MemberVehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+    Route::get('/visitors', [MemberVisitorController::class, 'index'])->name('visitors.index');
+    Route::post('/visitors', [MemberVisitorController::class, 'store'])->name('visitors.store');
+    Route::post('/visitors/{preApproval}/cancel', [MemberVisitorController::class, 'cancel'])->name('visitors.cancel');
 
     Route::get('/notices', [MemberNoticeController::class, 'index'])->name('notices.index');
     Route::get('/notices/{notice}', [MemberNoticeController::class, 'show'])->name('notices.show');

@@ -93,6 +93,11 @@ class Society extends Model
         return $this->hasMany(Tenant::class);
     }
 
+    public function visitors()
+    {
+        return $this->hasMany(Visitor::class);
+    }
+
     public function staff()
     {
         return $this->hasMany(Staff::class);
