@@ -410,18 +410,14 @@
 
     <div class="card">
         <div class="card-header">
-            <div class="card-title">System Health</div>
+            <div class="card-title">Support Desk</div>
         </div>
-        <div class="card-body" style="display: flex; align-items: center; gap: 16px;">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--success-light); display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-shield-alt" style="color: var(--success); font-size: 20px;"></i>
-            </div>
+        <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
             <div>
-                <div style="font-size: 14px; font-weight: 600;">All systems are running smoothly</div>
-                <div style="font-size: 12px; color: var(--success); margin-top: 4px;">
-                    <i class="fas fa-check-circle"></i> All services operational
-                </div>
+                <div style="font-size: 32px; font-weight: 700;">{{ $openTickets }}</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Open tickets</div>
             </div>
+            <a href="{{ route('superadmin.tickets.index', ['status' => 'open']) }}" class="btn btn-secondary btn-sm">View <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
         </div>
     </div>
 

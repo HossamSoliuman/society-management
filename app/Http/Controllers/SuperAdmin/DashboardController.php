@@ -100,7 +100,7 @@ class DashboardController extends Controller
             'revenueByPlan' => $billing->revenueByPlan(),
             'recentSocieties' => Society::with('subscriptionPlan')->latest()->take(5)->get(),
             'recentPayments' => Payment::with('society')->latest()->take(5)->get(),
-            'totalUsers' => User::count(),
+            'totalUsers' => User::where('status', 'active')->count(),
             'openTickets' => SupportTicket::where('status', 'open')->count(),
         ]);
     }
