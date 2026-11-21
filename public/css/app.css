@@ -1894,6 +1894,23 @@ select.form-control {
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+    pointer-events: none;
+}
+
+/* Chart.js canvas wrapper (x-chart component) */
+.chart-box {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.chart-box canvas,
+.pie-chart-container canvas {
+    display: block;
+}
+
+.pie-chart-container {
+    flex-shrink: 0;
 }
 
 .pie-chart-center .value {
