@@ -116,7 +116,7 @@
                             <td>
                                 <div style="display: inline-flex; gap: 6px;">
                                     <button type="button" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);" onclick="document.getElementById('edit-cat-{{ $category->id }}').style.display = document.getElementById('edit-cat-{{ $category->id }}').style.display === 'none' ? 'table-row' : 'none'"><i class="fas fa-pencil"></i></button>
-                                    <form method="POST" action="{{ route('society.documents.categories.destroy', $category) }}" onsubmit="return confirm('Delete this category?');" style="display: inline;">
+                                    <form method="POST" action="{{ route('society.documents.categories.destroy', $category) }}" data-confirm="Delete this category?" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-btn" title="Delete" style="color: var(--danger); border-color: var(--danger);"><i class="fas fa-trash"></i></button>

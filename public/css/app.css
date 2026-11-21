@@ -1316,6 +1316,55 @@ select.form-control {
     gap: 8px;
 }
 
+/* In-app confirm dialog + toast (app.js: appConfirm / appToast) */
+.app-dialog { z-index: 3000; }
+.app-dialog-box { max-width: 420px; }
+.app-dialog-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 24px 20px 20px;
+}
+.app-dialog-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--danger-light);
+    color: var(--danger);
+    font-size: 16px;
+}
+.app-dialog-icon.neutral { background: var(--primary-light); color: var(--primary); }
+.app-dialog-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    padding-top: 9px;
+}
+.app-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 3100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 40px);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.app-toast-success i { color: var(--success); }
+.app-toast-error i { color: var(--danger); }
+.app-toast.is-leaving { opacity: 0; transform: translateY(8px); }
+
 /* Steps Wizard */
 .steps-wizard {
     display: flex;

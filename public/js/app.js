@@ -1,3 +1,63 @@
+/**
+ * In-app confirmation dialog (replaces the browser's confirm()).
+ * appConfirm(message, onConfirm, { confirmLabel, cancelLabel, danger })
+ */
+window.appConfirm = function(message, onConfirm, options) {
+    options = options || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay app-dialog';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML =
+        '<div class="modal-content app-dialog-box">' +
+            '<div class="modal-body app-dialog-body">' +
+                '<div class="app-dialog-icon' + (options.danger === false ? ' neutral' : '') + '"><i class="fas ' + (options.danger === false ? 'fa-circle-question' : 'fa-triangle-exclamation') + '"></i></div>' +
+                '<div class="app-dialog-message"></div>' +
+            '</div>' +
+            '<div class="modal-footer">' +
+                '<button type="button" class="btn btn-secondary" data-dialog-cancel></button>' +
+                '<button type="button" class="btn ' + (options.danger === false ? 'btn-primary' : 'btn-danger') + '" data-dialog-confirm></button>' +
+            '</div>' +
+        '</div>';
+    overlay.querySelector('.app-dialog-message').textContent = message;
+    overlay.querySelector('[data-dialog-cancel]').textContent = options.cancelLabel || 'Cancel';
+    overlay.querySelector('[data-dialog-confirm]').textContent = options.confirmLabel || 'Confirm';
+
+    var previousFocus = document.activeElement;
+    function close() {
+        document.removeEventListener('keydown', onKey);
+        overlay.remove();
+        if (previousFocus && previousFocus.focus) { previousFocus.focus(); }
+    }
+    function onKey(e) {
+        if (e.key === 'Escape') { close(); }
+    }
+
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) { close(); } });
+    overlay.querySelector('[data-dialog-cancel]').addEventListener('click', close);
+    overlay.querySelector('[data-dialog-confirm]').addEventListener('click', function() {
+        close();
+        if (typeof onConfirm === 'function') { onConfirm(); }
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-dialog-confirm]').focus();
+};
+
+/**
+ * Small in-app toast (replaces the browser's alert()).
+ */
+window.appToast = function(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'app-toast ' + (type === 'error' ? 'app-toast-error' : 'app-toast-success');
+    toast.setAttribute('role', 'status');
+    toast.innerHTML = '<i class="fas ' + (type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check') + '"></i><span></span>';
+    toast.querySelector('span').textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.classList.add('is-leaving'); }, 3500);
+    setTimeout(function() { toast.remove(); }, 3900);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     var sidebarToggle = document.getElementById('sidebarToggle');
     var sidebar = document.getElementById('sidebar');
@@ -122,16 +182,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Delete confirm
-    var deleteForms = document.querySelectorAll('form[data-confirm]');
-    deleteForms.forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            var message = this.getAttribute('data-confirm') || 'Are you sure?';
-            if (!confirm(message)) {
-                e.preventDefault();
-            }
+    // Confirm before submitting any form marked with data-confirm (in-app dialog).
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-confirm')) { return; }
+        if (form.dataset.confirmed === '1') { form.dataset.confirmed = ''; return; }
+
+        e.preventDefault();
+        var submitter = e.submitter || null;
+        window.appConfirm(form.getAttribute('data-confirm') || 'Are you sure?', function() {
+            form.dataset.confirmed = '1';
+            if (form.requestSubmit) { form.requestSubmit(submitter); } else { form.submit(); }
+        }, {
+            confirmLabel: form.getAttribute('data-confirm-label') || 'Confirm',
+            danger: form.getAttribute('data-confirm-tone') !== 'neutral'
         });
-    });
+    }, true);
 
     // Alert auto-hide
     setTimeout(function() {
@@ -261,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(function (err) {
                     console.error('Dashboard update failed:', err);
-                    alert('Could not update the dashboard. Please try again.');
+                    window.appToast('Could not update the dashboard. Please try again.', 'error');
                 })
                 .finally(function () {
                     if (loader) { loader.style.display = 'none'; }

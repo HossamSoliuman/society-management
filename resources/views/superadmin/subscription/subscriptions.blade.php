@@ -126,7 +126,7 @@
                             <div style="display: flex; gap: 4px;">
                                 @if($sub->status !== 'cancelled')
                                     <a href="{{ route('superadmin.subscription.subscriptions.renew', $sub) }}" class="action-btn edit" title="Renew / Upgrade"><i class="fas fa-rotate"></i></a>
-                                    <form method="POST" action="{{ route('superadmin.subscription.subscriptions.cancel', $sub) }}" onsubmit="return confirm('Cancel this subscription?');">
+                                    <form method="POST" action="{{ route('superadmin.subscription.subscriptions.cancel', $sub) }}" data-confirm="Cancel this subscription?">
                                         @csrf
                                         <button type="submit" class="action-btn delete" title="Cancel"><i class="fas fa-ban"></i></button>
                                     </form>

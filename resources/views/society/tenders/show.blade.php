@@ -111,7 +111,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="section-title" style="font-size: 15px;">Close Tender</div>
-                    <form method="POST" action="{{ route('society.tenders.close', $tender) }}" onsubmit="return confirm('Close this tender?');">
+                    <form method="POST" action="{{ route('society.tenders.close', $tender) }}" data-confirm="Close this tender?">
                         @csrf
                         <div class="form-group">
                             <label class="form-label">Reason</label>

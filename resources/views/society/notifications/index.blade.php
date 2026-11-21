@@ -25,7 +25,7 @@
                     <i class="fas fa-check-double"></i> Mark all read
                 </button>
             </form>
-            <form method="POST" action="{{ route('notifications.clear-read') }}" onsubmit="return confirm('Delete every notification you have already read?');">
+            <form method="POST" action="{{ route('notifications.clear-read') }}" data-confirm="Delete every notification you have already read?">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-outline-secondary" {{ $stats['read'] === 0 ? 'disabled' : '' }}>
@@ -116,7 +116,7 @@
                                             <button type="submit" class="action-btn" title="Mark as read"><i class="fas fa-check"></i></button>
                                         </form>
                                     @endif
-                                    <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}" onsubmit="return confirm('Delete this notification?');">
+                                    <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}" data-confirm="Delete this notification?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>

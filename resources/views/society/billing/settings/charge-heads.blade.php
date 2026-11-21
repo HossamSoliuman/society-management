@@ -122,7 +122,7 @@
                                     <div class="dropdown">
                                         <button type="button" class="action-btn dropdown-toggle"><i class="fas fa-ellipsis-vertical"></i></button>
                                         <div class="dropdown-menu">
-                                            <form method="POST" action="{{ route('society.billing.settings.charge-heads.destroy', $chargeHead) }}" onsubmit="return confirm('Delete this charge head?')">
+                                            <form method="POST" action="{{ route('society.billing.settings.charge-heads.destroy', $chargeHead) }}" data-confirm="Delete this charge head?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item" style="color: var(--danger);"><i class="fas fa-trash"></i> Delete</button>

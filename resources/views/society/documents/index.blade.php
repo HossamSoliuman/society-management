@@ -193,7 +193,7 @@
                                 <div style="display: inline-flex; gap: 6px;">
                                     <a href="{{ route('society.documents.preview', $document) }}" target="_blank" class="action-btn view" title="Preview"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('society.documents.download', $document) }}" class="action-btn" title="Download"><i class="fas fa-download"></i></a>
-                                    <form method="POST" action="{{ route('society.documents.destroy', $document) }}" onsubmit="return confirm('Delete this document?');" style="display: inline;">
+                                    <form method="POST" action="{{ route('society.documents.destroy', $document) }}" data-confirm="Delete this document?" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-btn" title="Delete" style="color: var(--danger); border-color: var(--danger);"><i class="fas fa-trash"></i></button>

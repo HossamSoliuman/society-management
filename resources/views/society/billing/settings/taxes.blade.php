@@ -109,7 +109,7 @@
                                 <td>
                                     <div style="display: flex; gap: 6px;">
                                         <button type="button" class="action-btn edit" title="Edit" onclick='editTax(@json($tax))'><i class="fas fa-pencil"></i></button>
-                                        <form method="POST" action="{{ route('society.billing.settings.taxes.destroy', $tax) }}" onsubmit="return confirm('Delete this tax?')">
+                                        <form method="POST" action="{{ route('society.billing.settings.taxes.destroy', $tax) }}" data-confirm="Delete this tax?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
