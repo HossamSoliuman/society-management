@@ -311,7 +311,7 @@ class AccountingService
             ->first();
 
         if (! $series) {
-            $fy = $this->financialYearLabel(Carbon::today());
+            $fy = $this->financialYearLabel(Carbon::today(), $society);
             $series = NumberingSeries::create([
                 'society_id' => $society->id,
                 'document_type' => $documentType,
@@ -337,18 +337,26 @@ class AccountingService
     /**
      * "2026-2027" style label for the Indian financial year containing $date.
      */
-    public function financialYearLabel(Carbon $date): string
+    public function financialYearLabel(Carbon $date, ?Society $society = null): string
     {
-        $start = $date->month >= 4 ? $date->year : $date->year - 1;
+        $start = $this->financialYearStart($date, $society);
 
-        return $start.'-'.($start + 1);
+        return $start->month === 1
+            ? (string) $start->year
+            : $start->year.'-'.($start->year + 1);
     }
 
-    public function financialYearStart(Carbon $date): Carbon
+    /**
+     * First day of the financial year containing $date. The start month comes
+     * from the society's General Settings (April when unset).
+     */
+    public function financialYearStart(Carbon $date, ?Society $society = null): Carbon
     {
-        $year = $date->month >= 4 ? $date->year : $date->year - 1;
+        $month = (int) ($society?->setting('financial_year_start_month') ?? 4);
+        $month = $month >= 1 && $month <= 12 ? $month : 4;
+        $year = $date->month >= $month ? $date->year : $date->year - 1;
 
-        return Carbon::create($year, 4, 1)->startOfDay();
+        return Carbon::create($year, $month, 1)->startOfDay();
     }
 
     /* ----------------------------------------------------------------------
@@ -593,7 +601,7 @@ class AccountingService
     public function dashboardStats(Society $society): array
     {
         $today = Carbon::today();
-        $fyStart = $this->financialYearStart($today);
+        $fyStart = $this->financialYearStart($today, $society);
         $cashAndBank = $this->detailAccounts($society)
             ->filter(fn (Account $a) => $a->is_bank || in_array($a->system_key, ['cash', 'bank'], true))
             ->sum(fn (Account $a) => $this->balance($a));

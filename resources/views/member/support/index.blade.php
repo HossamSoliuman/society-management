@@ -13,7 +13,9 @@
                 <span>Complaints & Requests</span>
             </div>
         </div>
-        <a href="{{ route('member.support.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Raise a Request</a>
+        @if($canRaise)
+            <a href="{{ route('member.support.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Raise a Request</a>
+        @endif
     </div>
 </div>
 

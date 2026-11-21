@@ -492,12 +492,12 @@ class AccountingController extends Controller
             ->orderBy('code')
             ->get();
 
-        $fyStart = $this->accounting->financialYearStart(Carbon::today());
+        $fyStart = $this->accounting->financialYearStart(Carbon::today(), $society);
 
         return view('society.accounting.opening-balances', [
             'active' => 'opening-balances',
             'accounts' => $accounts,
-            'financialYear' => $this->accounting->financialYearLabel(Carbon::today()),
+            'financialYear' => $this->accounting->financialYearLabel(Carbon::today(), $society),
             'fyStart' => $fyStart->toDateString(),
             'openingEntry' => JournalEntry::query()->forSociety($society)->where('is_opening', true)->latest('id')->first(),
         ]);
@@ -666,7 +666,7 @@ class AccountingController extends Controller
     private function periodFromRequest(Request $request): array
     {
         $to = $request->filled('to') ? Carbon::parse($request->string('to')) : Carbon::today();
-        $from = $request->filled('from') ? Carbon::parse($request->string('from')) : $this->accounting->financialYearStart($to);
+        $from = $request->filled('from') ? Carbon::parse($request->string('from')) : $this->accounting->financialYearStart($to, $this->currentSociety());
 
         return [$from, $to];
     }

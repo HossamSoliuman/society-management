@@ -40,6 +40,7 @@ use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
 use App\Http\Controllers\Society\ReportController as SocietyReportController;
 use App\Http\Controllers\Society\ServiceVendorController;
+use App\Http\Controllers\Society\SettingController as SocietySettingController;
 use App\Http\Controllers\Society\SubscriptionController as SocietySubscriptionController;
 use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
@@ -491,6 +492,12 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::put('settings/users/{teamUser}', [SocietyUserController::class, 'update'])->name('settings.users.update');
         Route::put('settings/users/{teamUser}/status', [SocietyUserController::class, 'toggleStatus'])->name('settings.users.status');
         Route::post('settings/users/{teamUser}/resend-invitation', [SocietyUserController::class, 'resendInvitation'])->name('settings.users.resend-invitation');
+    });
+
+    // Settings -> General (per-society preferences)
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('settings/general', [SocietySettingController::class, 'general'])->name('settings.general');
+        Route::put('settings/general', [SocietySettingController::class, 'update'])->name('settings.general.update');
     });
 
     // Activity log for this society

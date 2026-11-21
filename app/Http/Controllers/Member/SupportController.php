@@ -31,6 +31,7 @@ class SupportController extends PortalController
 
         return view('member.support.index', [
             'member' => $member,
+            'canRaise' => $this->complaintsEnabled(),
             'tickets' => $tickets,
             'statuses' => SupportTicket::STATUSES,
             'stats' => [
@@ -41,8 +42,12 @@ class SupportController extends PortalController
         ]);
     }
 
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (! $this->complaintsEnabled()) {
+            return redirect()->route('member.support.index')->with('error', 'Please contact the society office to raise a complaint.');
+        }
+
         return view('member.support.create', [
             'member' => $this->currentMember(),
             'categories' => SocietySupportController::CATEGORIES,
@@ -53,6 +58,10 @@ class SupportController extends PortalController
 
     public function store(StoreMemberSupportRequest $request): RedirectResponse
     {
+        if (! $this->complaintsEnabled()) {
+            return redirect()->route('member.support.index')->with('error', 'Please contact the society office to raise a complaint.');
+        }
+
         $member = $this->currentMember()->load('society');
         $data = $request->validated();
 
@@ -109,5 +118,13 @@ class SupportController extends PortalController
         $this->tickets->reply($ticket, $request->user(), $data['message'], $status, $attachment);
 
         return redirect()->route('member.support.show', $ticket)->with('success', 'Reply posted.');
+    }
+
+    /**
+     * The society can switch off portal complaints in General Settings.
+     */
+    private function complaintsEnabled(): bool
+    {
+        return (bool) $this->currentMember()->society?->setting('portal_complaints_enabled');
     }
 }

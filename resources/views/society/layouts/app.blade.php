@@ -358,15 +358,17 @@
                 </a>
                 @endif
 
-                {{-- System Settings (group, stub) --}}
-                <div class="nav-group">
+                {{-- System Settings (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.settings.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-gear"></i>
                         <span>System Settings</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'General Settings']) }}" class="nav-item"><i class="fas fa-sliders"></i><span>General Settings</span></a>
+                        @if(auth()->user()?->hasAnyPermission('settings.manage'))
+                        <a href="{{ route('society.settings.general') }}" class="nav-item {{ request()->routeIs('society.settings.general') ? 'active' : '' }}"><i class="fas fa-sliders"></i><span>General Settings</span></a>
+                        @endif
                         <a href="{{ route('society.settings.users.index') }}" class="nav-item {{ request()->routeIs('society.settings.users.*') ? 'active' : '' }}"><i class="fas fa-user-shield"></i><span>Roles &amp; Permissions</span></a>
                     </div>
                 </div>
@@ -442,10 +444,12 @@
                                 <i class="fas fa-user"></i>
                                 <span>Profile</span>
                             </a>
-                            <a href="{{ route('society.placeholder', ['page' => 'System Settings']) }}" class="dropdown-menu-item">
+                            @if(auth()->user()?->hasAnyPermission('settings.manage'))
+                            <a href="{{ route('society.settings.general') }}" class="dropdown-menu-item">
                                 <i class="fas fa-cog"></i>
                                 <span>Settings</span>
                             </a>
+                            @endif
                             <hr class="dropdown-menu-divider">
                             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                                 @csrf

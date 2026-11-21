@@ -93,6 +93,23 @@ class Society extends Model
         return $this->hasMany(Tenant::class);
     }
 
+    public function settings()
+    {
+        return $this->hasMany(SocietySetting::class);
+    }
+
+    /**
+     * A General Settings value for this society, typed per SocietySetting::DEFINITIONS.
+     */
+    public function setting(string $key): mixed
+    {
+        $stored = $this->relationLoaded('settings')
+            ? $this->settings->firstWhere('key', $key)?->value
+            : $this->settings()->where('key', $key)->value('value');
+
+        return SocietySetting::castValue($key, $stored);
+    }
+
     public function documents()
     {
         return $this->hasMany(SocietyDocument::class);
