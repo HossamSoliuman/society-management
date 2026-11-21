@@ -26,9 +26,12 @@
                 <span>All Members</span>
             </div>
         </div>
-        <a href="{{ route('society.members.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Member
-        </a>
+        <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.members.export" />
+            <a href="{{ route('society.members.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Member
+            </a>
+        </div>
     </div>
 </div>
 

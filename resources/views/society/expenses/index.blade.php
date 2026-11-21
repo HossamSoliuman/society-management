@@ -30,7 +30,10 @@
                 <span>All Expenses</span>
             </div>
         </div>
-        <a href="{{ route('society.expenses.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Expense</a>
+        <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.expenses.export" />
+            <a href="{{ route('society.expenses.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Expense</a>
+        </div>
     </div>
 </div>
 

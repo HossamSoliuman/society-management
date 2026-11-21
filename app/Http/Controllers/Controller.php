@@ -31,4 +31,14 @@ abstract class Controller
 
         return $this->resolvedSociety = $user->society()->firstOrFail();
     }
+
+    /**
+     * Download name for a list export, e.g. "grn-maintenance-bills-20261121.xlsx".
+     */
+    protected function exportFileName(string $name, string $extension = 'xlsx', ?Society $society = null): string
+    {
+        $prefix = $society?->prefix ? $society->prefix.'-' : '';
+
+        return strtolower($prefix.$name.'-'.now()->format('Ymd')).'.'.$extension;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\MaintenanceBillsExport;
 use App\Http\Controllers\Controller;
 use App\Imports\MaintenanceBillImport;
 use App\Jobs\SendMaintenanceBill;
@@ -14,6 +15,7 @@ use App\Models\Society;
 use App\Models\Unit;
 use App\Services\BillDocumentService;
 use App\Services\BillingService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,6 +26,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class BillController extends Controller
 {
@@ -38,7 +41,41 @@ class BillController extends Controller
     {
         $society = $this->currentSociety();
 
-        $query = MaintenanceBill::query()
+        $perPage = (int) $request->input('per_page', 10);
+        $bills = $this->filteredBills($request, $society)->paginate($perPage)->withQueryString();
+
+        $base = MaintenanceBill::query()->forSociety($society);
+
+        $months = (clone $base)->select('bill_month')->distinct()->pluck('bill_month');
+        $cycles = (clone $base)->select('bill_cycle')->distinct()->pluck('bill_cycle');
+        $towers = (clone $base)->select('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');
+
+        return view('society.billing.bills.index', [
+            'society' => $society,
+            'bills' => $bills,
+            'kpis' => $this->kpis($society, $request->string('month')->toString() ?: null),
+            'months' => $months,
+            'cycles' => $cycles,
+            'towers' => $towers,
+        ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new MaintenanceBillsExport($this->filteredBills($request, $society)),
+            $this->exportFileName('maintenance-bills', society: $society),
+        );
+    }
+
+    /**
+     * Bill list query with the list screen's search and filters applied.
+     */
+    private function filteredBills(Request $request, Society $society): Builder
+    {
+        return MaintenanceBill::query()
             ->forSociety($society)
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
@@ -55,24 +92,6 @@ class BillController extends Controller
             ->when($request->filled('tower'), fn ($q) => $q->where('tower_wing', $request->string('tower')))
             ->orderByDesc('bill_date')
             ->orderByDesc('id');
-
-        $perPage = (int) $request->input('per_page', 10);
-        $bills = $query->paginate($perPage)->withQueryString();
-
-        $base = MaintenanceBill::query()->forSociety($society);
-
-        $months = (clone $base)->select('bill_month')->distinct()->pluck('bill_month');
-        $cycles = (clone $base)->select('bill_cycle')->distinct()->pluck('bill_cycle');
-        $towers = (clone $base)->select('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');
-
-        return view('society.billing.bills.index', [
-            'society' => $society,
-            'bills' => $bills,
-            'kpis' => $this->kpis($society, $request->string('month')->toString() ?: null),
-            'months' => $months,
-            'cycles' => $cycles,
-            'towers' => $towers,
-        ]);
     }
 
     public function create(): View

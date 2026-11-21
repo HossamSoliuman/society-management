@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\CollectionPaymentsExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendMaintenanceBill;
 use App\Models\CollectionPayment;
@@ -20,6 +21,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CollectionController extends Controller
 {
@@ -46,12 +49,45 @@ class CollectionController extends Controller
     }
 
     /**
+     * Excel export of the Payment Collection / Online Payments list with its current filters.
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+        $onlineOnly = $request->boolean('online');
+
+        return Excel::download(
+            new CollectionPaymentsExport($this->filteredPayments($request, $society, $onlineOnly)),
+            $this->exportFileName($onlineOnly ? 'online-payments' : 'collections', society: $society),
+        );
+    }
+
+    /**
      * Shared list renderer for Payment Collection + Online Payments (same table shell).
      */
     private function renderList(Request $request, string $view, string $title, bool $onlineOnly = false): View
     {
         $society = $this->currentSociety();
 
+        $payments = $this->filteredPayments($request, $society, $onlineOnly)->paginate(8)->withQueryString();
+
+        return view($view, [
+            'society' => $society,
+            'title' => $title,
+            'payments' => $payments,
+            'tab' => $request->string('tab')->toString() ?: 'all',
+            'kpis' => $this->kpis($society),
+            'overview' => $this->overviewDonut($society, Period::fromKey($request->query('overview'), 'this_year')),
+            'recent' => $this->recentTransactions($society),
+            'collectors' => $this->collectors($society),
+        ]);
+    }
+
+    /**
+     * Collection list query with the list screen's tab, search and filters applied.
+     */
+    private function filteredPayments(Request $request, Society $society, bool $onlineOnly): Builder
+    {
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = [
             'received' => 'paid',
@@ -60,7 +96,7 @@ class CollectionController extends Controller
             'refunded' => 'refunded',
         ][$tab] ?? null;
 
-        $query = CollectionPayment::query()
+        return CollectionPayment::query()
             ->forSociety($society)
             ->when($onlineOnly, fn ($q) => $q->where('is_online', true))
             ->when($tabStatus, fn ($q) => $q->where('status', $tabStatus))
@@ -79,19 +115,6 @@ class CollectionController extends Controller
             })
             ->orderByDesc('receipt_date')
             ->orderByDesc('id');
-
-        $payments = $query->paginate(8)->withQueryString();
-
-        return view($view, [
-            'society' => $society,
-            'title' => $title,
-            'payments' => $payments,
-            'tab' => $tab,
-            'kpis' => $this->kpis($society),
-            'overview' => $this->overviewDonut($society, Period::fromKey($request->query('overview'), 'this_year')),
-            'recent' => $this->recentTransactions($society),
-            'collectors' => $this->collectors($society),
-        ]);
     }
 
     public function create(Request $request): View

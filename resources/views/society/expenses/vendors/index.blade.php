@@ -15,7 +15,10 @@
                 <span>Vendors</span>
             </div>
         </div>
-        <a href="{{ route('society.expenses.vendors.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Vendor</a>
+        <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.expenses.vendors.export" />
+            <a href="{{ route('society.expenses.vendors.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Vendor</a>
+        </div>
     </div>
 </div>
 

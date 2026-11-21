@@ -20,6 +20,7 @@
                 <a href="{{ route('society.assets.import.sample') }}" class="btn btn-secondary" title="Download sample"><i class="fas fa-download"></i></a>
                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('assetImportFile').click()"><i class="fas fa-file-import"></i> Import Assets</button>
             </form>
+            <x-export-button route="society.assets.export" />
             <a href="{{ route('society.assets.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Asset</a>
         </div>
     </div>

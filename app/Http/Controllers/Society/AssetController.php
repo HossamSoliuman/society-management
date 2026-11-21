@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\AssetsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAssetRequest;
 use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Models\Society;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AssetController extends Controller
 {
@@ -43,21 +46,8 @@ class AssetController extends Controller
     {
         $society = $this->currentSociety();
 
-        $assets = Asset::query()
-            ->with(['category', 'images'])
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->integer('category')))
-            ->when($request->filled('location'), fn ($q) => $q->where('location', 'like', '%'.$request->string('location').'%'))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->when($request->filled('q'), function ($q) use ($request) {
-                $term = $request->string('q');
-                $q->where(function ($sub) use ($term) {
-                    $sub->where('name', 'like', "%{$term}%")
-                        ->orWhere('asset_code', 'like', "%{$term}%")
-                        ->orWhere('brand', 'like', "%{$term}%");
-                });
-            })
-            ->orderBy('asset_code')
+        $assets = $this->filteredAssets($request, $society)
+            ->with('images')
             ->paginate(8)
             ->withQueryString();
 
@@ -70,6 +60,38 @@ class AssetController extends Controller
             'locations' => self::TOWERS,
             'statuses' => self::STATUSES,
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new AssetsExport($this->filteredAssets($request, $society)),
+            $this->exportFileName('assets', society: $society),
+        );
+    }
+
+    /**
+     * Asset list query with the list screen's search and filters applied.
+     */
+    private function filteredAssets(Request $request, Society $society): Builder
+    {
+        return Asset::query()
+            ->with('category')
+            ->where('society_id', $society->id)
+            ->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->integer('category')))
+            ->when($request->filled('location'), fn ($q) => $q->where('location', 'like', '%'.$request->string('location').'%'))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $term = $request->string('q');
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', "%{$term}%")
+                        ->orWhere('asset_code', 'like', "%{$term}%")
+                        ->orWhere('brand', 'like', "%{$term}%");
+                });
+            })
+            ->orderBy('asset_code');
     }
 
     public function create(): View

@@ -30,7 +30,10 @@
                 <span>Payment Collection</span>
             </div>
         </div>
-        <a href="{{ route('society.collections.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment <i class="fas fa-chevron-down" style="font-size: 9px;"></i></a>
+        <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.collections.export" />
+            <a href="{{ route('society.collections.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment <i class="fas fa-chevron-down" style="font-size: 9px;"></i></a>
+        </div>
     </div>
 </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\ExpensesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
@@ -9,6 +10,7 @@ use App\Models\Society;
 use App\Models\Vendor;
 use App\Services\ExpenseStatsService;
 use App\Support\Period;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExpenseController extends Controller
 {
@@ -31,10 +35,43 @@ class ExpenseController extends Controller
     {
         $society = $this->currentSociety();
 
+        $expenses = $this->filteredExpenses($request, $society)->paginate(8)->withQueryString();
+
+        return view('society.expenses.index', [
+            'society' => $society,
+            'expenses' => $expenses,
+            'tab' => $request->string('tab')->toString() ?: 'all',
+            'kpis' => $this->stats->kpis($society),
+            'overview' => $this->categoryDonut($society, Period::fromKey($request->query('overview'), 'this_month')),
+            'topCategories' => array_map(
+                fn (array $row) => $row + ['color_var' => $row['color']],
+                array_slice($this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear()), 0, 5)
+            ),
+            'categories' => $this->activeCategories($society),
+            'vendors' => $this->activeVendors($society),
+            'paymentModes' => self::PAYMENT_MODES,
+        ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new ExpensesExport($this->filteredExpenses($request, $society)),
+            $this->exportFileName('expenses', society: $society),
+        );
+    }
+
+    /**
+     * Expense list query with the list screen's tab, search and filters applied.
+     */
+    private function filteredExpenses(Request $request, Society $society): Builder
+    {
         $tab = $request->string('tab')->toString() ?: 'all';
         $tabStatus = in_array($tab, ['paid', 'pending', 'overdue', 'cancelled'], true) ? $tab : null;
 
-        $expenses = Expense::query()
+        return Expense::query()
             ->with(['category', 'vendor'])
             ->when($society, fn ($q) => $q->where('society_id', $society->id))
             ->when($tabStatus, fn ($q) => $q->where('payment_status', $tabStatus))
@@ -53,24 +90,7 @@ class ExpenseController extends Controller
                 });
             })
             ->orderByDesc('expense_date')
-            ->orderByDesc('id')
-            ->paginate(8)
-            ->withQueryString();
-
-        return view('society.expenses.index', [
-            'society' => $society,
-            'expenses' => $expenses,
-            'tab' => $tab,
-            'kpis' => $this->stats->kpis($society),
-            'overview' => $this->categoryDonut($society, Period::fromKey($request->query('overview'), 'this_month')),
-            'topCategories' => array_map(
-                fn (array $row) => $row + ['color_var' => $row['color']],
-                array_slice($this->stats->byCategory($society, now()->startOfYear(), now()->endOfYear()), 0, 5)
-            ),
-            'categories' => $this->activeCategories($society),
-            'vendors' => $this->activeVendors($society),
-            'paymentModes' => self::PAYMENT_MODES,
-        ]);
+            ->orderByDesc('id');
     }
 
     /**

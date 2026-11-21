@@ -267,6 +267,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     Route::middleware('permission:members.manage')->group(function () {
         Route::get('/members', [MemberController::class, 'index'])->name('members.index');
         Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
+        Route::get('/members/export', [MemberController::class, 'export'])->name('members.export');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store');
         Route::get('/members/{member}', [MemberController::class, 'show'])->name('members.show');
         Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
@@ -276,6 +277,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
 
         Route::get('/units', [UnitController::class, 'index'])->name('units.index');
         Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
+        Route::get('/units/export', [UnitController::class, 'export'])->name('units.export');
         Route::post('/units', [UnitController::class, 'store'])->name('units.store');
         Route::get('/units/import', [UnitController::class, 'importForm'])->name('units.import');
         Route::post('/units/import', [UnitController::class, 'import'])->name('units.import.store');
@@ -383,6 +385,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         // Static routes precede the {bill} wildcard.
         Route::get('billing/bills', [BillController::class, 'index'])->name('billing.bills.index');
         Route::get('billing/bills/create', [BillController::class, 'create'])->name('billing.bills.create');
+        Route::get('billing/bills/export', [BillController::class, 'export'])->name('billing.bills.export');
         Route::post('billing/bills', [BillController::class, 'store'])->name('billing.bills.store');
         Route::get('billing/bills/bulk-upload', [BillController::class, 'bulkUpload'])->name('billing.bills.bulk');
         Route::post('billing/bills/bulk-upload', [BillController::class, 'bulkStore'])->name('billing.bills.bulk.store');
@@ -419,6 +422,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         // Collections. Static routes precede the {payment} wildcard.
         Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
         Route::get('collections/online', [CollectionController::class, 'online'])->name('collections.online');
+        Route::get('collections/export', [CollectionController::class, 'export'])->name('collections.export');
         Route::get('collections/overview-data', [CollectionController::class, 'overviewData'])->name('collections.overview-data');
         Route::get('collections/pending-dues', [CollectionController::class, 'pendingDues'])->name('collections.pending-dues');
         Route::get('collections/record', [CollectionController::class, 'create'])->name('collections.create');
@@ -434,6 +438,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     // Expenses. Static segments precede the {expense} wildcard so they aren't captured by binding.
     Route::middleware('permission:expenses.manage')->group(function () {
         Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+        Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
         Route::get('expenses/reports', [ExpenseController::class, 'reports'])->name('expenses.reports');
         Route::get('expenses/category-donut-data', [ExpenseController::class, 'categoryDonutData'])->name('expenses.category-donut-data');
 
@@ -446,6 +451,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
 
         Route::get('expenses/vendors', [VendorController::class, 'index'])->name('expenses.vendors.index');
         Route::get('expenses/vendors/create', [VendorController::class, 'create'])->name('expenses.vendors.create');
+        Route::get('expenses/vendors/export', [VendorController::class, 'export'])->name('expenses.vendors.export');
         Route::post('expenses/vendors', [VendorController::class, 'store'])->name('expenses.vendors.store');
         Route::get('expenses/vendors/{vendor}/edit', [VendorController::class, 'edit'])->name('expenses.vendors.edit');
         Route::put('expenses/vendors/{vendor}', [VendorController::class, 'update'])->name('expenses.vendors.update');
@@ -461,6 +467,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
     // Assets. Static segments precede the {asset} wildcard so they aren't captured by binding.
     Route::middleware('permission:assets.manage')->group(function () {
         Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
+        Route::get('assets/export', [AssetController::class, 'export'])->name('assets.export');
         Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
         Route::get('assets/import/sample', [AssetController::class, 'importSample'])->name('assets.import.sample');
 

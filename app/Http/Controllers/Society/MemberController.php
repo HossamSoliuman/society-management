@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\MembersExport;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\Role;
+use App\Models\Society;
 use App\Models\User;
 use App\Notifications\MemberPortalInvitation;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
 class MemberController extends Controller
@@ -21,6 +26,36 @@ class MemberController extends Controller
     {
         $society = $this->currentSociety();
 
+        $members = $this->filteredMembers($request, $society)->paginate(8)->withQueryString();
+
+        $stats = [
+            'total' => $society->members()->count(),
+            'active' => $society->members()->where('status', 'active')->count(),
+            'inactive' => $society->members()->where('status', 'inactive')->count(),
+            'blocked' => $society->members()->where('status', 'blocked')->count(),
+        ];
+
+        $towers = $society->members()->whereNotNull('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');
+        $units = $society->members()->whereNotNull('flat_unit')->distinct()->orderBy('flat_unit')->pluck('flat_unit');
+
+        return view('society.members.index', compact('society', 'members', 'stats', 'towers', 'units'));
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new MembersExport($this->filteredMembers($request, $society)->getQuery()),
+            $this->exportFileName('members', society: $society),
+        );
+    }
+
+    /**
+     * Member list query with the list screen's search and filters applied.
+     */
+    private function filteredMembers(Request $request, Society $society): HasMany
+    {
         $query = $society->members()->latest('join_date');
 
         if ($search = $request->input('q')) {
@@ -48,19 +83,7 @@ class MemberController extends Controller
             $query->where('member_type', $type);
         }
 
-        $members = $query->paginate(8)->withQueryString();
-
-        $stats = [
-            'total' => $society->members()->count(),
-            'active' => $society->members()->where('status', 'active')->count(),
-            'inactive' => $society->members()->where('status', 'inactive')->count(),
-            'blocked' => $society->members()->where('status', 'blocked')->count(),
-        ];
-
-        $towers = $society->members()->whereNotNull('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');
-        $units = $society->members()->whereNotNull('flat_unit')->distinct()->orderBy('flat_unit')->pluck('flat_unit');
-
-        return view('society.members.index', compact('society', 'members', 'stats', 'towers', 'units'));
+        return $query;
     }
 
     public function create()

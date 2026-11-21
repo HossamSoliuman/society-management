@@ -20,6 +20,7 @@
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.units.export" />
             <a href="{{ route('society.units.import') }}" class="btn btn-outline-secondary"><i class="fas fa-upload"></i> Import Units</a>
             <a href="{{ route('society.units.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Unit</a>
         </div>

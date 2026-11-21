@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\VendorsExport;
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
 use App\Models\Society;
 use App\Models\Vendor;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VendorController extends Controller
 {
@@ -18,23 +22,7 @@ class VendorController extends Controller
     {
         $society = $this->currentSociety();
 
-        $vendors = Vendor::query()
-            ->with('category')
-            ->when($society, fn ($q) => $q->where('society_id', $society->id))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->integer('category')))
-            ->when($request->filled('q'), function ($q) use ($request) {
-                $term = $request->string('q');
-                $q->where(function ($sub) use ($term) {
-                    $sub->where('name', 'like', "%{$term}%")
-                        ->orWhere('company', 'like', "%{$term}%")
-                        ->orWhere('phone', 'like', "%{$term}%")
-                        ->orWhere('email', 'like', "%{$term}%");
-                });
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $vendors = $this->filteredVendors($request, $society)->paginate(10)->withQueryString();
 
         $base = Vendor::query()->when($society, fn ($q) => $q->where('society_id', $society->id));
 
@@ -49,6 +37,38 @@ class VendorController extends Controller
                 'top' => (clone $base)->orderBy('name')->value('name') ?? '—',
             ],
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new VendorsExport($this->filteredVendors($request, $society)),
+            $this->exportFileName('vendors', society: $society),
+        );
+    }
+
+    /**
+     * Vendor list query with the list screen's search and filters applied.
+     */
+    private function filteredVendors(Request $request, Society $society): Builder
+    {
+        return Vendor::query()
+            ->with('category')
+            ->where('society_id', $society->id)
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->integer('category')))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $term = $request->string('q');
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', "%{$term}%")
+                        ->orWhere('company', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%")
+                        ->orWhere('email', 'like', "%{$term}%");
+                });
+            })
+            ->orderBy('name');
     }
 
     public function create(): View

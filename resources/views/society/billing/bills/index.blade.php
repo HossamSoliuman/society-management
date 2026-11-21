@@ -30,6 +30,7 @@
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
+            <x-export-button route="society.billing.bills.export" />
             <a href="{{ route('society.billing.bills.generate') }}" class="btn btn-secondary"><i class="fas fa-layer-group"></i> Generate Bills</a>
             <a href="{{ route('society.billing.bills.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Bill</a>
         </div>

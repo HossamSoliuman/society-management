@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Society;
 
+use App\Exports\UnitsExport;
 use App\Http\Controllers\Controller;
+use App\Models\Society;
 use App\Models\Unit;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UnitController extends Controller
 {
@@ -12,6 +17,38 @@ class UnitController extends Controller
     {
         $society = $this->currentSociety();
 
+        $units = $this->filteredUnits($request, $society)->paginate(8)->withQueryString();
+
+        $stats = [
+            'total' => $society->units()->count(),
+            'occupied' => $society->units()->where('status', 'occupied')->count(),
+            'vacant' => $society->units()->where('status', 'vacant')->count(),
+            'under_maintenance' => $society->units()->where('status', 'under_maintenance')->count(),
+        ];
+
+        $buildings = $society->units()->whereNotNull('building')->distinct()->orderBy('building')->pluck('building');
+        $wings = $society->units()->whereNotNull('wing')->distinct()->orderBy('wing')->pluck('wing');
+        $floors = $society->units()->whereNotNull('floor')->distinct()->orderBy('floor')->pluck('floor');
+        $types = $society->units()->whereNotNull('unit_type')->distinct()->orderBy('unit_type')->pluck('unit_type');
+
+        return view('society.units.index', compact('society', 'units', 'stats', 'buildings', 'wings', 'floors', 'types'));
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $society = $this->currentSociety();
+
+        return Excel::download(
+            new UnitsExport($this->filteredUnits($request, $society)->getQuery()),
+            $this->exportFileName('units', society: $society),
+        );
+    }
+
+    /**
+     * Unit list query with the list screen's search and filters applied.
+     */
+    private function filteredUnits(Request $request, Society $society): HasMany
+    {
         $query = $society->units()->orderBy('unit_number');
 
         if ($search = $request->input('q')) {
@@ -33,21 +70,7 @@ class UnitController extends Controller
             $query->where('unit_type', $type);
         }
 
-        $units = $query->paginate(8)->withQueryString();
-
-        $stats = [
-            'total' => $society->units()->count(),
-            'occupied' => $society->units()->where('status', 'occupied')->count(),
-            'vacant' => $society->units()->where('status', 'vacant')->count(),
-            'under_maintenance' => $society->units()->where('status', 'under_maintenance')->count(),
-        ];
-
-        $buildings = $society->units()->whereNotNull('building')->distinct()->orderBy('building')->pluck('building');
-        $wings = $society->units()->whereNotNull('wing')->distinct()->orderBy('wing')->pluck('wing');
-        $floors = $society->units()->whereNotNull('floor')->distinct()->orderBy('floor')->pluck('floor');
-        $types = $society->units()->whereNotNull('unit_type')->distinct()->orderBy('unit_type')->pluck('unit_type');
-
-        return view('society.units.index', compact('society', 'units', 'stats', 'buildings', 'wings', 'floors', 'types'));
+        return $query;
     }
 
     public function create()
