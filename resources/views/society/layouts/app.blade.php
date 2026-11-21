@@ -99,17 +99,17 @@
                     </div>
                 </div>
 
-                {{-- Tenant Management (group, stub) --}}
-                <div class="nav-group">
+                {{-- Tenant Management (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.tenants.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-user-group"></i>
                         <span>Tenant Management</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'All Tenants']) }}" class="nav-item"><i class="fas fa-list"></i><span>All Tenants</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Add Tenant']) }}" class="nav-item"><i class="fas fa-user-plus"></i><span>Add Tenant</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Tenant Agreements']) }}" class="nav-item"><i class="fas fa-file-signature"></i><span>Tenant Agreements</span></a>
+                        <a href="{{ route('society.tenants.index') }}" class="nav-item {{ request()->routeIs('society.tenants.index') || request()->routeIs('society.tenants.show') || request()->routeIs('society.tenants.edit') ? 'active' : '' }}"><i class="fas fa-list"></i><span>All Tenants</span></a>
+                        <a href="{{ route('society.tenants.create') }}" class="nav-item {{ request()->routeIs('society.tenants.create') ? 'active' : '' }}"><i class="fas fa-user-plus"></i><span>Add Tenant</span></a>
+                        <a href="{{ route('society.tenants.agreements') }}" class="nav-item {{ request()->routeIs('society.tenants.agreements') ? 'active' : '' }}"><i class="fas fa-file-signature"></i><span>Tenant Agreements</span></a>
                     </div>
                 </div>
 

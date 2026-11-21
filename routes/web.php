@@ -42,6 +42,8 @@ use App\Http\Controllers\Society\ServiceVendorController;
 use App\Http\Controllers\Society\SubscriptionController as SocietySubscriptionController;
 use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
+use App\Http\Controllers\Society\TenantAgreementController;
+use App\Http\Controllers\Society\TenantController;
 use App\Http\Controllers\Society\TenderController;
 use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\Society\UserController as SocietyUserController;
@@ -259,6 +261,21 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
         Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
         Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+
+        // Tenants & rental agreements. Static segments precede the {tenant} wildcard.
+        Route::get('/tenants/agreements', [TenantAgreementController::class, 'index'])->name('tenants.agreements');
+        Route::post('/tenants/agreements/{agreement}/terminate', [TenantAgreementController::class, 'terminate'])->name('tenants.agreements.terminate');
+        Route::get('/tenants/agreements/{agreement}/download', [TenantAgreementController::class, 'download'])->name('tenants.agreements.download');
+        Route::delete('/tenants/agreements/{agreement}', [TenantAgreementController::class, 'destroy'])->name('tenants.agreements.destroy');
+        Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+        Route::get('/tenants/create', [TenantController::class, 'create'])->name('tenants.create');
+        Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+        Route::get('/tenants/{tenant}', [TenantController::class, 'show'])->name('tenants.show');
+        Route::get('/tenants/{tenant}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
+        Route::put('/tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
+        Route::post('/tenants/{tenant}/move-out', [TenantController::class, 'moveOut'])->name('tenants.move-out');
+        Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
+        Route::post('/tenants/{tenant}/agreements', [TenantAgreementController::class, 'store'])->name('tenants.agreements.store');
     });
 
     // Maintenance Billing & Collections

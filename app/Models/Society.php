@@ -88,6 +88,11 @@ class Society extends Model
         return $this->hasMany(Member::class);
     }
 
+    public function tenants()
+    {
+        return $this->hasMany(Tenant::class);
+    }
+
     public function documents()
     {
         return $this->hasMany(SocietyDocument::class);

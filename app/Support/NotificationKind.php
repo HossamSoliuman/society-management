@@ -20,6 +20,7 @@ final class NotificationKind
         'complaint_assigned' => ['label' => 'Complaint', 'icon' => 'fa-triangle-exclamation', 'variant' => 'danger'],
         'subscription_renewal' => ['label' => 'Subscription', 'icon' => 'fa-rotate', 'variant' => 'warning'],
         'amc_expiry' => ['label' => 'AMC Expiry', 'icon' => 'fa-file-contract', 'variant' => 'danger'],
+        'agreement_expiry' => ['label' => 'Rental Agreement', 'icon' => 'fa-file-signature', 'variant' => 'warning'],
     ];
 
     private const FALLBACK = ['label' => 'Notification', 'icon' => 'fa-bell', 'variant' => 'secondary'];

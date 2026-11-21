@@ -16,6 +16,7 @@ Schedule::command('bills:mark-overdue')->dailyAt('00:45');
 Schedule::command('bills:apply-late-fees')->dailyAt('01:00');
 Schedule::command('bills:send-reminders')->dailyAt('09:00');
 Schedule::command('amc:send-expiry-alerts')->dailyAt('08:30');
+Schedule::command('tenants:send-agreement-alerts')->dailyAt('08:40');
 
 // Shared hosting has no supervisor: drain the database queue from the scheduler instead.
 Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=3')

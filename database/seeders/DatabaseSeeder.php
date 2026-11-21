@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             SystemLogSeeder::class,
             AnnouncementSeeder::class,
             SupportTicketSeeder::class,
+            TenantSeeder::class,
         ]);
     }
 }
