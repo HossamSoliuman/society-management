@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Document extends Model
 {
     /** @use HasFactory<DocumentFactory> */
-    use BelongsToSociety, HasFactory;
+    use BelongsToSociety, HasFactory, LogsActivity;
 
     protected $fillable = [
         'society_id', 'name', 'document_category_id', 'type', 'description',

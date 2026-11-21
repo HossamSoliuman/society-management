@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\TargetsAudience;
 use Database\Factories\NoticeFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Notice extends Model
 {
     /** @use HasFactory<NoticeFactory> */
-    use HasFactory, TargetsAudience;
+    use HasFactory, LogsActivity, TargetsAudience;
 
     /**
      * Audience presets for notices written by a society office.

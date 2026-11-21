@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\SupportTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,12 +17,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class SupportTicket extends Model
 {
-    use BelongsToSociety;
+    use BelongsToSociety, LogsActivity;
 
     /** @use HasFactory<SupportTicketFactory> */
     use HasFactory, SoftDeletes;
 
     public const RAISED_BY_TYPES = ['member', 'staff_admin'];
+
+    /** @var array<int, string> */
+    protected array $activityIgnoredAttributes = ['last_reply_at'];
 
     public const STATUSES = ['open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'];
 

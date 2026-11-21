@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\TenderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Tender extends Model
 {
     /** @use HasFactory<TenderFactory> */
-    use BelongsToSociety, HasFactory;
+    use BelongsToSociety, HasFactory, LogsActivity;
 
     protected $fillable = [
         'society_id', 'title', 'sub_title', 'reference_no', 'department',

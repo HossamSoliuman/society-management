@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSociety;
+use App\Models\Concerns\LogsActivity;
 use App\Observers\LedgerPostingObserver;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */
-    use BelongsToSociety, HasFactory;
+    use BelongsToSociety, HasFactory, LogsActivity;
 
     protected $fillable = [
         'society_id', 'code', 'expense_date', 'title', 'category_id', 'vendor_id',
