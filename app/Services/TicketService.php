@@ -7,6 +7,7 @@ use App\Models\Society;
 use App\Models\SupportTicket;
 use App\Models\TicketReply;
 use App\Models\User;
+use App\Notifications\ComplaintAssigned;
 use App\Notifications\TicketCreated;
 use App\Notifications\TicketReplied;
 use App\Notifications\TicketStatusChanged;
@@ -22,8 +23,10 @@ class TicketService
 {
     /**
      * @param  array<string, mixed>  $attributes
+     * @param  bool  $complaintDesk  a resident complaint logged by the society office:
+     *                               notify the office team instead of the platform desk
      */
-    public function create(Society $society, array $attributes, ?User $createdBy = null): SupportTicket
+    public function create(Society $society, array $attributes, ?User $createdBy = null, bool $complaintDesk = false): SupportTicket
     {
         $ticket = DB::transaction(function () use ($society, $attributes, $createdBy): SupportTicket {
             return SupportTicket::create(array_merge($attributes, [
@@ -37,7 +40,11 @@ class TicketService
 
         // Resident complaints go to the society office; society tickets go to
         // the platform support desk.
-        $recipients = $createdBy?->hasRole('member') ? $this->societyAdmins($ticket) : $this->superAdmins();
+        $recipients = match (true) {
+            $complaintDesk => $this->societyAdmins($ticket)->reject(fn (User $user) => $user->is($createdBy))->values(),
+            (bool) $createdBy?->hasRole('member') => $this->societyAdmins($ticket),
+            default => $this->superAdmins(),
+        };
         foreach ($recipients as $recipient) {
             $recipient->notify(new TicketCreated($ticket));
         }
@@ -49,7 +56,7 @@ class TicketService
      * Post a reply; optionally move the status at the same time. Society-side
      * replies notify super admins, super-admin replies notify society admins.
      */
-    public function reply(SupportTicket $ticket, User $author, string $message, ?string $status = null, ?string $attachment = null): TicketReply
+    public function reply(SupportTicket $ticket, User $author, string $message, ?string $status = null, ?string $attachment = null, bool $complaintDesk = false): TicketReply
     {
         $reply = DB::transaction(function () use ($ticket, $author, $message, $status, $attachment): TicketReply {
             $reply = $ticket->replies()->create([
@@ -67,14 +74,14 @@ class TicketService
             return $reply;
         });
 
-        foreach ($this->counterparts($ticket, $author) as $recipient) {
+        foreach ($this->counterparts($ticket, $author, $complaintDesk) as $recipient) {
             $recipient->notify(new TicketReplied($ticket, $reply));
         }
 
         return $reply;
     }
 
-    public function changeStatus(SupportTicket $ticket, string $status, User $changedBy): SupportTicket
+    public function changeStatus(SupportTicket $ticket, string $status, User $changedBy, bool $complaintDesk = false): SupportTicket
     {
         if ($status === $ticket->status) {
             return $ticket;
@@ -83,8 +90,27 @@ class TicketService
         $previous = $ticket->status;
         $ticket->forceFill($this->statusAttributes($status))->save();
 
-        foreach ($this->counterparts($ticket, $changedBy) as $recipient) {
+        foreach ($this->counterparts($ticket, $changedBy, $complaintDesk) as $recipient) {
             $recipient->notify(new TicketStatusChanged($ticket, $previous));
+        }
+
+        return $ticket;
+    }
+
+    /**
+     * Hand a complaint to a society team member; an untouched complaint
+     * moves to "in progress" at the same time.
+     */
+    public function assign(SupportTicket $ticket, ?User $assignee, User $assignedBy): SupportTicket
+    {
+        $update = ['assigned_to' => $assignee?->id];
+        if ($assignee && $ticket->status === 'open') {
+            $update += $this->statusAttributes('in_progress');
+        }
+        $ticket->forceFill($update)->save();
+
+        if ($assignee && ! $assignee->is($assignedBy)) {
+            $assignee->notify(new ComplaintAssigned($ticket, $assignedBy));
         }
 
         return $ticket;
@@ -106,7 +132,7 @@ class TicketService
      *
      * @return Collection<int, User>
      */
-    private function counterparts(SupportTicket $ticket, User $actor): Collection
+    private function counterparts(SupportTicket $ticket, User $actor, bool $complaintDesk = false): Collection
     {
         if ($actor->hasRole('super_admin')) {
             return $this->societyAdmins($ticket);
@@ -119,6 +145,10 @@ class TicketService
         // Society staff acting on a resident's ticket talk to the resident,
         // otherwise (a platform ticket) to the support desk.
         $memberUser = $this->memberUser($ticket);
+
+        if ($complaintDesk) {
+            return $memberUser ? new Collection([$memberUser]) : new Collection;
+        }
 
         return $memberUser ? new Collection([$memberUser]) : $this->superAdmins();
     }

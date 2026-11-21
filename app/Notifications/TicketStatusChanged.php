@@ -47,7 +47,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
     private function urlFor(object $notifiable): string
     {
         if (! method_exists($notifiable, 'hasRole')) {
-            return route('society.support.show', $this->ticket);
+            return $this->societyUrl();
         }
 
         if ($notifiable->hasRole('super_admin')) {
@@ -56,6 +56,16 @@ class TicketStatusChanged extends Notification implements ShouldQueue
 
         return $notifiable->hasRole('member')
             ? route('member.support.show', $this->ticket)
+            : $this->societyUrl();
+    }
+
+    /**
+     * Resident complaints open on the complaint desk; platform tickets on Priority Support.
+     */
+    private function societyUrl(): string
+    {
+        return $this->ticket->raised_by_type === 'member'
+            ? route('society.complaints.show', $this->ticket)
             : route('society.support.show', $this->ticket);
     }
 }

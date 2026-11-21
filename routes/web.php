@@ -23,6 +23,7 @@ use App\Http\Controllers\Society\BillSettingController;
 use App\Http\Controllers\Society\BulkUploadController;
 use App\Http\Controllers\Society\ChargeHeadController;
 use App\Http\Controllers\Society\CollectionController;
+use App\Http\Controllers\Society\ComplaintController;
 use App\Http\Controllers\Society\DashboardController as SocietyDashboardController;
 use App\Http\Controllers\Society\DocumentController;
 use App\Http\Controllers\Society\ExpenseCategoryController;
@@ -360,6 +361,17 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
         Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
         Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
+    });
+
+    // Complaint desk: resident complaints. Static segment precedes the {complaint} wildcard.
+    Route::middleware('permission:support.manage')->group(function () {
+        Route::get('complaints', [ComplaintController::class, 'index'])->name('complaints.index');
+        Route::get('complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
+        Route::post('complaints', [ComplaintController::class, 'store'])->name('complaints.store');
+        Route::get('complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
+        Route::post('complaints/{complaint}/reply', [ComplaintController::class, 'reply'])->name('complaints.reply');
+        Route::put('complaints/{complaint}/status', [ComplaintController::class, 'updateStatus'])->name('complaints.status');
+        Route::put('complaints/{complaint}/assign', [ComplaintController::class, 'assign'])->name('complaints.assign');
     });
 
     // Priority Support. Static segment precedes the {request} wildcard.

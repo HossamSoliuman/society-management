@@ -23,5 +23,5 @@
     </div>
 </div>
 <div class="card-footer" style="padding: 12px 20px;">
-    <a href="{{ route('society.placeholder', ['page' => 'Complaint Management']) }}" class="btn-link">View Complaints <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
+    <a href="{{ route('society.complaints.index') }}" class="btn-link">View Complaints <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
 </div>

@@ -182,6 +182,7 @@ class DashboardController extends Controller
 
         // --- Complaints (from support tickets) ---
         $ticketsByStatus = SupportTicket::where('society_id', $sid)
+            ->where('raised_by_type', 'member')
             ->selectRaw('status, COUNT(*) as c')
             ->groupBy('status')
             ->pluck('c', 'status');
@@ -189,6 +190,7 @@ class DashboardController extends Controller
         $cProgress = (int) ($ticketsByStatus['in_progress'] ?? 0);
         $cResolved = (int) (($ticketsByStatus['resolved'] ?? 0) + ($ticketsByStatus['closed'] ?? 0));
         $highPriority = (int) SupportTicket::where('society_id', $sid)
+            ->where('raised_by_type', 'member')
             ->whereIn('status', ['open', 'in_progress'])
             ->whereIn('priority', ['high', 'urgent', 'critical'])
             ->count();

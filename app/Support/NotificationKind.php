@@ -17,6 +17,7 @@ final class NotificationKind
         'ticket_created' => ['label' => 'New Ticket', 'icon' => 'fa-headset', 'variant' => 'purple'],
         'ticket_replied' => ['label' => 'Ticket Reply', 'icon' => 'fa-reply', 'variant' => 'purple'],
         'ticket_status' => ['label' => 'Ticket Status', 'icon' => 'fa-clipboard-check', 'variant' => 'success'],
+        'complaint_assigned' => ['label' => 'Complaint', 'icon' => 'fa-triangle-exclamation', 'variant' => 'danger'],
         'subscription_renewal' => ['label' => 'Subscription', 'icon' => 'fa-rotate', 'variant' => 'warning'],
         'amc_expiry' => ['label' => 'AMC Expiry', 'icon' => 'fa-file-contract', 'variant' => 'danger'],
     ];

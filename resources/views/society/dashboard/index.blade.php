@@ -97,8 +97,8 @@
                     <a href="{{ route('society.collections.create') }}" class="quick-action-item">
                         <i class="fas fa-credit-card" style="color: var(--info);"></i><span>Record Payment</span>
                     </a>
-                    <a href="{{ route('society.support.create') }}" class="quick-action-item">
-                        <i class="fas fa-headset" style="color: var(--danger);"></i><span>Raise Complaint</span>
+                    <a href="{{ route('society.complaints.create') }}" class="quick-action-item">
+                        <i class="fas fa-headset" style="color: var(--danger);"></i><span>Log Complaint</span>
                     </a>
                     <a href="{{ auth()->user()?->hasAnyPermission('notices.manage') ? route('society.notices.create') : route('society.notices.index') }}" class="quick-action-item">
                         <i class="fas fa-paper-plane" style="color: var(--primary);"></i><span>{{ auth()->user()?->hasAnyPermission('notices.manage') ? 'Send Notice' : 'View Notices' }}</span>

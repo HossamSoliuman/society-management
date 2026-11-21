@@ -302,10 +302,12 @@
                     <i class="fas fa-calendar-check"></i>
                     <span>Amenities Booking</span>
                 </a>
-                <a href="{{ route('society.placeholder', ['page' => 'Complaint Management']) }}" class="nav-item">
+                @if(auth()->user()?->hasAnyPermission('support.manage'))
+                <a href="{{ route('society.complaints.index') }}" class="nav-item {{ request()->routeIs('society.complaints.*') ? 'active' : '' }}">
                     <i class="fas fa-triangle-exclamation"></i>
                     <span>Complaint Management</span>
                 </a>
+                @endif
                 @if(Route::has('society.documents.index'))
                 <a href="{{ route('society.documents.index') }}" class="nav-item {{ request()->routeIs('society.documents.*') ? 'active' : '' }}">
                     <i class="fas fa-folder-open"></i>
