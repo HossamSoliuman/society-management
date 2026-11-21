@@ -37,17 +37,10 @@
         <div class="card-body" style="padding: 16px;">
             <div class="card-title" style="margin-bottom: 12px;">Unit Summary</div>
             <div style="display: flex; align-items: center; gap: 12px;">
-                @include('society.partials.donut', [
-                    'segments' => [
-                        ['value' => $stats['occupied'], 'color' => '#10B981'],
-                        ['value' => $stats['vacant'], 'color' => '#F59E0B'],
-                        ['value' => $stats['under_maintenance'], 'color' => '#8B5CF6'],
-                    ],
-                    'centerValue' => number_format($stats['total']),
-                    'centerLabel' => 'Total Units',
-                    'size' => 100,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="100" label="Unit occupancy"
+                    :labels="['Occupied', 'Vacant', 'Under Maintenance']"
+                    :datasets="[['data' => [$stats['occupied'], $stats['vacant'], $stats['under_maintenance']], 'colors' => ['#10B981', '#F59E0B', '#8B5CF6']]]"
+                    :center-value="number_format($stats['total'])" center-label="Total Units" />
                 <div class="units-summary-legend" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
                         <span class="legend-dot" style="background: #10B981;"></span>

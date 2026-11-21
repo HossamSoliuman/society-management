@@ -137,22 +137,14 @@
         <div class="card">
             <div class="card-header"><div class="card-title">Profit &amp; Loss Summary</div></div>
             <div class="card-body">
-                @include('society.partials.area-chart', [
-                    'series' => [
-                        ['points' => $pl['chart']['income'], 'stroke' => '#10B981', 'fill' => 'rgba(16,185,129,0.10)'],
-                        ['points' => $pl['chart']['expense'], 'stroke' => '#EF4444', 'fill' => 'rgba(239,68,68,0.08)'],
-                        ['points' => $pl['chart']['profit'], 'stroke' => '#3B82F6', 'fill' => null],
-                    ],
-                    'labels' => $pl['chart']['labels'],
-                    'max' => $pl['chart']['max'],
-                    'yTicks' => ['₹10L' => 1000000, '₹5L' => 500000, '₹0' => 0],
-                ])
-                <div class="chart-legend" style="justify-content: center; gap: 24px; margin: 8px 0 16px;">
-                    <div class="legend-item"><span class="legend-dot" style="background: #10B981;"></span><span class="legend-label">Income</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #EF4444;"></span><span class="legend-label">Expenses</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #3B82F6;"></span><span class="legend-label">Profit</span></div>
-                </div>
-                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                <x-chart type="area" :height="220" format="inr" legend label="Income, expense and profit"
+                    :labels="$pl['chart']['labels']"
+                    :datasets="[
+                        ['label' => 'Income', 'data' => $pl['chart']['income'], 'color' => '#10B981'],
+                        ['label' => 'Expense', 'data' => $pl['chart']['expense'], 'color' => '#EF4444'],
+                        ['label' => 'Net Profit', 'data' => $pl['chart']['profit'], 'color' => '#3B82F6', 'fill' => false, 'dashed' => true],
+                    ]" />
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-top: 16px;">
                     <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span style="color: var(--text-secondary);">Total Income</span><span style="font-weight: 600;">&#8377; {{ $pl['summary']['total_income'] }}</span></div>
                     <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span style="color: var(--text-secondary);">Total Expenses</span><span style="font-weight: 600;">&#8377; {{ $pl['summary']['total_expenses'] }}</span></div>
                     <div style="display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--border-color); margin-top: 4px;"><span style="font-weight: 700;">Net Profit</span><span style="font-weight: 700; color: var(--success);">&#8377; {{ $pl['summary']['net_profit'] }}</span></div>
@@ -169,13 +161,8 @@
                 <div class="card-title">Income &amp; Expense Breakdown</div>
             </div>
             <div class="card-body">
-                @include('society.partials.donut', [
-                    'segments' => collect($pl['breakdown']['income'])->map(fn ($s) => ['value' => (float) str_replace(',', '', $s['amount']), 'color' => $s['color']])->all(),
-                    'centerValue' => $pl['breakdown']['center_value'],
-                    'centerLabel' => $pl['breakdown']['center_label'],
-                    'size' => 160,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="160" format="inr" :segments="$pl['breakdown']['income']"
+                    :center-value="$pl['breakdown']['center_value']" :center-label="$pl['breakdown']['center_label']" />
                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin: 16px 0 6px;">Income</div>
                 @foreach($pl['breakdown']['income'] as $row)
                     <div style="display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px;">

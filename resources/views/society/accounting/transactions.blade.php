@@ -191,19 +191,14 @@
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">Transaction Summary <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">(This Month)</span></div>
-                @include('society.partials.donut', [
-                    'segments' => collect($summary['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-                    'centerValue' => $summary['center_value'],
-                    'centerLabel' => $summary['center_label'],
-                    'size' => 170,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="170" format="inr" :segments="$summary['segments']"
+                    :center-value="$summary['center_value']" :center-label="$summary['center_label']" />
                 <div class="chart-legend" style="margin-top: 20px;">
                     @foreach($summary['segments'] as $seg)
                         <div class="legend-item">
                             <span class="legend-dot" style="background: {{ $seg['color'] }};"></span>
                             <span class="legend-label">{{ $seg['label'] }}</span>
-                            <span class="legend-value">{{ $seg['amount'] }} ({{ $seg['pct'] }})</span>
+                            <span class="legend-value">{!! $seg['amount'] !!} ({{ $seg['pct'] }})</span>
                         </div>
                     @endforeach
                 </div>

@@ -154,13 +154,8 @@
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">Category Usage <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">(This Month)</span></div>
-                @include('society.partials.donut', [
-                    'segments' => collect($usage['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-                    'centerValue' => $usage['center_value'],
-                    'centerLabel' => $usage['center_label'],
-                    'size' => 170,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="170" format="inr" :segments="$usage['segments']"
+                    :center-value="$usage['center_value']" :center-label="$usage['center_label']" />
                 <div class="chart-legend" style="margin-top: 20px;">
                     @foreach($usage['segments'] as $seg)
                         <div class="legend-item">

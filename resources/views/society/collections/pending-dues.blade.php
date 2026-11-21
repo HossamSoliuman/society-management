@@ -168,13 +168,8 @@
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">Dues Aging Summary</div>
-                @include('society.partials.donut', [
-                    'segments' => collect($aging['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-                    'centerValue' => $aging['center_value'],
-                    'centerLabel' => $aging['center_label'],
-                    'size' => 170,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="170" format="inr" :segments="$aging['segments']"
+                    :center-value="$aging['center_value']" :center-label="$aging['center_label']" />
                 <div class="chart-legend" style="margin-top: 20px;">
                     @foreach($aging['segments'] as $seg)
                         <div class="legend-item">

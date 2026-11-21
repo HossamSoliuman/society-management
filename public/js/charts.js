@@ -151,6 +151,18 @@
             return options;
         }
 
+        // Solid legend swatches in the series colour (line points are white-filled).
+        options.plugins.legend.labels.generateLabels = function (chart) {
+            return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(function (item) {
+                var ds = chart.data.datasets[item.datasetIndex];
+                if (ds && typeof ds.borderColor === 'string') {
+                    item.fillStyle = ds.borderColor;
+                    item.strokeStyle = ds.borderColor;
+                }
+                return item;
+            });
+        };
+
         var valueAxis = {
             beginAtZero: true,
             stacked: !!config.stacked,
@@ -161,6 +173,7 @@
                 font: { size: 10 },
                 padding: 6,
                 maxTicksLimit: 5,
+                precision: 0,
                 callback: function (value) { return compactTick(value, format); }
             }
         };

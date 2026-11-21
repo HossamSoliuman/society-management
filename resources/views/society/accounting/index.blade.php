@@ -124,19 +124,12 @@
                     <a href="{{ route('society.accounting.transactions') }}" style="font-size: 13px; color: var(--primary); font-weight: 600;">View Report</a>
                 </div>
                 <div class="card-body">
-                    @include('society.partials.area-chart', [
-                        'series' => [
-                            ['points' => $cashFlow['income'], 'stroke' => '#10B981', 'fill' => 'rgba(16,185,129,0.10)'],
-                            ['points' => $cashFlow['expense'], 'stroke' => '#EF4444', 'fill' => 'rgba(239,68,68,0.08)'],
-                        ],
-                        'labels' => $cashFlow['labels'],
-                        'max' => $cashFlow['max'],
-                        'yTicks' => ['₹2.5L' => 250000, '₹2L' => 200000, '₹1L' => 100000, '₹0' => 0],
-                    ])
-                    <div class="chart-legend" style="justify-content: center; gap: 24px; margin-top: 8px;">
-                        <div class="legend-item"><span class="legend-dot" style="background: #10B981;"></span><span class="legend-label">Income</span></div>
-                        <div class="legend-item"><span class="legend-dot" style="background: #EF4444;"></span><span class="legend-label">Expense</span></div>
-                    </div>
+                    <x-chart type="area" :height="220" format="inr" legend label="Cash flow"
+                        :labels="$cashFlow['labels']"
+                        :datasets="[
+                            ['label' => 'Income', 'data' => $cashFlow['income'], 'color' => '#10B981'],
+                            ['label' => 'Expense', 'data' => $cashFlow['expense'], 'color' => '#EF4444'],
+                        ]" />
                 </div>
             </div>
 
@@ -146,19 +139,14 @@
                     <a href="{{ route('society.accounting.chart-of-accounts') }}" style="font-size: 13px; color: var(--primary); font-weight: 600;">View All Accounts</a>
                 </div>
                 <div class="card-body">
-                    @include('society.partials.donut', [
-                        'segments' => collect($balanceSummary['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-                        'centerValue' => $balanceSummary['center_value'],
-                        'centerLabel' => $balanceSummary['center_label'],
-                        'size' => 170,
-                        'stroke' => 14,
-                    ])
+                    <x-chart type="doughnut" :size="170" format="inr" :segments="$balanceSummary['segments']"
+                        :center-value="$balanceSummary['center_value']" :center-label="$balanceSummary['center_label']" />
                     <div class="chart-legend" style="margin-top: 20px;">
                         @foreach($balanceSummary['segments'] as $seg)
                             <div class="legend-item">
                                 <span class="legend-dot" style="background: {{ $seg['color'] }};"></span>
                                 <span class="legend-label">{{ $seg['label'] }}</span>
-                                <span class="legend-value">{{ $seg['amount'] }}</span>
+                                <span class="legend-value">{!! $seg['amount'] !!}</span>
                             </div>
                         @endforeach
                     </div>

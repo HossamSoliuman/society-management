@@ -644,7 +644,7 @@ class AccountingService
     /**
      * Income vs expense for the last 12 months.
      *
-     * @return array{labels: array<int, string>, income: array<int, float>, expense: array<int, float>, max: float}
+     * @return array{labels: array<int, string>, income: array<int, float>, expense: array<int, float>}
      */
     public function cashFlowSeries(Society $society): array
     {
@@ -660,7 +660,7 @@ class AccountingService
             $expense[] = round($this->periodMovements($society, 'expense', $from, $to)->sum('amount'), 2);
         }
 
-        return ['labels' => $labels, 'income' => $income, 'expense' => $expense, 'max' => $this->niceCeil(max(array_merge($income, $expense, [1])))];
+        return ['labels' => $labels, 'income' => $income, 'expense' => $expense];
     }
 
     /**
@@ -745,7 +745,7 @@ class AccountingService
     /**
      * Cumulative daily income / expense / surplus lines for the P&L chart.
      *
-     * @return array{labels: array<int, string>, income: array<int, float>, expense: array<int, float>, profit: array<int, float>, max: float}
+     * @return array{labels: array<int, string>, income: array<int, float>, expense: array<int, float>, profit: array<int, float>}
      */
     private function cumulativeSeries(Society $society, Carbon $from, Carbon $to): array
     {
@@ -775,7 +775,7 @@ class AccountingService
             $profit[] = round($inc - $exp, 2);
         }
 
-        return ['labels' => $labels, 'income' => $income, 'expense' => $expense, 'profit' => $profit, 'max' => $this->niceCeil(max(array_merge($income, $expense, [1])))];
+        return ['labels' => $labels, 'income' => $income, 'expense' => $expense, 'profit' => $profit];
     }
 
     private function openBillsOutstanding(Society $society): float
@@ -793,20 +793,5 @@ class AccountingService
             ->where('society_id', $society->id)
             ->whereIn('payment_status', ['pending', 'overdue'])
             ->sum('due_amount'), 2);
-    }
-
-    private function niceCeil(float $value): float
-    {
-        if ($value <= 0) {
-            return 1;
-        }
-        $magnitude = 10 ** floor(log10($value));
-        foreach ([1, 2, 2.5, 5, 10] as $factor) {
-            if ($value <= $factor * $magnitude) {
-                return $factor * $magnitude;
-            }
-        }
-
-        return 10 * $magnitude;
     }
 }

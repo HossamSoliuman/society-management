@@ -2,6 +2,7 @@
     'type' => 'line',
     'labels' => [],
     'datasets' => [],
+    'segments' => null,
     'height' => 220,
     'size' => null,
     'format' => 'number',
@@ -19,8 +20,13 @@
      * Chart.js chart rendered by public/js/charts.js.
      *
      * Datasets: [['label' => 'Collected', 'data' => [..], 'color' => '#hex'|'var(--primary)', 'fill' => bool, 'dashed' => bool, 'type' => 'bar'|'line', 'stack' => 'a']]
-     * Doughnut / pie: a single dataset with 'data' and a matching 'colors' list.
+     * Doughnut / pie: a single dataset with 'data' and a matching 'colors' list,
+     * or pass segments as [['label' => .., 'value' => .., 'color' => '#hex'], ...].
      */
+    if (is_array($segments)) {
+        $labels = array_column($segments, 'label');
+        $datasets = [['data' => array_column($segments, 'value'), 'colors' => array_column($segments, 'color')]];
+    }
     $circular = in_array($type, ['doughnut', 'pie'], true);
     $config = array_filter([
         'type' => $type,
@@ -45,7 +51,7 @@
     <canvas data-chart="{{ json_encode($config) }}" role="img" aria-label="{{ $label ?? 'Chart' }}"></canvas>
     @if($circular && ! is_null($centerValue))
         <div class="pie-chart-center">
-            <div class="value">{{ $centerValue }}</div>
+            <div class="value">{{ html_entity_decode((string) $centerValue, ENT_QUOTES | ENT_HTML5) }}</div>
             @if($centerLabel)
                 <div class="label">{{ $centerLabel }}</div>
             @endif

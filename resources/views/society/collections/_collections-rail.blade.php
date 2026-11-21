@@ -8,13 +8,8 @@
 <div class="card">
     <div class="card-body">
         <div class="section-title" style="font-size: 15px;">Collection Overview</div>
-        @include('society.partials.donut', [
-            'segments' => collect($overview['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-            'centerValue' => $overview['center_value'],
-            'centerLabel' => $overview['center_label'],
-            'size' => 170,
-            'stroke' => 14,
-        ])
+        <x-chart type="doughnut" :size="170" format="inr" :segments="$overview['segments']"
+            :center-value="$overview['center_value']" :center-label="$overview['center_label']" />
         <div class="chart-legend" style="margin-top: 20px;">
             @foreach($overview['segments'] as $seg)
                 <div class="legend-item">

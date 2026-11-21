@@ -198,13 +198,8 @@
         <div class="card">
             <div class="card-body">
                 <div class="section-title" style="font-size: 15px;">Requests by Category <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">(This Month)</span></div>
-                @include('society.partials.donut', [
-                    'segments' => collect($categoryDonut['segments'])->map(fn ($s) => ['value' => $s['value'], 'color' => $s['color']])->all(),
-                    'centerValue' => $categoryDonut['center_value'],
-                    'centerLabel' => $categoryDonut['center_label'],
-                    'size' => 170,
-                    'stroke' => 14,
-                ])
+                <x-chart type="doughnut" :size="170" format="number" :segments="$categoryDonut['segments']"
+                    :center-value="$categoryDonut['center_value']" :center-label="$categoryDonut['center_label']" />
                 <div class="chart-legend" style="margin-top: 20px;">
                     @foreach($categoryDonut['segments'] as $seg)
                         <div class="legend-item">
