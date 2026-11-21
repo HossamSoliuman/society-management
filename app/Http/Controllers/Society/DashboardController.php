@@ -287,7 +287,7 @@ class DashboardController extends Controller
                 'address' => trim(collect([$society->address_line_1, $society->city, $society->state])->filter()->implode(', ')) ?: '—',
                 'established' => $society->year_established ?: optional($society->registration_date)->format('Y') ?: '—',
                 'towers' => $society->wings_count ?: $society->blocks_count ?: '—',
-                'floors' => $society->flats_count ?: '—',
+                'units' => $totalUnits ?: ($society->total_units ?: '—'),
             ],
         ];
     }

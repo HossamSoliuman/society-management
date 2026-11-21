@@ -24,6 +24,34 @@ class Unit extends Model
         ];
     }
 
+    /**
+     * Keep the society's `total_units` equal to the units actually registered,
+     * so the profile, dashboards and platform screens never disagree.
+     */
+    protected static function booted(): void
+    {
+        $sync = fn (Unit $unit) => static::syncSocietyTotal($unit->society_id);
+
+        static::created($sync);
+        static::deleted($sync);
+        static::restored($sync);
+        static::updated(function (Unit $unit) {
+            if ($unit->wasChanged('society_id')) {
+                static::syncSocietyTotal($unit->getOriginal('society_id'));
+                static::syncSocietyTotal($unit->society_id);
+            }
+        });
+    }
+
+    public static function syncSocietyTotal(?int $societyId): void
+    {
+        if (! $societyId) {
+            return;
+        }
+
+        Society::whereKey($societyId)->update(['total_units' => static::where('society_id', $societyId)->count()]);
+    }
+
     public function society()
     {
         return $this->belongsTo(Society::class);

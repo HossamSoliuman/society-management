@@ -40,7 +40,6 @@ class ProfileController extends Controller
             'year_established' => 'nullable|integer|min:1900|max:2100',
             'wings_count' => 'nullable|integer|min:0',
             'blocks_count' => 'nullable|integer|min:0',
-            'total_units' => 'nullable|integer|min:0',
             'address_line_1' => 'nullable|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',

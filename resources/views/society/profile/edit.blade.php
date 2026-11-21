@@ -76,7 +76,8 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Total Units</label>
-                    <input type="number" name="total_units" class="form-control" value="{{ old('total_units', $society->total_units) }}">
+                    <input type="number" class="form-control" value="{{ $society->total_units }}" disabled>
+                    <div class="form-text">Counted from <a href="{{ route('society.units.index') }}">registered units</a>.</div>
                 </div>
             </div>
             <div class="form-row">

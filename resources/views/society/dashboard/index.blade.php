@@ -170,7 +170,7 @@
         </div>
         <div class="info-strip-cell">
             <div class="info-strip-icon"><i class="fas fa-layer-group"></i></div>
-            <div><div class="info-strip-label">Total Flats</div><div class="info-strip-value">{{ $d['societyInfo']['floors'] }}</div></div>
+            <div><div class="info-strip-label">Total Units</div><div class="info-strip-value">{{ $d['societyInfo']['units'] }}</div></div>
         </div>
     </div>
 </div>
