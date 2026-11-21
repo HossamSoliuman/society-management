@@ -10,7 +10,8 @@ use App\Models\Refund;
 use App\Models\Society;
 use App\Models\Subscription;
 use App\Services\PlatformBillingService;
-use Carbon\Carbon;
+use App\Support\Period;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,36 +22,47 @@ class BillingController extends Controller
 {
     public function __construct(private readonly PlatformBillingService $billing) {}
 
-    public function overview(): View
+    public function overview(Request $request): View
     {
-        $totalRevenue = Invoice::sum('total_amount');
-        $totalCollected = Payment::where('status', 'success')->sum('amount');
-        $totalOutstanding = Invoice::whereIn('status', ['pending', 'partially_paid', 'overdue'])->sum('outstanding_amount');
-        $totalOverdue = Invoice::where('status', 'overdue')->sum('outstanding_amount');
+        $period = Period::fromKey($request->query('range'));
+        $outstanding = (float) Invoice::whereIn('status', ['pending', 'partially_paid', 'overdue'])->sum('outstanding_amount');
+        $overdue = (float) Invoice::where('status', 'overdue')->sum('outstanding_amount');
+        $collected = (float) Payment::where('status', 'success')->sum('amount');
+        $statusTotal = $collected + $outstanding;
 
-        $monthlyRevenue = [];
-        $monthlyOutstanding = [];
-        for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $monthlyRevenue[] = Payment::whereDate('payment_date', $date)->where('status', 'success')->sum('amount');
-            $monthlyOutstanding[] = Invoice::whereDate('due_date', $date)->sum('outstanding_amount');
-        }
+        return view('superadmin.billing.overview', [
+            'd' => $this->buildOverview($period),
+            'range' => $period->key,
+            'rangeOptions' => Period::options(),
+            'collectionStatus' => [
+                'collected' => $collected,
+                'outstanding' => $outstanding - $overdue,
+                'overdue' => $overdue,
+                'collected_percent' => $statusTotal > 0 ? (int) round($collected / $statusTotal * 100) : 0,
+                'outstanding_percent' => $statusTotal > 0 ? (int) round(($outstanding - $overdue) / $statusTotal * 100) : 0,
+                'overdue_percent' => $statusTotal > 0 ? (int) round($overdue / $statusTotal * 100) : 0,
+            ],
+            'recentInvoices' => Invoice::with('society')->latest()->take(5)->get(),
+        ]);
+    }
 
-        $revenueByCategory = $this->billing->revenueByCategory();
+    /**
+     * AJAX endpoint: the period-dependent overview cards as HTML fragments.
+     */
+    public function overviewData(Request $request): JsonResponse
+    {
+        $period = Period::fromKey($request->query('range'));
+        $d = $this->buildOverview($period);
 
-        $collectionStatus = [
-            'collected' => $totalCollected,
-            'outstanding' => $totalOutstanding,
-            'overdue' => $totalOverdue,
-            'collected_percent' => $totalRevenue > 0 ? round(($totalCollected / $totalRevenue) * 100) : 0,
-        ];
-
-        $recentInvoices = Invoice::with('society')->latest()->take(5)->get();
-
-        return view('superadmin.billing.overview', compact(
-            'totalRevenue', 'totalCollected', 'totalOutstanding', 'totalOverdue',
-            'monthlyRevenue', 'monthlyOutstanding', 'revenueByCategory', 'collectionStatus', 'recentInvoices'
-        ));
+        return response()->json([
+            'range' => $period->key,
+            'rangeLabel' => $period->label(),
+            'fragments' => [
+                'stats' => view('superadmin.billing.partials.overview-stats', ['d' => $d])->render(),
+                'revenue' => view('superadmin.billing.partials.overview-revenue', ['d' => $d])->render(),
+                'categories' => view('superadmin.billing.partials.overview-categories', ['d' => $d])->render(),
+            ],
+        ]);
     }
 
     public function invoices(Request $request): View
@@ -276,5 +288,41 @@ class BillingController extends Controller
 
         return redirect()->route('superadmin.billing.refunds')
             ->with('success', "Refund {$refund->refund_number} of ₹".number_format((float) $refund->amount, 2)." issued against {$payment->receipt_number}.");
+    }
+
+    /**
+     * Invoiced vs collected figures for a period, compared with the one before it.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildOverview(Period $period): array
+    {
+        $previous = $period->previous();
+        $invoiced = fn (Period $p): float => (float) $p->within(Invoice::query(), 'invoice_date')->sum('total_amount');
+        $collected = fn (Period $p): float => (float) $p->within(Payment::where('status', 'success'), 'payment_date')->sum('amount');
+        $change = fn (float $now, float $before): ?float => $before > 0 ? round(($now - $before) / $before * 100, 1) : null;
+
+        $invoicedNow = $invoiced($period);
+        $collectedNow = $collected($period);
+
+        return [
+            'period' => $period,
+            'stats' => [
+                'invoiced' => $invoicedNow,
+                'invoiced_change' => $change($invoicedNow, $invoiced($previous)),
+                'collected' => $collectedNow,
+                'collected_change' => $change($collectedNow, $collected($previous)),
+                'outstanding' => (float) Invoice::whereIn('status', ['pending', 'partially_paid', 'overdue'])->sum('outstanding_amount'),
+                'outstanding_count' => Invoice::whereIn('status', ['pending', 'partially_paid', 'overdue'])->count(),
+                'overdue' => (float) Invoice::where('status', 'overdue')->sum('outstanding_amount'),
+                'overdue_count' => Invoice::where('status', 'overdue')->count(),
+            ],
+            'chart' => [
+                'labels' => array_values($period->buckets()),
+                'collected' => $period->series($period->within(Payment::where('status', 'success'), 'payment_date'), 'payment_date', 'amount'),
+                'invoiced' => $period->series($period->within(Invoice::query(), 'invoice_date'), 'invoice_date', 'total_amount'),
+            ],
+            'revenueByCategory' => $this->billing->revenueByCategory($period),
+        ];
     }
 }

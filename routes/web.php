@@ -140,6 +140,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/subscription/renewals', [SubscriptionController::class, 'renewals'])->name('subscription.renewals');
 
     Route::get('/billing/overview', [BillingController::class, 'overview'])->name('billing.overview');
+    Route::get('/billing/overview/data', [BillingController::class, 'overviewData'])->name('billing.overview.data');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
     Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
