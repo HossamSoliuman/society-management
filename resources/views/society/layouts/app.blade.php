@@ -351,10 +351,12 @@
                     <span>Support Tickets</span>
                 </a>
                 @endif
-                <a href="{{ route('society.placeholder', ['page' => 'Activity Logs']) }}" class="nav-item">
+                @if(auth()->user()?->hasAnyPermission('logs.view'))
+                <a href="{{ route('society.activity-logs.index') }}" class="nav-item {{ request()->routeIs('society.activity-logs.*') ? 'active' : '' }}">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Activity Logs</span>
                 </a>
+                @endif
 
                 {{-- System Settings (group, stub) --}}
                 <div class="nav-group">

@@ -72,7 +72,9 @@
             </div>
         </div>
         <div class="card-footer" style="padding: 12px 20px;">
-            <a href="{{ route('society.placeholder', ['page' => 'Activity Logs']) }}" class="btn btn-outline-secondary" style="width: 100%;">View All Activity <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
+            @if(auth()->user()?->hasAnyPermission('logs.view'))
+                <a href="{{ route('society.activity-logs.index') }}" class="btn btn-outline-secondary" style="width: 100%;">View All Activity <i class="fas fa-arrow-right" style="font-size: 10px;"></i></a>
+            @endif
         </div>
     </div>
 </div>

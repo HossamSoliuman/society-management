@@ -14,6 +14,7 @@ use App\Http\Controllers\Member\VehicleController as MemberVehicleController;
 use App\Http\Controllers\NotificationController as HeaderNotificationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
+use App\Http\Controllers\Society\ActivityLogController as SocietyActivityLogController;
 use App\Http\Controllers\Society\AmcController;
 use App\Http\Controllers\Society\AnnouncementController as SocietyAnnouncementController;
 use App\Http\Controllers\Society\AssetCategoryController;
@@ -491,6 +492,11 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::put('settings/users/{teamUser}/status', [SocietyUserController::class, 'toggleStatus'])->name('settings.users.status');
         Route::post('settings/users/{teamUser}/resend-invitation', [SocietyUserController::class, 'resendInvitation'])->name('settings.users.resend-invitation');
     });
+
+    // Activity log for this society
+    Route::get('activity-logs', [SocietyActivityLogController::class, 'index'])
+        ->middleware('permission:logs.view')
+        ->name('activity-logs.index');
 
     // Placeholder for not-yet-built pages
     Route::get('/coming-soon/{page?}', [PlaceholderController::class, 'index'])->name('placeholder');
