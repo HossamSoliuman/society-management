@@ -19,6 +19,7 @@ use App\Models\NumberingSeries;
 use App\Models\PaymentGatewayOrder;
 use App\Models\ServiceVendor;
 use App\Models\Society;
+use App\Models\Staff;
 use App\Models\SupportTicket;
 use App\Models\Tax;
 use App\Models\Tenant;
@@ -76,6 +77,7 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'request' => SupportTicket::factory()->create($sid),
         'complaint' => SupportTicket::factory()->create($sid + ['raised_by_type' => 'member']),
         'tenant' => Tenant::factory()->create($sid),
+        'staff' => Staff::factory()->create($sid),
         'agreement' => TenantAgreement::factory()->create($sid + ['tenant_id' => Tenant::factory()->create($sid)->id]),
         'document' => Document::factory()->create($sid + ['document_category_id' => null]),
         'tender' => Tender::factory()->create($sid),

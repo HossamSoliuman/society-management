@@ -113,19 +113,21 @@
                     </div>
                 </div>
 
-                {{-- Staff Management (group, stub) --}}
-                <div class="nav-group">
+                {{-- Staff Management (group) --}}
+                @if(auth()->user()?->hasAnyPermission('staff.manage'))
+                <div class="nav-group {{ request()->routeIs('society.staff.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-user-tie"></i>
                         <span>Staff Management</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'All Staff']) }}" class="nav-item"><i class="fas fa-list"></i><span>All Staff</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Add Staff']) }}" class="nav-item"><i class="fas fa-user-plus"></i><span>Add Staff</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Attendance']) }}" class="nav-item"><i class="fas fa-calendar-check"></i><span>Attendance</span></a>
+                        <a href="{{ route('society.staff.index') }}" class="nav-item {{ request()->routeIs('society.staff.index') || request()->routeIs('society.staff.show') || request()->routeIs('society.staff.edit') ? 'active' : '' }}"><i class="fas fa-list"></i><span>All Staff</span></a>
+                        <a href="{{ route('society.staff.create') }}" class="nav-item {{ request()->routeIs('society.staff.create') ? 'active' : '' }}"><i class="fas fa-user-plus"></i><span>Add Staff</span></a>
+                        <a href="{{ route('society.staff.attendance') }}" class="nav-item {{ request()->routeIs('society.staff.attendance*') ? 'active' : '' }}"><i class="fas fa-calendar-check"></i><span>Attendance</span></a>
                     </div>
                 </div>
+                @endif
 
                 {{-- Visitor Management (group, stub) --}}
                 <div class="nav-group">

@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
             AnnouncementSeeder::class,
             SupportTicketSeeder::class,
             TenantSeeder::class,
+            StaffSeeder::class,
         ]);
     }
 }

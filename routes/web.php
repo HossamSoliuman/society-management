@@ -41,6 +41,8 @@ use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
 use App\Http\Controllers\Society\ReportController as SocietyReportController;
 use App\Http\Controllers\Society\ServiceVendorController;
 use App\Http\Controllers\Society\SettingController as SocietySettingController;
+use App\Http\Controllers\Society\StaffAttendanceController;
+use App\Http\Controllers\Society\StaffController;
 use App\Http\Controllers\Society\SubscriptionController as SocietySubscriptionController;
 use App\Http\Controllers\Society\SupportController;
 use App\Http\Controllers\Society\TaxController;
@@ -281,6 +283,20 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('/tenants/{tenant}/move-out', [TenantController::class, 'moveOut'])->name('tenants.move-out');
         Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
         Route::post('/tenants/{tenant}/agreements', [TenantAgreementController::class, 'store'])->name('tenants.agreements.store');
+    });
+
+    // Staff & attendance. Static segments precede the {staff} wildcard.
+    Route::middleware('permission:staff.manage')->group(function () {
+        Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+        Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
+        Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+        Route::get('/staff/attendance', [StaffAttendanceController::class, 'index'])->name('staff.attendance');
+        Route::get('/staff/attendance/mark', [StaffAttendanceController::class, 'mark'])->name('staff.attendance.mark');
+        Route::post('/staff/attendance', [StaffAttendanceController::class, 'store'])->name('staff.attendance.store');
+        Route::get('/staff/{staff}', [StaffController::class, 'show'])->name('staff.show');
+        Route::get('/staff/{staff}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+        Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
+        Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
     // Maintenance Billing & Collections
