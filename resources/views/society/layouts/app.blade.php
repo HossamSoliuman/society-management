@@ -306,10 +306,6 @@
                     <i class="fas fa-triangle-exclamation"></i>
                     <span>Complaint Management</span>
                 </a>
-                <a href="{{ route('society.placeholder', ['page' => 'Documents']) }}" class="nav-item">
-                    <i class="fas fa-folder-open"></i>
-                    <span>Documents</span>
-                </a>
                 @if(Route::has('society.documents.index'))
                 <a href="{{ route('society.documents.index') }}" class="nav-item {{ request()->routeIs('society.documents.*') ? 'active' : '' }}">
                     <i class="fas fa-folder-open"></i>
@@ -328,10 +324,16 @@
                     <span>Vendor Management</span>
                 </a>
                 @endif
-                <a href="{{ route('society.notices.index') }}" class="nav-item {{ request()->routeIs('society.notices.*') ? 'active' : '' }}">
+                <a href="{{ route('society.notices.index') }}" class="nav-item {{ request()->routeIs('society.notices.index') || request()->routeIs('society.notices.show') ? 'active' : '' }}">
                     <i class="fas fa-bullhorn"></i>
                     <span>Notices</span>
                 </a>
+                @if(auth()->user()?->hasAnyPermission('notices.manage'))
+                <a href="{{ route('society.notices.manage') }}" class="nav-item {{ request()->routeIs('society.notices.manage') || request()->routeIs('society.notices.create') || request()->routeIs('society.notices.edit') ? 'active' : '' }}">
+                    <i class="fas fa-pen-to-square"></i>
+                    <span>Publish Notices</span>
+                </a>
+                @endif
                 <a href="{{ route('society.notifications.index') }}" class="nav-item {{ request()->routeIs('society.notifications.*') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>

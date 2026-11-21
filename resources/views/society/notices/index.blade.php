@@ -13,6 +13,12 @@
                 <span>Notices</span>
             </div>
         </div>
+        @if(auth()->user()?->hasAnyPermission('notices.manage'))
+            <div style="display: inline-flex; gap: 10px;">
+                <a href="{{ route('society.notices.manage') }}" class="btn btn-secondary"><i class="fas fa-list-check"></i> Manage Notices</a>
+                <a href="{{ route('society.notices.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Notice</a>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -69,7 +75,7 @@
                                 <a href="{{ route('society.notices.show', $notice) }}" style="font-weight: 600; font-size: 15px;">{{ $notice->title }}</a>
                                 <span class="badge {{ $notice->priorityBadgeClass() }}">{{ ucfirst($notice->priority) }}</span>
                                 <span class="badge badge-secondary">{{ ucfirst($notice->notice_type) }}</span>
-                                @if($notice->society_id)<span class="badge badge-info">For {{ $notice->society?->name }}</span>@endif
+                                @if($notice->isSocietyAuthored())<span class="badge badge-info">Society office</span>@else<span class="badge badge-secondary">Platform</span>@endif
                             </div>
                             <div style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">{{ $notice->short_description ?: Str::limit(strip_tags($notice->content), 160) }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
@@ -98,7 +104,7 @@
                     <div class="empty-state">
                         <div class="empty-state-icon"><i class="fas fa-bullhorn"></i></div>
                         <div class="empty-state-title">No notices</div>
-                        <div class="empty-state-text">Notices from the platform that target your society will appear here.</div>
+                        <div class="empty-state-text">Notices for your society will appear here.</div>
                     </div>
                 </div>
             </div>

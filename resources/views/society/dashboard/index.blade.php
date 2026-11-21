@@ -100,8 +100,8 @@
                     <a href="{{ route('society.support.create') }}" class="quick-action-item">
                         <i class="fas fa-headset" style="color: var(--danger);"></i><span>Raise Complaint</span>
                     </a>
-                    <a href="{{ route('society.placeholder', ['page' => 'Notifications']) }}" class="quick-action-item">
-                        <i class="fas fa-paper-plane" style="color: var(--primary);"></i><span>Send Notice</span>
+                    <a href="{{ auth()->user()?->hasAnyPermission('notices.manage') ? route('society.notices.create') : route('society.notices.index') }}" class="quick-action-item">
+                        <i class="fas fa-paper-plane" style="color: var(--primary);"></i><span>{{ auth()->user()?->hasAnyPermission('notices.manage') ? 'Send Notice' : 'View Notices' }}</span>
                     </a>
                 </div>
             </div>

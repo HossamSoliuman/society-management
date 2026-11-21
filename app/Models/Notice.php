@@ -15,8 +15,19 @@ class Notice extends Model
     /** @use HasFactory<NoticeFactory> */
     use HasFactory, TargetsAudience;
 
+    /**
+     * Audience presets for notices written by a society office.
+     *
+     * @var array<string, array{label: string, roles: array<int, string>|null}>
+     */
+    public const SOCIETY_AUDIENCES = [
+        'everyone' => ['label' => 'Everyone (residents and team)', 'roles' => null],
+        'residents' => ['label' => 'Residents only', 'roles' => ['member']],
+        'team' => ['label' => 'Society team only', 'roles' => ['society_admin', 'manager', 'accountant', 'staff']],
+    ];
+
     protected $fillable = [
-        'society_id', 'title', 'notice_type', 'priority', 'short_description', 'content',
+        'society_id', 'origin', 'title', 'notice_type', 'priority', 'short_description', 'content',
         'attach_path', 'publish_at', 'expires_at', 'pin_to_dashboard',
         'audience_type', 'target_roles', 'estimated_recipients', 'delivered_count', 'delivered_at',
         'send_email', 'send_sms', 'require_acknowledgement', 'status', 'created_by',
@@ -37,6 +48,35 @@ class Notice extends Model
             'send_sms' => 'boolean',
             'require_acknowledgement' => 'boolean',
         ];
+    }
+
+    public function isSocietyAuthored(): bool
+    {
+        return $this->origin === 'society';
+    }
+
+    /**
+     * Notices a society office wrote for its own residents and team.
+     */
+    public function scopeAuthoredBySociety(Builder $query, Society|int $society): Builder
+    {
+        $societyId = $society instanceof Society ? $society->id : $society;
+
+        return $query->where('origin', 'society')->where('society_id', $societyId);
+    }
+
+    /**
+     * Key of SOCIETY_AUDIENCES matching the stored role targeting.
+     */
+    public function societyAudience(): string
+    {
+        foreach (self::SOCIETY_AUDIENCES as $key => $audience) {
+            if ($audience['roles'] == $this->target_roles) {
+                return $key;
+            }
+        }
+
+        return 'everyone';
     }
 
     public function creator(): BelongsTo

@@ -29,6 +29,7 @@ use App\Http\Controllers\Society\ExpenseCategoryController;
 use App\Http\Controllers\Society\ExpenseController;
 use App\Http\Controllers\Society\MemberController;
 use App\Http\Controllers\Society\NoticeController as SocietyNoticeController;
+use App\Http\Controllers\Society\NoticeManagementController;
 use App\Http\Controllers\Society\NotificationController as SocietyNotificationController;
 use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\OnlinePaymentController;
@@ -217,6 +218,16 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
 
     // My Subscription (read-only, every society role)
     Route::get('/subscription', [SocietySubscriptionController::class, 'index'])->name('subscription.index');
+
+    // Notices written by this society's office. Static segments precede the {notice} wildcard.
+    Route::middleware('permission:notices.manage')->group(function () {
+        Route::get('/notices/manage', [NoticeManagementController::class, 'index'])->name('notices.manage');
+        Route::get('/notices/create', [NoticeManagementController::class, 'create'])->name('notices.create');
+        Route::post('/notices', [NoticeManagementController::class, 'store'])->name('notices.store');
+        Route::get('/notices/{notice}/edit', [NoticeManagementController::class, 'edit'])->name('notices.edit');
+        Route::put('/notices/{notice}', [NoticeManagementController::class, 'update'])->name('notices.update');
+        Route::delete('/notices/{notice}', [NoticeManagementController::class, 'destroy'])->name('notices.destroy');
+    });
 
     // Notices targeted at this society (every society role)
     Route::get('/notices', [SocietyNoticeController::class, 'index'])->name('notices.index');
