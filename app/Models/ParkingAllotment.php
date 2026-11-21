@@ -33,6 +33,11 @@ class ParkingAllotment extends Model
         ];
     }
 
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
+    }
+
     public function slot(): BelongsTo
     {
         return $this->belongsTo(ParkingSlot::class, 'parking_slot_id');

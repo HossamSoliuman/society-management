@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             StaffSeeder::class,
             VisitorSeeder::class,
             VehicleParkingSeeder::class,
+            AmenitySeeder::class,
         ]);
     }
 }

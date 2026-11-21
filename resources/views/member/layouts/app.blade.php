@@ -66,6 +66,10 @@
                     <i class="fas fa-car"></i>
                     <span>Vehicles</span>
                 </a>
+                <a href="{{ route('member.amenities.index') }}" class="nav-item {{ request()->routeIs('member.amenities.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Amenities</span>
+                </a>
                 <a href="{{ route('member.visitors.index') }}" class="nav-item {{ request()->routeIs('member.visitors.*') ? 'active' : '' }}">
                     <i class="fas fa-id-badge"></i>
                     <span>Visitors</span>

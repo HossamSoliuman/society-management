@@ -39,6 +39,11 @@ class TenantAgreement extends Model
         ];
     }
 
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class)->withTrashed();

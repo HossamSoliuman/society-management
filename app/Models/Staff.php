@@ -48,6 +48,11 @@ class Staff extends Model
         ];
     }
 
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
+    }
+
     public function vendor(): BelongsTo
     {
         return $this->belongsTo(ServiceVendor::class, 'vendor_id');

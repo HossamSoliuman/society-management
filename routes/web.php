@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Member\AmenityController as MemberAmenityController;
 use App\Http\Controllers\Member\AnnouncementController as MemberAnnouncementController;
 use App\Http\Controllers\Member\BillController as MemberBillController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Society\AccountingController;
 use App\Http\Controllers\Society\ActivityLogController as SocietyActivityLogController;
 use App\Http\Controllers\Society\AmcController;
+use App\Http\Controllers\Society\AmenityController;
 use App\Http\Controllers\Society\AnnouncementController as SocietyAnnouncementController;
 use App\Http\Controllers\Society\AssetCategoryController;
 use App\Http\Controllers\Society\AssetController;
@@ -332,6 +334,21 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('/visitors/{visitor}/check-out', [VisitorController::class, 'checkout'])->name('visitors.check-out');
     });
 
+    // Amenities & bookings. Static segments precede the {amenity} / {booking} wildcards.
+    Route::middleware('permission:amenities.manage')->group(function () {
+        Route::get('/amenities', [AmenityController::class, 'index'])->name('amenities.index');
+        Route::get('/amenities/create', [AmenityController::class, 'create'])->name('amenities.create');
+        Route::post('/amenities', [AmenityController::class, 'store'])->name('amenities.store');
+        Route::get('/amenities/bookings', [AmenityController::class, 'bookings'])->name('amenities.bookings');
+        Route::get('/amenities/bookings/create', [AmenityController::class, 'createBooking'])->name('amenities.bookings.create');
+        Route::post('/amenities/bookings', [AmenityController::class, 'storeBooking'])->name('amenities.bookings.store');
+        Route::post('/amenities/bookings/{booking}/approve', [AmenityController::class, 'approve'])->name('amenities.bookings.approve');
+        Route::post('/amenities/bookings/{booking}/reject', [AmenityController::class, 'reject'])->name('amenities.bookings.reject');
+        Route::post('/amenities/bookings/{booking}/cancel', [AmenityController::class, 'cancel'])->name('amenities.bookings.cancel');
+        Route::get('/amenities/{amenity}/edit', [AmenityController::class, 'edit'])->name('amenities.edit');
+        Route::put('/amenities/{amenity}', [AmenityController::class, 'update'])->name('amenities.update');
+    });
+
     // Maintenance Billing & Collections
     Route::middleware('permission:billing.manage')->group(function () {
         Route::get('/billing/bulk-upload', [BulkUploadController::class, 'index'])->name('billing.bulk-upload');
@@ -596,6 +613,10 @@ Route::middleware(['auth', 'active', 'role:member', 'member.access'])->prefix('m
     Route::get('/vehicles/{vehicle}/edit', [MemberVehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('/vehicles/{vehicle}', [MemberVehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{vehicle}', [MemberVehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+    Route::get('/amenities', [MemberAmenityController::class, 'index'])->name('amenities.index');
+    Route::post('/amenities', [MemberAmenityController::class, 'store'])->name('amenities.store');
+    Route::post('/amenities/bookings/{booking}/cancel', [MemberAmenityController::class, 'cancel'])->name('amenities.cancel');
 
     Route::get('/visitors', [MemberVisitorController::class, 'index'])->name('visitors.index');
     Route::post('/visitors', [MemberVisitorController::class, 'store'])->name('visitors.store');

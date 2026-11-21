@@ -7,6 +7,7 @@ use Database\Factories\ParkingSlotFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -29,6 +30,11 @@ class ParkingSlot extends Model
         return [
             'is_covered' => 'boolean',
         ];
+    }
+
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
     }
 
     public function allotments(): HasMany

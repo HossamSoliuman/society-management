@@ -2,6 +2,8 @@
 
 use App\Models\Account;
 use App\Models\AccountGroup;
+use App\Models\Amenity;
+use App\Models\AmenityBooking;
 use App\Models\Announcement;
 use App\Models\Asset;
 use App\Models\AssetCategory;
@@ -83,6 +85,8 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'complaint' => SupportTicket::factory()->create($sid + ['raised_by_type' => 'member']),
         'tenant' => Tenant::factory()->create($sid),
         'staff' => Staff::factory()->create($sid),
+        'amenity' => Amenity::factory()->create($sid),
+        'booking' => AmenityBooking::factory()->create($sid + ['amenity_id' => Amenity::factory()->create($sid)->id]),
         'vehicle' => Vehicle::factory()->create($sid),
         'slot' => ParkingSlot::factory()->create($sid),
         'allotment' => ParkingAllotment::factory()->create($sid + ['parking_slot_id' => ParkingSlot::factory()->create($sid)->id]),

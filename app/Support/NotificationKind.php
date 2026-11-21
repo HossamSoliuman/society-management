@@ -22,6 +22,7 @@ final class NotificationKind
         'amc_expiry' => ['label' => 'AMC Expiry', 'icon' => 'fa-file-contract', 'variant' => 'danger'],
         'agreement_expiry' => ['label' => 'Rental Agreement', 'icon' => 'fa-file-signature', 'variant' => 'warning'],
         'visitor_arrival' => ['label' => 'Visitor', 'icon' => 'fa-id-badge', 'variant' => 'info'],
+        'amenity_booking' => ['label' => 'Amenity Booking', 'icon' => 'fa-calendar-check', 'variant' => 'success'],
     ];
 
     private const FALLBACK = ['label' => 'Notification', 'icon' => 'fa-bell', 'variant' => 'secondary'];

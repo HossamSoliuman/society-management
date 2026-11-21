@@ -41,6 +41,11 @@ class VisitorPreApproval extends Model
         ];
     }
 
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
+    }
+
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);

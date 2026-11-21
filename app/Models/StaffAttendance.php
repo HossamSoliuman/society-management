@@ -36,6 +36,11 @@ class StaffAttendance extends Model
         ];
     }
 
+    public function society(): BelongsTo
+    {
+        return $this->belongsTo(Society::class);
+    }
+
     public function staff(): BelongsTo
     {
         return $this->belongsTo(Staff::class)->withTrashed();

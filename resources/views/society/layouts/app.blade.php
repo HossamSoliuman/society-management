@@ -302,10 +302,19 @@
 
                 <div class="sidebar-label" style="padding-left: 8px;">OTHER</div>
 
-                <a href="{{ route('society.placeholder', ['page' => 'Amenities Booking']) }}" class="nav-item">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Amenities Booking</span>
-                </a>
+                @if(auth()->user()?->hasAnyPermission('amenities.manage'))
+                <div class="nav-group {{ request()->routeIs('society.amenities.*') ? 'open' : '' }}">
+                    <button class="nav-group-toggle">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Amenities Booking</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="nav-submenu">
+                        <a href="{{ route('society.amenities.index') }}" class="nav-item {{ request()->routeIs('society.amenities.index') || request()->routeIs('society.amenities.create') || request()->routeIs('society.amenities.edit') ? 'active' : '' }}"><i class="fas fa-dumbbell"></i><span>Amenities</span></a>
+                        <a href="{{ route('society.amenities.bookings') }}" class="nav-item {{ request()->routeIs('society.amenities.bookings*') ? 'active' : '' }}"><i class="fas fa-calendar-days"></i><span>Bookings</span></a>
+                    </div>
+                </div>
+                @endif
                 @if(auth()->user()?->hasAnyPermission('support.manage'))
                 <a href="{{ route('society.complaints.index') }}" class="nav-item {{ request()->routeIs('society.complaints.*') ? 'active' : '' }}">
                     <i class="fas fa-triangle-exclamation"></i>
