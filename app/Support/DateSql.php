@@ -47,6 +47,18 @@ final class DateSql
     }
 
     /**
+     * Expression yielding a sortable "YYYY-MM-DD" day string.
+     */
+    public static function date(string $column, ?string $connection = null): string
+    {
+        return match (self::driver($connection)) {
+            'sqlite' => "strftime('%Y-%m-%d', {$column})",
+            'pgsql' => "to_char({$column}, 'YYYY-MM-DD')",
+            default => "DATE_FORMAT({$column}, '%Y-%m-%d')",
+        };
+    }
+
+    /**
      * Expression yielding a sortable "YYYY-MM" bucket string.
      */
     public static function yearMonth(string $column, ?string $connection = null): string

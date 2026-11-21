@@ -9,6 +9,7 @@ use App\Models\Refund;
 use App\Models\Society;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Support\Period;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -181,11 +182,11 @@ class PlatformBillingService
 
     /**
      * Revenue collected per subscription plan, from successful payments joined
-     * through invoices → subscriptions.
+     * through invoices → subscriptions. Limited to the period when one is given.
      *
      * @return array<int, array{name: string, amount: float, percentage: float}>
      */
-    public function revenueByPlan(): array
+    public function revenueByPlan(?Period $period = null): array
     {
         $rows = Payment::query()
             ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
@@ -193,6 +194,7 @@ class PlatformBillingService
             ->leftJoin('subscription_plans', 'subscription_plans.id', '=', 'subscriptions.plan_id')
             ->where('payments.status', 'success')
             ->whereNull('payments.deleted_at')
+            ->when($period, fn ($q) => $period->within($q, 'payments.payment_date'))
             ->selectRaw("COALESCE(subscription_plans.name, 'Unassigned') as name, SUM(payments.amount) as amount")
             ->groupBy('subscription_plans.name')
             ->orderByDesc('amount')
@@ -202,18 +204,37 @@ class PlatformBillingService
     }
 
     /**
-     * Revenue collected per invoice category.
+     * Revenue collected per invoice category. Limited to the period when one is given.
      *
      * @return array<int, array{name: string, amount: float, percentage: float}>
      */
-    public function revenueByCategory(): array
+    public function revenueByCategory(?Period $period = null): array
     {
         $rows = Payment::query()
             ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
             ->where('payments.status', 'success')
             ->whereNull('payments.deleted_at')
+            ->when($period, fn ($q) => $period->within($q, 'payments.payment_date'))
             ->selectRaw('COALESCE(invoices.category, invoices.invoice_type) as name, SUM(payments.amount) as amount')
             ->groupByRaw('COALESCE(invoices.category, invoices.invoice_type)')
+            ->orderByDesc('amount')
+            ->get();
+
+        return $this->withPercentages($rows->map(fn ($r) => ['name' => $r->name, 'amount' => (float) $r->amount])->all());
+    }
+
+    /**
+     * Successful payments per payment method. Limited to the period when one is given.
+     *
+     * @return array<int, array{name: string, amount: float, percentage: float}>
+     */
+    public function revenueByMethod(?Period $period = null): array
+    {
+        $rows = Payment::query()
+            ->where('status', 'success')
+            ->when($period, fn ($q) => $period->within($q, 'payment_date'))
+            ->selectRaw("COALESCE(NULLIF(payment_method, ''), 'Other') as name, SUM(amount) as amount")
+            ->groupByRaw("COALESCE(NULLIF(payment_method, ''), 'Other')")
             ->orderByDesc('amount')
             ->get();
 
