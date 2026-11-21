@@ -40,7 +40,27 @@ class NotificationController extends Controller
             return AnnouncementPublished::targetUrl($type, (int) $data['item_id'], $request->user());
         }
 
-        return $data['url'] ?? null;
+        return isset($data['url']) && is_string($data['url']) ? $this->localPath($data['url']) : null;
+    }
+
+    /**
+     * Stored URLs are absolute and carry whatever host the queue worker had
+     * configured, so only the path, query and fragment are kept and the
+     * redirect stays on the host the user is browsing.
+     */
+    private function localPath(string $url): string
+    {
+        $parts = parse_url($url);
+
+        if ($parts === false) {
+            return '/';
+        }
+
+        $path = '/'.ltrim($parts['path'] ?? '', '/');
+
+        return $path
+            .(isset($parts['query']) ? '?'.$parts['query'] : '')
+            .(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
     }
 
     public function readAll(Request $request): RedirectResponse
