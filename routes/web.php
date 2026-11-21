@@ -46,6 +46,7 @@ use App\Http\Controllers\Society\TenantAgreementController;
 use App\Http\Controllers\Society\TenantController;
 use App\Http\Controllers\Society\TenderController;
 use App\Http\Controllers\Society\UnitController;
+use App\Http\Controllers\Society\UnitDirectoryController;
 use App\Http\Controllers\Society\UserController as SocietyUserController;
 use App\Http\Controllers\Society\VendorController;
 use App\Http\Controllers\SuperAdmin\AccountController;
@@ -257,6 +258,8 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('/units', [UnitController::class, 'store'])->name('units.store');
         Route::get('/units/import', [UnitController::class, 'importForm'])->name('units.import');
         Route::post('/units/import', [UnitController::class, 'import'])->name('units.import.store');
+        Route::get('/units/owners', [UnitDirectoryController::class, 'owners'])->name('units.owners');
+        Route::get('/units/occupancy', [UnitDirectoryController::class, 'occupancy'])->name('units.occupancy');
         Route::get('/units/{unit}', [UnitController::class, 'show'])->name('units.show');
         Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
         Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');

@@ -88,11 +88,11 @@
                             <i class="fas fa-city"></i>
                             <span>Units</span>
                         </a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Unit Owners']) }}" class="nav-item">
+                        <a href="{{ route('society.units.owners') }}" class="nav-item {{ request()->routeIs('society.units.owners') ? 'active' : '' }}">
                             <i class="fas fa-user-tie"></i>
                             <span>Unit Owners</span>
                         </a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Occupancy Status']) }}" class="nav-item">
+                        <a href="{{ route('society.units.occupancy') }}" class="nav-item {{ request()->routeIs('society.units.occupancy') ? 'active' : '' }}">
                             <i class="fas fa-house-circle-check"></i>
                             <span>Occupancy Status</span>
                         </a>
