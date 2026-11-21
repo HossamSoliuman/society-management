@@ -28,7 +28,7 @@
                 </div>
             </div>
 
-            <div class="sidebar-label">SUPER ADMIN</div>
+            <div class="sidebar-label">MAIN</div>
 
             <nav class="sidebar-nav">
                 {{-- Dashboard --}}
