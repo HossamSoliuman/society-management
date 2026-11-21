@@ -23,6 +23,7 @@ final class NotificationKind
         'agreement_expiry' => ['label' => 'Rental Agreement', 'icon' => 'fa-file-signature', 'variant' => 'warning'],
         'visitor_arrival' => ['label' => 'Visitor', 'icon' => 'fa-id-badge', 'variant' => 'info'],
         'amenity_booking' => ['label' => 'Amenity Booking', 'icon' => 'fa-calendar-check', 'variant' => 'success'],
+        'member_request' => ['label' => 'Member Request', 'icon' => 'fa-user-clock', 'variant' => 'primary'],
     ];
 
     private const FALLBACK = ['label' => 'Notification', 'icon' => 'fa-bell', 'variant' => 'secondary'];

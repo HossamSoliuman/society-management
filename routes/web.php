@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\JoinRequestController;
 use App\Http\Controllers\Member\AmenityController as MemberAmenityController;
 use App\Http\Controllers\Member\AnnouncementController as MemberAnnouncementController;
 use App\Http\Controllers\Member\BillController as MemberBillController;
@@ -32,7 +33,9 @@ use App\Http\Controllers\Society\DashboardController as SocietyDashboardControll
 use App\Http\Controllers\Society\DocumentController;
 use App\Http\Controllers\Society\ExpenseCategoryController;
 use App\Http\Controllers\Society\ExpenseController;
+use App\Http\Controllers\Society\FamilyMemberController as SocietyFamilyMemberController;
 use App\Http\Controllers\Society\MemberController;
+use App\Http\Controllers\Society\MemberRequestController;
 use App\Http\Controllers\Society\NoticeController as SocietyNoticeController;
 use App\Http\Controllers\Society\NoticeManagementController;
 use App\Http\Controllers\Society\NotificationController as SocietyNotificationController;
@@ -84,6 +87,10 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Public "request to join" form behind each society's share link.
+Route::get('/join/{code}', [JoinRequestController::class, 'show'])->name('join.show');
+Route::post('/join/{code}', [JoinRequestController::class, 'store'])->middleware('throttle:5,1')->name('join.store');
+
 // Payment-provider callbacks: signature-verified inside the gateway driver.
 Route::post('/webhooks/payments', PaymentWebhookController::class)->name('webhooks.payments');
 
@@ -275,6 +282,21 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
         Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
         Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+
+        // Join / ownership-transfer requests from the public join link
+        Route::get('/member-requests', [MemberRequestController::class, 'index'])->name('member-requests.index');
+        Route::get('/member-requests/{memberRequest}', [MemberRequestController::class, 'show'])->name('member-requests.show');
+        Route::post('/member-requests/{memberRequest}/approve', [MemberRequestController::class, 'approve'])->name('member-requests.approve');
+        Route::post('/member-requests/{memberRequest}/reject', [MemberRequestController::class, 'reject'])->name('member-requests.reject');
+        Route::get('/member-requests/{memberRequest}/document', [MemberRequestController::class, 'document'])->name('member-requests.document');
+
+        // Family members across all households
+        Route::get('/family-members', [SocietyFamilyMemberController::class, 'index'])->name('family-members.index');
+        Route::get('/family-members/create', [SocietyFamilyMemberController::class, 'create'])->name('family-members.create');
+        Route::post('/family-members', [SocietyFamilyMemberController::class, 'store'])->name('family-members.store');
+        Route::get('/family-members/{familyMember}/edit', [SocietyFamilyMemberController::class, 'edit'])->name('family-members.edit');
+        Route::put('/family-members/{familyMember}', [SocietyFamilyMemberController::class, 'update'])->name('family-members.update');
+        Route::delete('/family-members/{familyMember}', [SocietyFamilyMemberController::class, 'destroy'])->name('family-members.destroy');
 
         // Tenants & rental agreements. Static segments precede the {tenant} wildcard.
         Route::get('/tenants/agreements', [TenantAgreementController::class, 'index'])->name('tenants.agreements');

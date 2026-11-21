@@ -6,6 +6,7 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Society extends Model
 {
@@ -91,6 +92,22 @@ class Society extends Model
     public function tenants()
     {
         return $this->hasMany(Tenant::class);
+    }
+
+    /**
+     * Public code for the "request to join" share link, created on first use.
+     */
+    public function joinCode(): string
+    {
+        if (! $this->join_code) {
+            do {
+                $code = strtolower(Str::random(10));
+            } while (static::query()->where('join_code', $code)->exists());
+
+            $this->forceFill(['join_code' => $code])->saveQuietly();
+        }
+
+        return $this->join_code;
     }
 
     public function amenities()

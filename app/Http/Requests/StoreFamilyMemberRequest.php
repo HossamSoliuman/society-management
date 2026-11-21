@@ -19,6 +19,10 @@ class StoreFamilyMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'member_id' => [
+                $this->routeIs('society.*') ? 'required' : 'prohibited',
+                Rule::exists('members', 'id')->where('society_id', $this->user()?->society_id)->whereNull('deleted_at'),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'relation' => ['required', Rule::in(FamilyMember::RELATIONS)],
             'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],

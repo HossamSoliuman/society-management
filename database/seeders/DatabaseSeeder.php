@@ -59,6 +59,7 @@ class DatabaseSeeder extends Seeder
             VisitorSeeder::class,
             VehicleParkingSeeder::class,
             AmenitySeeder::class,
+            HouseholdSeeder::class,
         ]);
     }
 }

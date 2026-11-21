@@ -14,8 +14,10 @@ use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\FamilyMember;
 use App\Models\MaintenanceBill;
 use App\Models\Member;
+use App\Models\MemberRequest;
 use App\Models\Notice;
 use App\Models\NumberingSeries;
 use App\Models\ParkingAllotment;
@@ -85,6 +87,8 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'complaint' => SupportTicket::factory()->create($sid + ['raised_by_type' => 'member']),
         'tenant' => Tenant::factory()->create($sid),
         'staff' => Staff::factory()->create($sid),
+        'memberRequest' => MemberRequest::factory()->create($sid),
+        'familyMember' => FamilyMember::factory()->create($sid + ['member_id' => Member::factory()->create($sid)->id]),
         'amenity' => Amenity::factory()->create($sid),
         'booking' => AmenityBooking::factory()->create($sid + ['amenity_id' => Amenity::factory()->create($sid)->id]),
         'vehicle' => Vehicle::factory()->create($sid),

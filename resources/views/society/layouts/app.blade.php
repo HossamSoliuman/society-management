@@ -50,7 +50,7 @@
                 </a>
 
                 {{-- Member Management (group) --}}
-                <div class="nav-group {{ request()->routeIs('society.members.*') ? 'open' : '' }}">
+                <div class="nav-group {{ request()->routeIs('society.members.*') || request()->routeIs('society.member-requests.*') || request()->routeIs('society.family-members.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-users"></i>
                         <span>Member Management</span>
@@ -65,11 +65,11 @@
                             <i class="fas fa-user-plus"></i>
                             <span>Add Member</span>
                         </a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Member Requests']) }}" class="nav-item {{ request()->routeIs('society.placeholder') && request()->route('page') === 'Member Requests' ? 'active' : '' }}">
+                        <a href="{{ route('society.member-requests.index') }}" class="nav-item {{ request()->routeIs('society.member-requests.*') ? 'active' : '' }}">
                             <i class="fas fa-user-clock"></i>
                             <span>Member Requests</span>
                         </a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Family Members']) }}" class="nav-item {{ request()->routeIs('society.placeholder') && request()->route('page') === 'Family Members' ? 'active' : '' }}">
+                        <a href="{{ route('society.family-members.index') }}" class="nav-item {{ request()->routeIs('society.family-members.*') ? 'active' : '' }}">
                             <i class="fas fa-people-roof"></i>
                             <span>Family Members</span>
                         </a>
