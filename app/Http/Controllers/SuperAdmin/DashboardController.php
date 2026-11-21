@@ -42,7 +42,10 @@ class DashboardController extends Controller
             ->whereBetween('subscription_end_date', [$monthStart, $now])
             ->count();
 
-        $totalUnits = (int) Society::sum('total_units');
+        // Same fallback as Society::getTotalUnitsAttribute(): declared counts until units are registered.
+        $totalUnits = (int) Society::query()
+            ->selectRaw('SUM(COALESCE(total_units, COALESCE(flats_count, 0) + COALESCE(shops_count, 0) + COALESCE(offices_count, 0))) as total')
+            ->value('total');
         $newUnits = Unit::where('created_at', '>=', $monthStart)->count();
 
         $successful = fn () => Payment::query()->where('status', 'success');
