@@ -18,12 +18,14 @@ class RoleSeeder extends Seeder
         'manager' => [
             'dashboard.view', 'members.manage', 'billing.manage', 'expenses.manage', 'assets.manage',
             'support.manage', 'vendors.manage', 'documents.manage', 'notices.view', 'reports.view',
+            'notices.manage', 'staff.manage', 'visitors.manage', 'amenities.manage', 'logs.view',
         ],
         'accountant' => [
             'dashboard.view', 'billing.manage', 'accounting.manage', 'expenses.manage', 'notices.view', 'reports.view',
         ],
         'staff' => [
             'dashboard.view', 'members.manage', 'support.manage', 'documents.manage', 'notices.view',
+            'visitors.manage',
         ],
     ];
 
@@ -35,7 +37,8 @@ class RoleSeeder extends Seeder
     public const SOCIETY_PERMISSIONS = [
         'dashboard.view', 'members.manage', 'billing.manage', 'expenses.manage', 'assets.manage',
         'support.manage', 'accounting.manage', 'vendors.manage', 'documents.manage', 'notices.view',
-        'team.manage', 'reports.view', 'settings.manage',
+        'team.manage', 'reports.view', 'settings.manage', 'notices.manage', 'staff.manage',
+        'visitors.manage', 'amenities.manage', 'logs.view',
     ];
 
     public function run(): void
@@ -77,6 +80,10 @@ class RoleSeeder extends Seeder
             ['name' => 'documents.manage', 'display_name' => 'Manage Documents', 'module' => 'documents'],
             ['name' => 'notices.view', 'display_name' => 'View Notices', 'module' => 'notices'],
             ['name' => 'team.manage', 'display_name' => 'Manage Society Users', 'module' => 'team'],
+            ['name' => 'notices.manage', 'display_name' => 'Publish Society Notices', 'module' => 'notices'],
+            ['name' => 'staff.manage', 'display_name' => 'Manage Staff & Attendance', 'module' => 'staff'],
+            ['name' => 'visitors.manage', 'display_name' => 'Manage Visitors & Gate', 'module' => 'visitors'],
+            ['name' => 'amenities.manage', 'display_name' => 'Manage Amenities & Bookings', 'module' => 'amenities'],
         ];
 
         foreach ($permissions as $permission) {
