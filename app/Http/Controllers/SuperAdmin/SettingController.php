@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RunBackupJob;
+use App\Models\BackupRun;
 use App\Models\BackupSetting;
 use App\Models\CompanyProfile;
 use App\Models\PrefixSetting;
 use App\Models\SecuritySetting;
 use App\Models\SmtpSetting;
+use App\Services\BackupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class SettingController extends Controller
@@ -129,35 +134,75 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Test email sent to '.$validated['test_email'].'.');
     }
 
-    public function backupSettings()
+    public function backupSettings(): View
     {
-        $backup = BackupSetting::first();
-
-        return view('superadmin.settings.backup', compact('backup'));
+        return view('superadmin.settings.backup', [
+            'backup' => BackupSetting::current(),
+            'runs' => BackupRun::query()->with('triggeredBy')->latest()->limit(15)->get(),
+        ]);
     }
 
-    public function updateBackup(Request $request)
+    public function updateBackup(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'backup_frequency' => 'required|in:daily,weekly,monthly',
-            'backup_time' => 'required',
+            'backup_time' => 'required|date_format:H:i',
             'retention_period' => 'required|in:7_days,14_days,30_days,60_days,90_days',
-            'backup_location' => 'required|in:local,aws_s3,google_drive',
             'email_notification' => 'boolean',
             'backup_database' => 'boolean',
-            'backup_user_data' => 'boolean',
             'backup_files' => 'boolean',
             'backup_logs' => 'boolean',
-            'backup_settings' => 'boolean',
         ]);
 
-        foreach (['email_notification', 'backup_database', 'backup_user_data', 'backup_files', 'backup_logs', 'backup_settings'] as $field) {
+        foreach (['email_notification', 'backup_database', 'backup_files', 'backup_logs'] as $field) {
             $validated[$field] = $request->boolean($field);
         }
 
-        BackupSetting::first()->update($validated);
+        if (! $validated['backup_database'] && ! $validated['backup_files'] && ! $validated['backup_logs']) {
+            return redirect()->back()->withInput()->withErrors(['backup_database' => 'Select at least one item to back up.']);
+        }
+
+        $validated['backup_location'] = 'local';
+
+        BackupSetting::query()->firstOrNew()->fill($validated)->save();
 
         return redirect()->back()->with('success', 'Backup settings updated');
+    }
+
+    /**
+     * Queue a manual backup; the queue worker (drained by the scheduler) runs it.
+     */
+    public function runBackup(Request $request): RedirectResponse
+    {
+        if (BackupRun::query()->whereIn('status', ['queued', 'running'])->where('created_at', '>=', now()->subHour())->exists()) {
+            return redirect()->back()->with('error', 'A backup is already in progress.');
+        }
+
+        $run = BackupRun::create(['trigger' => 'manual', 'status' => 'queued', 'triggered_by' => $request->user()->id]);
+
+        RunBackupJob::dispatch($run);
+
+        return redirect()->back()->with('success', 'Backup queued. It will appear as completed in the history once it has run.');
+    }
+
+    public function downloadBackup(BackupRun $backupRun, BackupService $backups): StreamedResponse
+    {
+        $path = $backups->archivePath($backupRun);
+
+        abort_if($path === null, 404);
+
+        return $backups->disk()->download($path, $backupRun->file_name);
+    }
+
+    public function destroyBackup(BackupRun $backupRun, BackupService $backups): RedirectResponse
+    {
+        if (in_array($backupRun->status, ['queued', 'running'], true)) {
+            return redirect()->back()->with('error', 'This backup is still in progress.');
+        }
+
+        $backups->deleteArchive($backupRun);
+
+        return redirect()->back()->with('success', 'Backup deleted.');
     }
 
     public function securitySettings()

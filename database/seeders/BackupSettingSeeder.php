@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\BackupSetting;
+use Illuminate\Database\Seeder;
 
 class BackupSettingSeeder extends Seeder
 {
@@ -13,7 +13,7 @@ class BackupSettingSeeder extends Seeder
             'backup_frequency' => 'daily',
             'backup_time' => '02:00',
             'retention_period' => '30_days',
-            'backup_location' => 'aws_s3',
+            'backup_location' => 'local',
             'email_notification' => true,
             'backup_database' => true,
             'backup_user_data' => true,

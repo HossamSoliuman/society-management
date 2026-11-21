@@ -228,6 +228,9 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::post('/settings/smtp/test', [SettingController::class, 'sendTestEmail'])->middleware('throttle:5,1')->name('settings.smtp.test');
     Route::get('/settings/backup', [SettingController::class, 'backupSettings'])->name('settings.backup');
     Route::put('/settings/backup', [SettingController::class, 'updateBackup'])->name('settings.backup.update');
+    Route::post('/settings/backup/run', [SettingController::class, 'runBackup'])->name('settings.backup.run');
+    Route::get('/settings/backup/{backupRun}/download', [SettingController::class, 'downloadBackup'])->name('settings.backup.download');
+    Route::delete('/settings/backup/{backupRun}', [SettingController::class, 'destroyBackup'])->name('settings.backup.destroy');
     Route::get('/settings/security', [SettingController::class, 'securitySettings'])->name('settings.security');
     Route::put('/settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
 });
