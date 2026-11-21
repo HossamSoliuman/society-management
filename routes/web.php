@@ -113,6 +113,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 
     Route::get('/societies', [SocietyController::class, 'index'])->name('societies.index');
     Route::get('/societies/create', [SocietyController::class, 'create'])->name('societies.create');

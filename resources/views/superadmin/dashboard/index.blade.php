@@ -8,6 +8,22 @@
         <div>
             <h1 class="page-title">Super Admin Dashboard</h1>
         </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="dashboardLoader" style="display: none; color: var(--text-muted); font-size: 12px;">
+                <i class="fas fa-circle-notch fa-spin"></i> Updating…
+            </span>
+            <div class="header-search" style="max-width: 200px;">
+                <i class="fas fa-calendar search-icon"></i>
+                <select id="dashboardRange" data-period-select data-loader="dashboardLoader"
+                        data-url="{{ route('superadmin.dashboard.data') }}"
+                        class="form-control"
+                        style="padding-left: 36px; -webkit-appearance: none; appearance: none;">
+                    @foreach($rangeOptions as $key => $label)
+                        <option value="{{ $key }}" @selected($key === $range)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
     </div>
     <div class="breadcrumb">
         <a href="{{ route('superadmin.dashboard') }}">Home</a>
@@ -16,160 +32,29 @@
     </div>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon blue">
-            <i class="fas fa-building"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Total Societies</div>
-            <div class="stat-value">{{ number_format($totalSocieties) }}</div>
-            <div class="stat-trend {{ $newSocieties > 0 ? 'up' : '' }}" @if($newSocieties === 0) style="color: var(--text-muted);" @endif>
-                @if($newSocieties > 0)<i class="fas fa-arrow-up"></i>@endif
-                <span>{{ $newSocieties }} new this month</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Active Societies</div>
-            <div class="stat-value">{{ number_format($activeSocieties) }}</div>
-            <div class="stat-trend" style="color: {{ $expiringSoon > 0 ? 'var(--warning)' : 'var(--text-muted)' }};">
-                <span>{{ $expiringSoon }} expiring soon</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon red">
-            <i class="fas fa-hourglass-end"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Expired Societies</div>
-            <div class="stat-value">{{ number_format($expiredSocieties) }}</div>
-            <div class="stat-trend {{ $lapsedThisMonth > 0 ? 'down' : '' }}" @if($lapsedThisMonth === 0) style="color: var(--text-muted);" @endif>
-                <span>{{ $lapsedThisMonth }} lapsed this month</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon purple">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Total Units</div>
-            <div class="stat-value">{{ number_format($totalUnits) }}</div>
-            <div class="stat-trend {{ $newUnits > 0 ? 'up' : '' }}" @if($newUnits === 0) style="color: var(--text-muted);" @endif>
-                @if($newUnits > 0)<i class="fas fa-arrow-up"></i>@endif
-                <span>{{ number_format($newUnits) }} registered this month</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon orange">
-            <i class="fas fa-indian-rupee-sign"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Monthly Revenue</div>
-            <div class="stat-value">&#8377; {{ number_format($currentMonthRevenue / 100000, 2) }}L</div>
-            @if($revenueChange === null)
-                <div class="stat-trend" style="color: var(--text-muted);"><span>No payments last month</span></div>
-            @else
-                <div class="stat-trend {{ $revenueChange >= 0 ? 'up' : 'down' }}">
-                    <i class="fas {{ $revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
-                    <span>{{ abs($revenueChange) }}% vs last month</span>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon teal">
-            <i class="fas fa-wallet"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Total Revenue</div>
-            <div class="stat-value">&#8377; {{ number_format($totalRevenue / 100000, 2) }}L</div>
-            <div class="stat-trend" style="color: var(--text-muted);">
-                <span>All time revenue</span>
-            </div>
-        </div>
-    </div>
+<div class="stats-grid stats-grid-3" id="dash-stats">
+    @include('superadmin.dashboard.partials.stats', ['d' => $d])
 </div>
 
 <div class="grid-3">
-    <div class="card" style="grid-column: span 2;">
-        <div class="card-header">
-            <div class="card-title">Revenue Overview</div>
-            <form method="GET" action="{{ route('superadmin.dashboard') }}">
-                <select name="revenue" class="form-control" style="width: auto; min-width: 140px;" onchange="this.form.submit()">
-                    @foreach($revenueRanges as $value => $label)
-                        <option value="{{ $value }}" @selected($revenueRange === (string) $value)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </form>
-        </div>
-        <div class="card-body">
-            @php $maxRev = collect($monthlyRevenue)->max('amount'); @endphp
-            @if(! $maxRev)
-                <div class="empty-state" style="height: 280px; display: flex; flex-direction: column; justify-content: center;">
-                    <div class="empty-state-icon"><i class="fas fa-chart-column"></i></div>
-                    <div class="empty-state-title">No payments in this period</div>
-                </div>
-            @else
-                <div style="height: 280px; display: flex; align-items: flex-end; gap: 8px; padding: 20px 0;">
-                    @foreach($monthlyRevenue as $rev)
-                        @php $height = ($rev['amount'] / $maxRev) * 220; @endphp
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;" title="{{ $rev['month'] }}: &#8377; {{ number_format($rev['amount']) }}">
-                            <div style="width: 100%; display: flex; align-items: flex-end; justify-content: center; height: 220px;">
-                                <div style="width: 14px; background: var(--primary); border-radius: 3px 3px 0 0; height: {{ $rev['amount'] > 0 ? max($height, 2) : 0 }}px; opacity: 0.85;"></div>
-                            </div>
-                            <span style="font-size: 10px; color: var(--text-muted);">{{ $rev['month'] }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
+    <div class="card" id="dash-revenue" style="grid-column: span 2;">
+        @include('superadmin.dashboard.partials.revenue', ['d' => $d])
     </div>
 
     <div>
+        @php
+            $totalSoc = array_sum($societyStatus) ?: 1;
+            $totalSub = array_sum($subscriptionStatus) ?: 1;
+        @endphp
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
                 <div class="card-title">Society Status</div>
             </div>
             <div class="card-body" style="display: flex; align-items: center; gap: 16px;">
-                <div class="pie-chart-container">
-                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="12"/>
-                        @php
-                            $totalSoc = array_sum($societyStatus);
-                            $totalSoc = $totalSoc ?: 1;
-                            $offset = 0;
-                            $colors = ['#10B981', '#F59E0B', '#94a3b8'];
-                            $keys = array_keys($societyStatus);
-                        @endphp
-                        @foreach($societyStatus as $idx => $value)
-                            @php
-                                $pct = ($value / $totalSoc) * 251.2;
-                                $color = $colors[$loop->index] ?? '#e2e8f0';
-                            @endphp
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ $color }}" stroke-width="12"
-                                stroke-dasharray="{{ $pct }} {{ 251.2 - $pct }}"
-                                stroke-dashoffset="-{{ $offset }}" stroke-linecap="butt"/>
-                            @php $offset += $pct; @endphp
-                        @endforeach
-                    </svg>
-                    <div class="pie-chart-center">
-                        <div class="value">{{ $totalSocieties }}</div>
-                        <div class="label">Total</div>
-                    </div>
-                </div>
+                <x-chart type="doughnut" label="Society status"
+                    :labels="['Active', 'Expired', 'Inactive']"
+                    :datasets="[['data' => [$societyStatus['active'], $societyStatus['expired'], $societyStatus['inactive']], 'colors' => ['#10B981', '#F59E0B', '#94a3b8']]]"
+                    :center-value="(string) array_sum($societyStatus)" center-label="Total" />
                 <div class="chart-legend" style="flex: 1;">
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #10B981;"></span>
@@ -195,28 +80,10 @@
                 <div class="card-title">Subscription Status</div>
             </div>
             <div class="card-body" style="display: flex; align-items: center; gap: 16px;">
-                <div class="pie-chart-container">
-                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="12"/>
-                        @php
-                            $totalSub = array_sum($subscriptionStatus);
-                            $totalSub = $totalSub ?: 1;
-                            $offset = 0;
-                            $subColors = ['#10B981', '#EF4444', '#F59E0B'];
-                        @endphp
-                        @foreach($subscriptionStatus as $idx => $value)
-                            @php $pct = ($value / $totalSub) * 251.2; @endphp
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ $subColors[$loop->index] ?? '#e2e8f0' }}" stroke-width="12"
-                                stroke-dasharray="{{ $pct }} {{ 251.2 - $pct }}"
-                                stroke-dashoffset="-{{ $offset }}"/>
-                            @php $offset += $pct; @endphp
-                        @endforeach
-                    </svg>
-                    <div class="pie-chart-center">
-                        <div class="value">{{ array_sum($subscriptionStatus) }}</div>
-                        <div class="label">Total</div>
-                    </div>
-                </div>
+                <x-chart type="doughnut" label="Subscription status"
+                    :labels="['Active', 'Expired', 'Expiring Soon']"
+                    :datasets="[['data' => [$subscriptionStatus['active'], $subscriptionStatus['expired'], $subscriptionStatus['expiring_soon']], 'colors' => ['#10B981', '#EF4444', '#F59E0B']]]"
+                    :center-value="(string) array_sum($subscriptionStatus)" center-label="Total" />
                 <div class="chart-legend" style="flex: 1;">
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #10B981;"></span>
@@ -285,56 +152,8 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title">Revenue by Plan</div>
-        </div>
-        <div class="card-body">
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <div class="pie-chart-container" style="width: 140px; height: 140px;">
-                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="14"/>
-                        @php $rpOffset = 0; @endphp
-                        @foreach($revenueByPlan as $plan)
-                            @php $rpPct = ($plan['percentage'] / 100) * 251.2; @endphp
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ ['#E84B1E', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#14B8A6'][$loop->index % 6] }}" stroke-width="14"
-                                stroke-dasharray="{{ $rpPct }} {{ 251.2 - $rpPct }}"
-                                stroke-dashoffset="-{{ $rpOffset }}"/>
-                            @php $rpOffset += $rpPct; @endphp
-                        @endforeach
-                    </svg>
-                </div>
-                <div class="chart-legend" style="flex: 1;">
-                    @foreach($revenueByPlan as $plan)
-                    <div class="legend-item">
-                        <span class="legend-dot" style="background: {{ ['#E84B1E', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#14B8A6'][$loop->index % 6] }};"></span>
-                        <span class="legend-label">{{ $plan['name'] }}</span>
-                        <span class="legend-value">&#8377; {{ number_format($plan['amount']) }} ({{ $plan['percentage'] }}%)</span>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">Payment Received (This Month)</div>
-                        <div style="font-size: 20px; font-weight: 700; margin-top: 4px;">&#8377; {{ number_format($currentMonthRevenue) }}</div>
-                    </div>
-                    @if($revenueChange !== null)
-                        <div style="display: flex; align-items: center; gap: 6px; color: {{ $revenueChange >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 12px; font-weight: 600;">
-                            <i class="fas {{ $revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i> {{ abs($revenueChange) }}%
-                        </div>
-                    @endif
-                </div>
-                @php $maxDaily = collect($dailyRevenue)->max('amount') ?: 1; @endphp
-                <div class="mini-chart" style="margin-top: 12px;">
-                    @foreach($dailyRevenue as $day)
-                        <div class="mini-chart-bar" style="height: {{ max(4, round($day['amount'] / $maxDaily * 100)) }}%; {{ $day['amount'] > 0 ? '' : 'opacity: 0.25;' }}" title="{{ $day['label'] }}: &#8377; {{ number_format($day['amount']) }}"></div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
+    <div class="card" id="dash-plans">
+        @include('superadmin.dashboard.partials.plans', ['d' => $d])
     </div>
 
     <div class="card">
