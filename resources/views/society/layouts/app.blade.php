@@ -144,29 +144,29 @@
                 </div>
                 @endif
 
-                {{-- Vehicle Management (group, stub) --}}
-                <div class="nav-group">
+                {{-- Vehicle Management (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.vehicles.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-car"></i>
                         <span>Vehicle Management</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'All Vehicles']) }}" class="nav-item"><i class="fas fa-list"></i><span>All Vehicles</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Register Vehicle']) }}" class="nav-item"><i class="fas fa-plus"></i><span>Register Vehicle</span></a>
+                        <a href="{{ route('society.vehicles.index') }}" class="nav-item {{ request()->routeIs('society.vehicles.index') || request()->routeIs('society.vehicles.edit') ? 'active' : '' }}"><i class="fas fa-list"></i><span>All Vehicles</span></a>
+                        <a href="{{ route('society.vehicles.create') }}" class="nav-item {{ request()->routeIs('society.vehicles.create') ? 'active' : '' }}"><i class="fas fa-plus"></i><span>Register Vehicle</span></a>
                     </div>
                 </div>
 
-                {{-- Parking Management (group, stub) --}}
-                <div class="nav-group">
+                {{-- Parking Management (group) --}}
+                <div class="nav-group {{ request()->routeIs('society.parking.*') ? 'open' : '' }}">
                     <button class="nav-group-toggle">
                         <i class="fas fa-square-parking"></i>
                         <span>Parking Management</span>
                         <i class="fas fa-chevron-down chevron"></i>
                     </button>
                     <div class="nav-submenu">
-                        <a href="{{ route('society.placeholder', ['page' => 'Parking Slots']) }}" class="nav-item"><i class="fas fa-list"></i><span>Parking Slots</span></a>
-                        <a href="{{ route('society.placeholder', ['page' => 'Allotments']) }}" class="nav-item"><i class="fas fa-square-parking"></i><span>Allotments</span></a>
+                        <a href="{{ route('society.parking.slots') }}" class="nav-item {{ request()->routeIs('society.parking.slots*') ? 'active' : '' }}"><i class="fas fa-list"></i><span>Parking Slots</span></a>
+                        <a href="{{ route('society.parking.allotments') }}" class="nav-item {{ request()->routeIs('society.parking.allotments*') ? 'active' : '' }}"><i class="fas fa-square-parking"></i><span>Allotments</span></a>
                     </div>
                 </div>
 

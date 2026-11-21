@@ -7,6 +7,7 @@ use Database\Factories\VehicleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Vehicle extends Model
 {
@@ -35,6 +36,19 @@ class Vehicle extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    /**
+     * The running parking allotment for this vehicle, if any.
+     */
+    public function allotment(): HasOne
+    {
+        return $this->hasOne(ParkingAllotment::class)->where('status', 'active');
+    }
+
+    public function isTwoWheeler(): bool
+    {
+        return in_array($this->vehicle_type, ['bike', 'scooter', 'cycle'], true);
     }
 
     public function typeLabel(): string

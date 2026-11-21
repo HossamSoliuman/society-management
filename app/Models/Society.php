@@ -93,6 +93,11 @@ class Society extends Model
         return $this->hasMany(Tenant::class);
     }
 
+    public function parkingSlots()
+    {
+        return $this->hasMany(ParkingSlot::class);
+    }
+
     public function visitors()
     {
         return $this->hasMany(Visitor::class);

@@ -16,6 +16,8 @@ use App\Models\MaintenanceBill;
 use App\Models\Member;
 use App\Models\Notice;
 use App\Models\NumberingSeries;
+use App\Models\ParkingAllotment;
+use App\Models\ParkingSlot;
 use App\Models\PaymentGatewayOrder;
 use App\Models\ServiceVendor;
 use App\Models\Society;
@@ -27,6 +29,7 @@ use App\Models\TenantAgreement;
 use App\Models\Tender;
 use App\Models\Unit;
 use App\Models\User;
+use App\Models\Vehicle;
 use App\Models\Vendor;
 use App\Models\Visitor;
 use App\Models\VisitorPreApproval;
@@ -80,6 +83,9 @@ function foreignRowFor(string $routeName, string $param, Society $society): mixe
         'complaint' => SupportTicket::factory()->create($sid + ['raised_by_type' => 'member']),
         'tenant' => Tenant::factory()->create($sid),
         'staff' => Staff::factory()->create($sid),
+        'vehicle' => Vehicle::factory()->create($sid),
+        'slot' => ParkingSlot::factory()->create($sid),
+        'allotment' => ParkingAllotment::factory()->create($sid + ['parking_slot_id' => ParkingSlot::factory()->create($sid)->id]),
         'visitor' => Visitor::factory()->create($sid),
         'preApproval' => VisitorPreApproval::factory()->create($sid),
         'agreement' => TenantAgreement::factory()->create($sid + ['tenant_id' => Tenant::factory()->create($sid)->id]),

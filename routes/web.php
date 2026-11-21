@@ -36,6 +36,7 @@ use App\Http\Controllers\Society\NoticeManagementController;
 use App\Http\Controllers\Society\NotificationController as SocietyNotificationController;
 use App\Http\Controllers\Society\NumberingSeriesController;
 use App\Http\Controllers\Society\OnlinePaymentController;
+use App\Http\Controllers\Society\ParkingController;
 use App\Http\Controllers\Society\PaymentReceiptController;
 use App\Http\Controllers\Society\PlaceholderController;
 use App\Http\Controllers\Society\ProfileController as SocietyProfileController;
@@ -53,6 +54,7 @@ use App\Http\Controllers\Society\TenderController;
 use App\Http\Controllers\Society\UnitController;
 use App\Http\Controllers\Society\UnitDirectoryController;
 use App\Http\Controllers\Society\UserController as SocietyUserController;
+use App\Http\Controllers\Society\VehicleController as SocietyVehicleController;
 use App\Http\Controllers\Society\VendorController;
 use App\Http\Controllers\Society\VisitorController;
 use App\Http\Controllers\Society\VisitorPreApprovalController;
@@ -286,6 +288,21 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::post('/tenants/{tenant}/move-out', [TenantController::class, 'moveOut'])->name('tenants.move-out');
         Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
         Route::post('/tenants/{tenant}/agreements', [TenantAgreementController::class, 'store'])->name('tenants.agreements.store');
+
+        // Vehicles & parking
+        Route::get('/vehicles', [SocietyVehicleController::class, 'index'])->name('vehicles.index');
+        Route::get('/vehicles/create', [SocietyVehicleController::class, 'create'])->name('vehicles.create');
+        Route::post('/vehicles', [SocietyVehicleController::class, 'store'])->name('vehicles.store');
+        Route::get('/vehicles/{vehicle}/edit', [SocietyVehicleController::class, 'edit'])->name('vehicles.edit');
+        Route::put('/vehicles/{vehicle}', [SocietyVehicleController::class, 'update'])->name('vehicles.update');
+        Route::delete('/vehicles/{vehicle}', [SocietyVehicleController::class, 'destroy'])->name('vehicles.destroy');
+        Route::get('/parking/slots', [ParkingController::class, 'slots'])->name('parking.slots');
+        Route::post('/parking/slots', [ParkingController::class, 'storeSlot'])->name('parking.slots.store');
+        Route::post('/parking/slots/{slot}/toggle', [ParkingController::class, 'toggleSlot'])->name('parking.slots.toggle');
+        Route::delete('/parking/slots/{slot}', [ParkingController::class, 'destroySlot'])->name('parking.slots.destroy');
+        Route::get('/parking/allotments', [ParkingController::class, 'allotments'])->name('parking.allotments');
+        Route::post('/parking/allotments', [ParkingController::class, 'storeAllotment'])->name('parking.allotments.store');
+        Route::post('/parking/allotments/{allotment}/end', [ParkingController::class, 'endAllotment'])->name('parking.allotments.end');
     });
 
     // Staff & attendance. Static segments precede the {staff} wildcard.

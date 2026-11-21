@@ -40,6 +40,7 @@ class StoreVehicleRequest extends FormRequest
             'owner_name' => ['nullable', 'string', 'max:255'],
             'rfid_tag' => ['nullable', 'string', 'max:100'],
             'unit_id' => ['nullable', 'integer', Rule::exists('units', 'id')->where('society_id', $societyId)],
+            'member_id' => [$this->routeIs('member.*') ? 'prohibited' : 'nullable', 'integer', Rule::exists('members', 'id')->where('society_id', $societyId)->whereNull('deleted_at')],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
