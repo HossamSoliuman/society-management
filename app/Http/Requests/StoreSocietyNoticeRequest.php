@@ -9,8 +9,18 @@ use Illuminate\Validation\Rule;
 
 class StoreSocietyNoticeRequest extends FormRequest
 {
+    /**
+     * When editing, the notice must be one this society wrote; anything else
+     * is reported as missing before validation runs.
+     */
     public function authorize(): bool
     {
+        $notice = $this->route('notice');
+
+        if ($notice instanceof Notice) {
+            abort_unless($notice->isSocietyAuthored() && (int) $notice->society_id === (int) $this->user()?->society_id, 404);
+        }
+
         return true;
     }
 
