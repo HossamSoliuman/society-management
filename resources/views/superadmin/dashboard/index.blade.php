@@ -116,7 +116,7 @@
             </form>
         </div>
         <div class="card-body">
-            @php($maxRev = collect($monthlyRevenue)->max('amount'))
+            @php $maxRev = collect($monthlyRevenue)->max('amount'); @endphp
             @if(! $maxRev)
                 <div class="empty-state" style="height: 280px; display: flex; flex-direction: column; justify-content: center;">
                     <div class="empty-state-icon"><i class="fas fa-chart-column"></i></div>
@@ -125,7 +125,7 @@
             @else
                 <div style="height: 280px; display: flex; align-items: flex-end; gap: 8px; padding: 20px 0;">
                     @foreach($monthlyRevenue as $rev)
-                        @php($height = ($rev['amount'] / $maxRev) * 220)
+                        @php $height = ($rev['amount'] / $maxRev) * 220; @endphp
                         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;" title="{{ $rev['month'] }}: &#8377; {{ number_format($rev['amount']) }}">
                             <div style="width: 100%; display: flex; align-items: flex-end; justify-content: center; height: 220px;">
                                 <div style="width: 14px; background: var(--primary); border-radius: 3px 3px 0 0; height: {{ $rev['amount'] > 0 ? max($height, 2) : 0 }}px; opacity: 0.85;"></div>
@@ -327,7 +327,7 @@
                         </div>
                     @endif
                 </div>
-                @php($maxDaily = collect($dailyRevenue)->max('amount') ?: 1)
+                @php $maxDaily = collect($dailyRevenue)->max('amount') ?: 1; @endphp
                 <div class="mini-chart" style="margin-top: 12px;">
                     @foreach($dailyRevenue as $day)
                         <div class="mini-chart-bar" style="height: {{ max(4, round($day['amount'] / $maxDaily * 100)) }}%; {{ $day['amount'] > 0 ? '' : 'opacity: 0.25;' }}" title="{{ $day['label'] }}: &#8377; {{ number_format($day['amount']) }}"></div>
