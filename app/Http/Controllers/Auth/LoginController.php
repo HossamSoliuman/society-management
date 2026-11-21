@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\SecuritySetting;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class LoginController extends Controller
@@ -24,7 +27,19 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
+        $security = SecuritySetting::current();
+        $throttleKey = 'login:'.Str::lower($credentials['email']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, $security->loginAttemptsLimit())) {
+            $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
+
+            return back()->withErrors([
+                'email' => "Too many failed login attempts. Try again in {$minutes} ".Str::plural('minute', $minutes).'.',
+            ])->onlyInput('email');
+        }
+
         if (Auth::attempt($credentials + ['status' => 'active'], $request->boolean('remember'))) {
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
             $user = Auth::user();
@@ -55,6 +70,8 @@ class LoginController extends Controller
 
             return back()->withErrors(['email' => 'This account does not have an active application role.'])->onlyInput('email');
         }
+
+        RateLimiter::hit($throttleKey, $security->lockSeconds());
 
         $attempted = User::where('email', $credentials['email'])->first();
         ActivityLog::record(

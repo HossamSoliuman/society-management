@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\PaymentGateway;
 use App\Contracts\SmsGateway;
+use App\Models\SecuritySetting;
 use App\Models\SmtpSetting;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 class AppServiceProvider extends ServiceProvider
@@ -51,7 +53,10 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        Password::defaults(fn () => Password::min(8));
+
         $this->applySmtpSettings();
+        $this->applySecuritySettings();
         $this->registerRouteBindings();
 
         Notification::resolved(function (ChannelManager $manager) {
@@ -71,6 +76,26 @@ class AppServiceProvider extends ServiceProvider
                 ->where('society_id', Auth::user()?->society_id ?? -1)
                 ->firstOrFail();
         });
+    }
+
+    /**
+     * Idle sessions expire after the super-admin "Auto Logout" period.
+     */
+    private function applySecuritySettings(): void
+    {
+        if ($this->app->runningUnitTests()) {
+            return;
+        }
+
+        try {
+            $security = SecuritySetting::query()->first();
+        } catch (Throwable) {
+            return;
+        }
+
+        if ($security) {
+            config(['session.lifetime' => $security->sessionLifetimeMinutes()]);
+        }
     }
 
     /**

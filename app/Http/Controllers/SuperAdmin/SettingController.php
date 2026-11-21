@@ -14,7 +14,10 @@ use App\Services\BackupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -205,36 +208,86 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Backup deleted.');
     }
 
-    public function securitySettings()
+    public function securitySettings(Request $request): View
     {
-        $security = SecuritySetting::first();
+        $sessions = DB::table('sessions')
+            ->where('user_id', $request->user()->id)
+            ->orderByDesc('last_activity')
+            ->get(['id', 'ip_address', 'user_agent', 'last_activity'])
+            ->map(fn (object $session) => [
+                'id' => $session->id,
+                'device' => $this->describeUserAgent((string) $session->user_agent),
+                'icon' => $this->browserIcon((string) $session->user_agent),
+                'ip' => $session->ip_address,
+                'last_active' => Carbon::createFromTimestamp($session->last_activity),
+                'current' => $session->id === $request->session()->getId(),
+            ]);
 
-        return view('superadmin.settings.security', compact('security'));
+        return view('superadmin.settings.security', [
+            'security' => SecuritySetting::current(),
+            'sessions' => $sessions,
+        ]);
     }
 
-    public function updateSecurity(Request $request)
+    public function updateSecurity(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'min_password_length' => 'required|integer|min:4|max:32',
-            'password_expiry' => 'required|in:30_days,60_days,90_days,180_days,never',
-            'require_uppercase' => 'boolean',
-            'require_lowercase' => 'boolean',
-            'require_number' => 'boolean',
-            'require_special' => 'boolean',
-            'enable_2fa' => 'boolean',
-            '2fa_for_super_admin' => 'required|in:required,optional',
-            '2fa_for_others' => 'required|in:required,optional',
-            'auto_logout' => 'required|in:15_minutes,30_minutes,1_hour,2_hours',
+            'auto_logout' => ['required', Rule::in(array_keys(SecuritySetting::AUTO_LOGOUT_MINUTES))],
             'login_attempts_limit' => 'required|integer|min:1|max:10',
-            'account_lock_duration' => 'required|in:15_minutes,30_minutes,1_hour,24_hours',
+            'account_lock_duration' => ['required', Rule::in(array_keys(SecuritySetting::LOCK_MINUTES))],
         ]);
 
-        foreach (['require_uppercase', 'require_lowercase', 'require_number', 'require_special', 'enable_2fa'] as $field) {
-            $validated[$field] = $request->boolean($field);
-        }
-
-        SecuritySetting::first()->update($validated);
+        SecuritySetting::query()->firstOrNew()->fill($validated)->save();
 
         return redirect()->back()->with('success', 'Security settings updated');
+    }
+
+    /**
+     * Sign one of the super admin's other devices out.
+     */
+    public function revokeSession(Request $request, string $session): RedirectResponse
+    {
+        if ($session === $request->session()->getId()) {
+            return redirect()->back()->with('error', 'Use Logout to end the current session.');
+        }
+
+        DB::table('sessions')->where('id', $session)->where('user_id', $request->user()->id)->delete();
+
+        return redirect()->back()->with('success', 'Session signed out.');
+    }
+
+    private function describeUserAgent(string $agent): string
+    {
+        $browser = match (true) {
+            str_contains($agent, 'Edg/') => 'Edge',
+            str_contains($agent, 'OPR/') => 'Opera',
+            str_contains($agent, 'Firefox/') => 'Firefox',
+            str_contains($agent, 'Chrome/') => 'Chrome',
+            str_contains($agent, 'Safari/') => 'Safari',
+            default => 'Browser',
+        };
+
+        $platform = match (true) {
+            str_contains($agent, 'Android') => 'Android',
+            str_contains($agent, 'iPhone') || str_contains($agent, 'iPad') => 'iOS',
+            str_contains($agent, 'Windows') => 'Windows',
+            str_contains($agent, 'Mac OS') => 'macOS',
+            str_contains($agent, 'Linux') => 'Linux',
+            default => 'Unknown device',
+        };
+
+        return "{$browser} on {$platform}";
+    }
+
+    private function browserIcon(string $agent): string
+    {
+        return match (true) {
+            str_contains($agent, 'Edg/') => 'edge',
+            str_contains($agent, 'OPR/') => 'opera',
+            str_contains($agent, 'Firefox/') => 'firefox',
+            str_contains($agent, 'Chrome/') => 'chrome',
+            str_contains($agent, 'Safari/') => 'safari',
+            default => 'chrome',
+        };
     }
 }

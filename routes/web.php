@@ -85,7 +85,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:20,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Public "request to join" form behind each society's share link.
 Route::get('/join/{code}', [JoinRequestController::class, 'show'])->name('join.show');
@@ -233,6 +233,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::delete('/settings/backup/{backupRun}', [SettingController::class, 'destroyBackup'])->name('settings.backup.destroy');
     Route::get('/settings/security', [SettingController::class, 'securitySettings'])->name('settings.security');
     Route::put('/settings/security', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
+    Route::delete('/settings/security/sessions/{session}', [SettingController::class, 'revokeSession'])->name('settings.security.sessions.destroy');
 });
 
 Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountant', 'society.access'])->prefix('society')->name('society.')->group(function () {
