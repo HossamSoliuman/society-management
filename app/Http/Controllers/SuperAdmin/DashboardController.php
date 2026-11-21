@@ -7,42 +7,68 @@ use App\Models\Payment;
 use App\Models\Society;
 use App\Models\Subscription;
 use App\Models\SupportTicket;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\PlatformBillingService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(PlatformBillingService $billing)
+    /** Revenue chart windows offered by the "Revenue Overview" selector. */
+    private const REVENUE_RANGES = ['12' => 'Last 12 Months', '6' => 'Last 6 Months', 'year' => 'This Year'];
+
+    public function index(Request $request, PlatformBillingService $billing): View
     {
+        $now = Carbon::now();
+        $monthStart = $now->copy()->startOfMonth();
+
+        // One partition for both the stat cards and the status chart:
+        // expired subscription first, then inactive, everything else active.
         $totalSocieties = Society::count();
-        $activeSocieties = Society::where('status', 'active')->count();
         $expiredSocieties = Society::where('subscription_status', 'expired')->count();
-        $totalUnits = Society::sum('flats_count') + Society::sum('shops_count') + Society::sum('offices_count');
+        $inactiveSocieties = Society::where('subscription_status', '!=', 'expired')->where('status', '!=', 'active')->count();
+        $activeSocieties = $totalSocieties - $expiredSocieties - $inactiveSocieties;
+        $societyStatus = [
+            'active' => $activeSocieties,
+            'expired' => $expiredSocieties,
+            'inactive' => $inactiveSocieties,
+        ];
 
-        $currentMonthRevenue = Payment::whereMonth('payment_date', Carbon::now()->month)
-            ->whereYear('payment_date', Carbon::now()->year)
+        $newSocieties = Society::where('created_at', '>=', $monthStart)->count();
+        $expiringSoon = Society::where('status', 'active')->where('subscription_status', 'expiring_soon')->count();
+        $lapsedThisMonth = Society::where('subscription_status', 'expired')
+            ->whereBetween('subscription_end_date', [$monthStart, $now])
+            ->count();
+
+        $totalUnits = (int) Society::sum('total_units');
+        $newUnits = Unit::where('created_at', '>=', $monthStart)->count();
+
+        $successful = fn () => Payment::query()->where('status', 'success');
+        $currentMonthRevenue = (float) $successful()->whereBetween('payment_date', [$monthStart, $now->copy()->endOfMonth()])->sum('amount');
+        $previousMonth = $now->copy()->subMonthNoOverflow();
+        $previousMonthRevenue = (float) $successful()
+            ->whereBetween('payment_date', [$previousMonth->copy()->startOfMonth(), $previousMonth->copy()->endOfMonth()])
             ->sum('amount');
+        $revenueChange = $previousMonthRevenue > 0
+            ? round(($currentMonthRevenue - $previousMonthRevenue) / $previousMonthRevenue * 100, 1)
+            : null;
+        $totalRevenue = (float) $successful()->sum('amount');
 
-        $totalRevenue = Payment::sum('amount');
+        $revenueRange = array_key_exists((string) $request->query('revenue'), self::REVENUE_RANGES)
+            ? (string) $request->query('revenue')
+            : '12';
+        $monthlyRevenue = $this->monthlyRevenue($revenueRange, $now);
 
-        $monthlyRevenue = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $amount = Payment::whereMonth('payment_date', $date->month)
-                ->whereYear('payment_date', $date->year)
-                ->sum('amount');
-            $monthlyRevenue[] = [
-                'month' => $date->format('M'),
-                'amount' => $amount,
+        $dailyRevenue = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $day = $now->copy()->subDays($i);
+            $dailyRevenue[] = [
+                'label' => $day->format('d M'),
+                'amount' => (float) $successful()->whereDate('payment_date', $day->toDateString())->sum('amount'),
             ];
         }
-
-        $societyStatus = [
-            'active' => Society::where('status', 'active')->where('subscription_status', 'active')->count(),
-            'expired' => Society::where('subscription_status', 'expired')->count(),
-            'inactive' => Society::where('status', 'inactive')->count(),
-        ];
 
         $subscriptionStatus = [
             'active' => Subscription::where('status', 'active')->count(),
@@ -50,19 +76,51 @@ class DashboardController extends Controller
             'expired' => Subscription::where('status', 'expired')->count(),
         ];
 
-        $revenueByPlan = $billing->revenueByPlan();
+        return view('superadmin.dashboard.index', [
+            'totalSocieties' => $totalSocieties,
+            'activeSocieties' => $activeSocieties,
+            'expiredSocieties' => $expiredSocieties,
+            'newSocieties' => $newSocieties,
+            'expiringSoon' => $expiringSoon,
+            'lapsedThisMonth' => $lapsedThisMonth,
+            'totalUnits' => $totalUnits,
+            'newUnits' => $newUnits,
+            'currentMonthRevenue' => $currentMonthRevenue,
+            'revenueChange' => $revenueChange,
+            'totalRevenue' => $totalRevenue,
+            'monthlyRevenue' => $monthlyRevenue,
+            'revenueRange' => $revenueRange,
+            'revenueRanges' => self::REVENUE_RANGES,
+            'dailyRevenue' => $dailyRevenue,
+            'societyStatus' => $societyStatus,
+            'subscriptionStatus' => $subscriptionStatus,
+            'revenueByPlan' => $billing->revenueByPlan(),
+            'recentSocieties' => Society::with('subscriptionPlan')->latest()->take(5)->get(),
+            'recentPayments' => Payment::with('society')->latest()->take(5)->get(),
+            'totalUsers' => User::count(),
+            'openTickets' => SupportTicket::where('status', 'open')->count(),
+        ]);
+    }
 
-        $recentSocieties = Society::with('subscriptionPlan')->latest()->take(5)->get();
-        $recentPayments = Payment::with('society')->latest()->take(5)->get();
+    /**
+     * Successful platform payments per month for the selected window.
+     *
+     * @return array<int, array{month: string, amount: float}>
+     */
+    private function monthlyRevenue(string $range, Carbon $now): array
+    {
+        $months = match ($range) {
+            '6' => collect(range(5, 0))->map(fn (int $i) => $now->copy()->startOfMonth()->subMonthsNoOverflow($i)),
+            'year' => collect(range(1, 12))->map(fn (int $m) => Carbon::create($now->year, $m, 1)),
+            default => collect(range(11, 0))->map(fn (int $i) => $now->copy()->startOfMonth()->subMonthsNoOverflow($i)),
+        };
 
-        $totalUsers = User::count();
-        $openTickets = SupportTicket::where('status', 'open')->count();
-
-        return view('superadmin.dashboard.index', compact(
-            'totalSocieties', 'activeSocieties', 'expiredSocieties', 'totalUnits',
-            'currentMonthRevenue', 'totalRevenue', 'monthlyRevenue',
-            'societyStatus', 'subscriptionStatus', 'revenueByPlan',
-            'recentSocieties', 'recentPayments', 'totalUsers', 'openTickets'
-        ));
+        return $months->map(fn (Carbon $month) => [
+            'month' => $month->format('M'),
+            'amount' => (float) Payment::query()
+                ->where('status', 'success')
+                ->whereBetween('payment_date', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])
+                ->sum('amount'),
+        ])->all();
     }
 }

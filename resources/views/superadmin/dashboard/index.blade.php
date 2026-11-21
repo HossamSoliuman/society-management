@@ -8,10 +8,6 @@
         <div>
             <h1 class="page-title">Super Admin Dashboard</h1>
         </div>
-        <div class="header-search" style="max-width: 280px;">
-            <i class="fas fa-calendar search-icon"></i>
-            <input type="text" value="22 Jun 2026 - 22 Jul 2026" readonly>
-        </div>
     </div>
     <div class="breadcrumb">
         <a href="{{ route('superadmin.dashboard') }}">Home</a>
@@ -28,9 +24,9 @@
         <div class="stat-info">
             <div class="stat-label">Total Societies</div>
             <div class="stat-value">{{ number_format($totalSocieties) }}</div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
-                <span>12 this month</span>
+            <div class="stat-trend {{ $newSocieties > 0 ? 'up' : '' }}" @if($newSocieties === 0) style="color: var(--text-muted);" @endif>
+                @if($newSocieties > 0)<i class="fas fa-arrow-up"></i>@endif
+                <span>{{ $newSocieties }} new this month</span>
             </div>
         </div>
     </div>
@@ -42,9 +38,8 @@
         <div class="stat-info">
             <div class="stat-label">Active Societies</div>
             <div class="stat-value">{{ number_format($activeSocieties) }}</div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
-                <span>8 this month</span>
+            <div class="stat-trend" style="color: {{ $expiringSoon > 0 ? 'var(--warning)' : 'var(--text-muted)' }};">
+                <span>{{ $expiringSoon }} expiring soon</span>
             </div>
         </div>
     </div>
@@ -56,9 +51,8 @@
         <div class="stat-info">
             <div class="stat-label">Expired Societies</div>
             <div class="stat-value">{{ number_format($expiredSocieties) }}</div>
-            <div class="stat-trend down">
-                <i class="fas fa-arrow-down"></i>
-                <span>2 this month</span>
+            <div class="stat-trend {{ $lapsedThisMonth > 0 ? 'down' : '' }}" @if($lapsedThisMonth === 0) style="color: var(--text-muted);" @endif>
+                <span>{{ $lapsedThisMonth }} lapsed this month</span>
             </div>
         </div>
     </div>
@@ -70,9 +64,9 @@
         <div class="stat-info">
             <div class="stat-label">Total Units</div>
             <div class="stat-value">{{ number_format($totalUnits) }}</div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
-                <span>356 this month</span>
+            <div class="stat-trend {{ $newUnits > 0 ? 'up' : '' }}" @if($newUnits === 0) style="color: var(--text-muted);" @endif>
+                @if($newUnits > 0)<i class="fas fa-arrow-up"></i>@endif
+                <span>{{ number_format($newUnits) }} registered this month</span>
             </div>
         </div>
     </div>
@@ -84,10 +78,14 @@
         <div class="stat-info">
             <div class="stat-label">Monthly Revenue</div>
             <div class="stat-value">&#8377; {{ number_format($currentMonthRevenue / 100000, 2) }}L</div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
-                <span>18.6% this month</span>
-            </div>
+            @if($revenueChange === null)
+                <div class="stat-trend" style="color: var(--text-muted);"><span>No payments last month</span></div>
+            @else
+                <div class="stat-trend {{ $revenueChange >= 0 ? 'up' : 'down' }}">
+                    <i class="fas {{ $revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                    <span>{{ abs($revenueChange) }}% vs last month</span>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -108,32 +106,35 @@
 <div class="grid-3">
     <div class="card" style="grid-column: span 2;">
         <div class="card-header">
-            <div>
-                <div class="card-title">Revenue Overview</div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Monthly revenue for last 12 months</div>
-            </div>
-            <select class="form-control" style="width: auto; min-width: 140px;">
-                <option>Last 12 Months</option>
-                <option>Last 6 Months</option>
-                <option>This Year</option>
-            </select>
+            <div class="card-title">Revenue Overview</div>
+            <form method="GET" action="{{ route('superadmin.dashboard') }}">
+                <select name="revenue" class="form-control" style="width: auto; min-width: 140px;" onchange="this.form.submit()">
+                    @foreach($revenueRanges as $value => $label)
+                        <option value="{{ $value }}" @selected($revenueRange === (string) $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </form>
         </div>
         <div class="card-body">
-            <div style="height: 280px; display: flex; align-items: flex-end; gap: 8px; padding: 20px 0;">
-                @foreach($monthlyRevenue as $rev)
-                    @php
-                        $maxRev = collect($monthlyRevenue)->max('amount') ?: 1;
-                        $height = ($rev['amount'] / $maxRev) * 220;
-                    @endphp
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
-                        <div style="width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 220px;">
-                            <div style="width: 8px; background: var(--primary); border-radius: 3px 3px 0 0; height: {{ $height }}px; opacity: 0.8;"></div>
-                            <div style="width: 8px; background: var(--gray-300); border-radius: 3px 3px 0 0; height: {{ $height * 0.6 }}px;"></div>
+            @php($maxRev = collect($monthlyRevenue)->max('amount'))
+            @if(! $maxRev)
+                <div class="empty-state" style="height: 280px; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="empty-state-icon"><i class="fas fa-chart-column"></i></div>
+                    <div class="empty-state-title">No payments in this period</div>
+                </div>
+            @else
+                <div style="height: 280px; display: flex; align-items: flex-end; gap: 8px; padding: 20px 0;">
+                    @foreach($monthlyRevenue as $rev)
+                        @php($height = ($rev['amount'] / $maxRev) * 220)
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;" title="{{ $rev['month'] }}: &#8377; {{ number_format($rev['amount']) }}">
+                            <div style="width: 100%; display: flex; align-items: flex-end; justify-content: center; height: 220px;">
+                                <div style="width: 14px; background: var(--primary); border-radius: 3px 3px 0 0; height: {{ $rev['amount'] > 0 ? max($height, 2) : 0 }}px; opacity: 0.85;"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-muted);">{{ $rev['month'] }}</span>
                         </div>
-                        <span style="font-size: 10px; color: var(--text-muted);">{{ $rev['month'] }}</span>
-                    </div>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 
@@ -212,7 +213,7 @@
                         @endforeach
                     </svg>
                     <div class="pie-chart-center">
-                        <div class="value">{{ $totalSocieties }}</div>
+                        <div class="value">{{ array_sum($subscriptionStatus) }}</div>
                         <div class="label">Total</div>
                     </div>
                 </div>
@@ -296,7 +297,7 @@
                         @php $rpOffset = 0; @endphp
                         @foreach($revenueByPlan as $plan)
                             @php $rpPct = ($plan['percentage'] / 100) * 251.2; @endphp
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ ['#E84B1E', '#10B981', '#F59E0B'][$loop->index] }}" stroke-width="14"
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="{{ ['#E84B1E', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#14B8A6'][$loop->index % 6] }}" stroke-width="14"
                                 stroke-dasharray="{{ $rpPct }} {{ 251.2 - $rpPct }}"
                                 stroke-dashoffset="-{{ $rpOffset }}"/>
                             @php $rpOffset += $rpPct; @endphp
@@ -306,7 +307,7 @@
                 <div class="chart-legend" style="flex: 1;">
                     @foreach($revenueByPlan as $plan)
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: {{ ['#E84B1E', '#10B981', '#F59E0B'][$loop->index] }};"></span>
+                        <span class="legend-dot" style="background: {{ ['#E84B1E', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#14B8A6'][$loop->index % 6] }};"></span>
                         <span class="legend-label">{{ $plan['name'] }}</span>
                         <span class="legend-value">&#8377; {{ number_format($plan['amount']) }} ({{ $plan['percentage'] }}%)</span>
                     </div>
@@ -320,14 +321,17 @@
                         <div style="font-size: 12px; color: var(--text-secondary);">Payment Received (This Month)</div>
                         <div style="font-size: 20px; font-weight: 700; margin-top: 4px;">&#8377; {{ number_format($currentMonthRevenue) }}</div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 12px; font-weight: 600;">
-                        <i class="fas fa-arrow-up"></i> 18.6%
-                    </div>
+                    @if($revenueChange !== null)
+                        <div style="display: flex; align-items: center; gap: 6px; color: {{ $revenueChange >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 12px; font-weight: 600;">
+                            <i class="fas {{ $revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i> {{ abs($revenueChange) }}%
+                        </div>
+                    @endif
                 </div>
+                @php($maxDaily = collect($dailyRevenue)->max('amount') ?: 1)
                 <div class="mini-chart" style="margin-top: 12px;">
-                    @for($i = 0; $i < 20; $i++)
-                        <div class="mini-chart-bar" style="height: {{ rand(20, 100) }}%;"></div>
-                    @endfor
+                    @foreach($dailyRevenue as $day)
+                        <div class="mini-chart-bar" style="height: {{ max(4, round($day['amount'] / $maxDaily * 100)) }}%; {{ $day['amount'] > 0 ? '' : 'opacity: 0.25;' }}" title="{{ $day['label'] }}: &#8377; {{ number_format($day['amount']) }}"></div>
+                    @endforeach
                 </div>
             </div>
         </div>
