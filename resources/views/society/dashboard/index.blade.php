@@ -17,7 +17,7 @@
             <span id="dashboardLoader" style="display: none; color: var(--text-muted); font-size: 12px;">
                 <i class="fas fa-circle-notch fa-spin"></i> Updating…
             </span>
-            <div class="header-search" style="max-width: 200px;">
+            <div class="header-search period-picker">
                 <i class="fas fa-calendar search-icon"></i>
                 <select id="dashboardRange" data-period-select data-loader="dashboardLoader"
                         data-url="{{ route('society.dashboard.data') }}"

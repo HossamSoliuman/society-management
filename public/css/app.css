@@ -1897,6 +1897,13 @@ select.form-control {
     pointer-events: none;
 }
 
+/* Page-level period selector in a page header */
+.page-header .header-search.period-picker {
+    flex: 0 1 200px;
+    min-width: 160px;
+    max-width: 200px;
+}
+
 /* Card-level period selector (x-period-select component) */
 select.form-control.period-select {
     width: auto;
@@ -1940,26 +1947,6 @@ select.form-control.period-select {
 .pie-chart-center .label {
     font-size: 11px;
     color: var(--text-muted);
-}
-
-/* Mini chart area */
-.mini-chart {
-    height: 40px;
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-}
-
-.mini-chart-bar {
-    flex: 1;
-    background: var(--primary);
-    border-radius: 2px 2px 0 0;
-    min-height: 4px;
-    opacity: 0.7;
-}
-
-.mini-chart-bar:last-child {
-    opacity: 1;
 }
 
 /* Receipt Preview */
@@ -4347,32 +4334,6 @@ body.sidebar-open .sidebar-overlay {
     grid-column: 1 / -1;
 }
 
-/* Simple grouped bar chart (superadmin billing overview) */
-.bar-chart {
-    height: 240px;
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    padding: 10px 0;
-    min-width: 0;
-}
-
-.bar-chart-col {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 1px;
-    height: 200px;
-}
-
-.bar-chart-bar {
-    width: 6px;
-    max-width: 45%;
-    border-radius: 2px 2px 0 0;
-}
-
 /* Units index: four KPI cards + a fixed-width occupancy pie card */
 .units-stats-grid {
     display: grid;
@@ -4709,14 +4670,6 @@ body.sidebar-open .sidebar-overlay {
     .pagination {
         flex-wrap: wrap;
         justify-content: center;
-    }
-
-    .bar-chart {
-        gap: 2px;
-    }
-
-    .bar-chart-bar {
-        width: 4px;
     }
 
     .pagination-info {

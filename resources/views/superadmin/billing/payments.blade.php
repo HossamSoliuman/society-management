@@ -12,7 +12,7 @@
             <span id="paymentsLoader" style="display: none; color: var(--text-muted); font-size: 12px;">
                 <i class="fas fa-circle-notch fa-spin"></i> Updating…
             </span>
-            <div class="header-search" style="max-width: 200px;">
+            <div class="header-search period-picker">
                 <i class="fas fa-calendar search-icon"></i>
                 <select data-period-select data-loader="paymentsLoader" data-fragment-prefix="payments-"
                         data-url="{{ route('superadmin.billing.payments.data') }}"
@@ -53,7 +53,7 @@
                 <div class="filter-item" style="flex: 0 0 auto;"><select class="form-control"><option>All Status</option></select></div>
                 <div class="filter-item" style="flex: 0 0 auto;"><select class="form-control"><option>All Methods</option></select></div>
                 <div class="filter-item" style="flex: 0 0 auto;"><select class="form-control"><option>All Types</option></select></div>
-                <div class="filter-item" style="flex: 0 0 auto;"><div class="header-search" style="max-width: 200px;"><i class="fas fa-calendar search-icon"></i><input type="text" value="01 May 2025 - 31 May 2025" readonly></div></div>
+                <div class="filter-item" style="flex: 0 0 auto;"><div class="header-search period-picker"><i class="fas fa-calendar search-icon"></i><input type="text" value="01 May 2025 - 31 May 2025" readonly></div></div>
                 <div class="filter-item" style="flex: 0 0 auto;"><button class="btn btn-secondary btn-sm"><i class="fas fa-filter"></i> Filters</button></div>
             </div>
 
