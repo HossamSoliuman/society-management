@@ -137,20 +137,35 @@ class BillingController extends Controller
             ->with('success', "Invoice {$invoice->invoice_number} raised for {$subscription->society->name} (₹".number_format((float) $invoice->total_amount, 2).').');
     }
 
-    public function payments(): View
+    public function payments(Request $request): View
     {
-        $payments = Payment::with(['society', 'invoice'])->latest()->paginate(10);
-        $totalCollections = Payment::where('status', 'success')->sum('amount');
-        $totalPaymentsReceived = Payment::where('status', 'success')->count();
-        $pendingPayments = Payment::where('status', 'pending')->count();
-        $failedPayments = Payment::where('status', 'failed')->count();
-        $pendingAmount = Payment::where('status', 'pending')->sum('amount');
-        $failedAmount = Payment::where('status', 'failed')->sum('amount');
+        $period = Period::fromKey($request->query('range'));
 
-        return view('superadmin.billing.payments', compact(
-            'payments', 'totalCollections', 'totalPaymentsReceived',
-            'pendingPayments', 'failedPayments', 'pendingAmount', 'failedAmount'
-        ));
+        return view('superadmin.billing.payments', [
+            'payments' => Payment::with(['society', 'invoice'])->latest()->paginate(10),
+            'd' => $this->buildPaymentSummary($period),
+            'range' => $period->key,
+            'rangeOptions' => Period::options(),
+        ]);
+    }
+
+    /**
+     * AJAX endpoint: the period-dependent payment cards as HTML fragments.
+     */
+    public function paymentsData(Request $request): JsonResponse
+    {
+        $period = Period::fromKey($request->query('range'));
+        $d = $this->buildPaymentSummary($period);
+
+        return response()->json([
+            'range' => $period->key,
+            'rangeLabel' => $period->label(),
+            'fragments' => [
+                'stats' => view('superadmin.billing.partials.payments-stats', ['d' => $d])->render(),
+                'summary' => view('superadmin.billing.partials.payments-summary', ['d' => $d])->render(),
+                'methods' => view('superadmin.billing.partials.payments-methods', ['d' => $d])->render(),
+            ],
+        ]);
     }
 
     public function createPayment(Request $request): View
@@ -323,6 +338,33 @@ class BillingController extends Controller
                 'invoiced' => $period->series($period->within(Invoice::query(), 'invoice_date'), 'invoice_date', 'total_amount'),
             ],
             'revenueByCategory' => $this->billing->revenueByCategory($period),
+        ];
+    }
+
+    /**
+     * Payment totals by status and method for a period.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildPaymentSummary(Period $period): array
+    {
+        $payments = fn (string $status, ?Period $window = null) => ($window ?? $period)->within(Payment::where('status', $status), 'payment_date');
+        $successful = (float) $payments('success')->sum('amount');
+        $previous = (float) $payments('success', $period->previous())->sum('amount');
+        $refunded = (float) $period->within(Refund::where('status', 'completed'), 'refund_date')->sum('amount');
+
+        return [
+            'period' => $period,
+            'successful' => $successful,
+            'successful_change' => $previous > 0 ? round(($successful - $previous) / $previous * 100, 1) : null,
+            'successful_count' => $payments('success')->count(),
+            'pending' => (float) $payments('pending')->sum('amount'),
+            'pending_count' => $payments('pending')->count(),
+            'failed' => (float) $payments('failed')->sum('amount'),
+            'failed_count' => $payments('failed')->count(),
+            'refunded' => $refunded,
+            'net' => $successful - $refunded,
+            'methods' => $this->billing->revenueByMethod($period),
         ];
     }
 }

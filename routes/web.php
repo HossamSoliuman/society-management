@@ -145,6 +145,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
     Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
+    Route::get('/billing/payments/data', [BillingController::class, 'paymentsData'])->name('billing.payments.data');
     Route::get('/billing/payments/create', [BillingController::class, 'createPayment'])->name('billing.payments.create');
     Route::post('/billing/payments', [BillingController::class, 'recordPayment'])->name('billing.payments.store');
     Route::get('/billing/refunds/create', [BillingController::class, 'createRefund'])->name('billing.refunds.create');
