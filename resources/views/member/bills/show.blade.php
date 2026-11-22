@@ -21,7 +21,7 @@
             @if($billModel->outstanding_amount > 0 && $billModel->status !== 'cancelled')
                 <form method="POST" action="{{ route('member.bills.pay', $billModel) }}" style="display: inline;">
                     @csrf
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-credit-card"></i> Pay &#8377; {{ format_inr($billModel->outstanding_amount) }} Online</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-credit-card"></i> Pay {{ format_inr($billModel->outstanding_amount) }} Online</button>
                 </form>
             @endif
         </div>
@@ -46,9 +46,9 @@
                 <div class="section-title" style="font-size: 15px;">Summary</div>
                 <div class="review-row"><span class="review-label">Status</span><span class="review-value">@include('society.partials.status-badge', ['class' => $billModel->statusBadgeClass(), 'label' => $billModel->statusLabel()])</span></div>
                 <div class="review-row"><span class="review-label">Due date</span><span class="review-value">{{ $billModel->due_date?->format('d M Y') }}</span></div>
-                <div class="review-row"><span class="review-label">Total</span><span class="review-value">&#8377; {{ format_inr($billModel->total_amount) }}</span></div>
-                <div class="review-row"><span class="review-label">Paid</span><span class="review-value">&#8377; {{ format_inr($billModel->collected_amount) }}</span></div>
-                <div class="review-row"><span class="review-label">Outstanding</span><span class="review-value" style="font-weight: 700; color: var(--primary);">&#8377; {{ format_inr($billModel->outstanding_amount) }}</span></div>
+                <div class="review-row"><span class="review-label">Total</span><span class="review-value">{{ format_inr($billModel->total_amount) }}</span></div>
+                <div class="review-row"><span class="review-label">Paid</span><span class="review-value">{{ format_inr($billModel->collected_amount) }}</span></div>
+                <div class="review-row"><span class="review-label">Outstanding</span><span class="review-value" style="font-weight: 700; color: var(--primary);">{{ format_inr($billModel->outstanding_amount) }}</span></div>
             </div>
         </div>
         <div class="card" style="margin-top: 20px;">
@@ -57,7 +57,7 @@
                 @forelse($billModel->payments as $payment)
                     <div class="review-row">
                         <span class="review-label"><a href="{{ route('member.payments.show', $payment) }}">{{ $payment->receipt_number }}</a><br><small style="color: var(--text-muted);">{{ $payment->receipt_date?->format('d M Y') }}</small></span>
-                        <span class="review-value">&#8377; {{ format_inr($payment->paid_amount) }}</span>
+                        <span class="review-value">{{ format_inr($payment->paid_amount) }}</span>
                     </div>
                 @empty
                     <div style="font-size: 13px; color: var(--text-muted);">No payments yet.</div>

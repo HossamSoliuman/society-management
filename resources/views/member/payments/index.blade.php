@@ -16,7 +16,7 @@
         <div class="stat-card" style="padding: 10px 16px;">
             <div class="stat-info">
                 <div class="stat-label">Total paid</div>
-                <div class="stat-value" style="font-size: 18px;">&#8377; {{ format_inr($totalPaid) }}</div>
+                <div class="stat-value" style="font-size: 18px;">{{ format_inr($totalPaid) }}</div>
             </div>
         </div>
     </div>

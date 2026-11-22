@@ -39,7 +39,7 @@
                 </span></div>
                 <div class="review-row"><span class="review-label">Mode</span><span class="review-value">{{ $payment->paymentModeLabel() }}</span></div>
                 <div class="review-row"><span class="review-label">Reference</span><span class="review-value">{{ $payment->reference_no ?: ($payment->transaction_utr ?: '—') }}</span></div>
-                <div class="review-row"><span class="review-label">Amount</span><span class="review-value" style="font-weight: 700; color: var(--primary);">&#8377; {{ format_inr($payment->paid_amount) }}</span></div>
+                <div class="review-row"><span class="review-label">Amount</span><span class="review-value" style="font-weight: 700; color: var(--primary);">{{ format_inr($payment->paid_amount) }}</span></div>
                 <div class="review-row"><span class="review-label">Status</span><span class="review-value">@include('society.partials.status-badge', ['class' => $payment->statusBadgeClass(), 'label' => $payment->statusLabel()])</span></div>
                 <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">{{ $payment->amountInWords() }}</div>
             </div>

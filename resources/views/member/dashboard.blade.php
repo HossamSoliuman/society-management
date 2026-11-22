@@ -18,9 +18,9 @@
 </div>
 
 <div class="stats-grid stats-grid-4">
-    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding Dues', 'value' => '₹ '.format_inr($stats['outstanding']), 'trend' => $stats['overdue'] ? $stats['overdue'].' overdue bill'.($stats['overdue'] === 1 ? '' : 's') : 'All clear', 'trendType' => $stats['overdue'] ? 'danger' : 'success'])
+    @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => $stats['outstanding'] > 0 ? 'danger' : 'success', 'label' => 'Outstanding Dues', 'value' => format_inr($stats['outstanding']), 'trend' => $stats['overdue'] ? $stats['overdue'].' overdue bill'.($stats['overdue'] === 1 ? '' : 's') : 'All clear', 'trendType' => $stats['overdue'] ? 'danger' : 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'warning', 'label' => 'Open Bills', 'value' => $openBills->count(), 'trend' => 'Awaiting payment', 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid This Year', 'value' => '₹ '.format_inr($stats['paid_this_year']), 'trend' => now()->format('Y'), 'trendType' => 'muted'])
+    @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Paid This Year', 'value' => format_inr($stats['paid_this_year']), 'trend' => now()->format('Y'), 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-headset', 'iconVariant' => 'purple', 'label' => 'Open Requests', 'value' => $stats['open_tickets'], 'trend' => 'Complaints & requests', 'trendType' => 'muted'])
 </div>
 
@@ -40,7 +40,7 @@
                             <div style="font-size: 12px; color: var(--text-muted);">{{ $bill->bill_month }} · due {{ $bill->due_date?->format('d M Y') }}</div>
                         </div>
                         <div class="detail-row-value" style="text-align: right;">
-                            <div style="font-weight: 700;">&#8377; {{ format_inr($bill->outstanding_amount) }}</div>
+                            <div style="font-weight: 700;">{{ format_inr($bill->outstanding_amount) }}</div>
                             @include('society.partials.status-badge', ['class' => $bill->statusBadgeClass(), 'label' => $bill->statusLabel()])
                         </div>
                     </div>
@@ -63,7 +63,7 @@
                             <a href="{{ route('member.payments.show', $payment) }}">{{ $payment->receipt_number }}</a>
                             <div style="font-size: 12px; color: var(--text-muted);">{{ $payment->receipt_date?->format('d M Y') }} · {{ $payment->paymentModeLabel() }}</div>
                         </div>
-                        <div class="detail-row-value" style="text-align: right; font-weight: 700;">&#8377; {{ format_inr($payment->paid_amount) }}</div>
+                        <div class="detail-row-value" style="text-align: right; font-weight: 700;">{{ format_inr($payment->paid_amount) }}</div>
                     </div>
                 @empty
                     <div style="font-size: 13px; color: var(--text-muted);">No payments recorded yet.</div>
