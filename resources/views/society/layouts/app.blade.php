@@ -17,10 +17,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/>
-                        <path d="M9 9h1v1H9zM14 9h1v1h-1z"/>
-                    </svg>
+                    <x-brand-mark />
                 </div>
                 <div class="brand-text">
                     <span class="brand-title">Society Management</span>

@@ -57,14 +57,9 @@
         .login-brand-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #E84B1E, #F97316);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin: 0 auto 24px;
         }
-        .login-brand-icon svg { width: 40px; height: 40px; }
+        .login-brand-icon svg { display: block; width: 100%; height: 100%; }
         .login-brand h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
         .login-brand p { font-size: 14px; opacity: 0.8; }
         .login-features {
@@ -178,10 +173,7 @@
         <div class="login-left">
             <div class="login-brand">
                 <div class="login-brand-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 40px; height: 40px; color: #fff;">
-                        <path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/>
-                        <path d="M9 9h1v1H9zM14 9h1v1h-1z"/>
-                    </svg>
+                    <x-brand-mark />
                 </div>
                 <h1>Society Management</h1>
                 <p>SaaS Platform</p>

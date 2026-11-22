@@ -28,10 +28,7 @@
         <div class="mk-container mk-header-inner">
             <a href="{{ route('home') }}" class="mk-brand" aria-label="Society Management home">
                 <span class="mk-brand-mark">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/>
-                        <path d="M9 9h1v1H9zM14 9h1v1h-1z"/>
-                    </svg>
+                    <x-brand-mark />
                 </span>
                 <span class="mk-brand-name">Society Management</span>
             </a>
@@ -79,10 +76,7 @@
                 <div>
                     <a href="{{ route('home') }}" class="mk-brand">
                         <span class="mk-brand-mark">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/>
-                                <path d="M9 9h1v1H9zM14 9h1v1h-1z"/>
-                            </svg>
+                            <x-brand-mark />
                         </span>
                         <span class="mk-brand-name">Society Management</span>
                     </a>
