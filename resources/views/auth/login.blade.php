@@ -25,7 +25,7 @@
             <a href="{{ route('home') }}" class="mk-auth-back" aria-label="Back to site"><i class="fas fa-arrow-left" aria-hidden="true"></i><span>Back to site</span></a>
         </header>
 
-        <main class="mk-container mk-auth-grid">
+        <main class="mk-container mk-auth-center">
             <div class="mk-auth-main">
                 <h1 class="mk-display">Welcome <em>back.</em></h1>
 
@@ -69,8 +69,6 @@
                     <p class="mk-auth-alt">New to Society Management? <a href="{{ route('demo.create') }}" class="mk-auth-link">Request a demo</a></p>
                 </div>
             </div>
-
-            @include('marketing.partials.tower', ['floorCount' => 6])
         </main>
     </div>
 
