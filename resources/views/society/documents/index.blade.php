@@ -67,9 +67,9 @@
     <div class="stat-card">
         <div class="stat-icon purple"><i class="fas fa-download"></i></div>
         <div class="stat-info">
-            <div class="stat-label">Downloads (This Month)</div>
+            <div class="stat-label">Total Downloads</div>
             <div class="stat-value">{{ $stats['downloads'] }}</div>
-            <div class="stat-trend" style="color: var(--success);"><span><i class="fas fa-arrow-up"></i> 24% from last month</span></div>
+            <div class="stat-trend" style="color: var(--success);"><span>All time</span></div>
         </div>
     </div>
     <div class="stat-card">

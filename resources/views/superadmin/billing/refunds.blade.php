@@ -27,7 +27,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Refund Amount</div>
             <div class="stat-value">&#8377; {{ number_format($totalRefundAmount) }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 12.5% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -35,7 +34,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Refunds</div>
             <div class="stat-value">{{ $totalRefunds }}</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 5.3% from last month</div>
         </div>
     </div>
     <div class="stat-card">

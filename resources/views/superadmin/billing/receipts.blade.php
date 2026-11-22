@@ -27,7 +27,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Collections (This Month)</div>
             <div class="stat-value">&#8377; {{ number_format($totalCollections) }}</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 10.8% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -35,7 +34,6 @@
         <div class="stat-info">
             <div class="stat-label">Receipts Issued (This Month)</div>
             <div class="stat-value">{{ $receiptsIssued }}</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 10.8% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -43,7 +41,6 @@
         <div class="stat-info">
             <div class="stat-label">Pending Receipts</div>
             <div class="stat-value">{{ $pendingReceipts }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 2 from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -51,7 +48,6 @@
         <div class="stat-info">
             <div class="stat-label">Cancelled Receipts</div>
             <div class="stat-value">{{ $cancelledReceipts }}</div>
-            <div class="stat-trend" style="color: var(--text-muted);">Same as last month</div>
         </div>
     </div>
 </div>

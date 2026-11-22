@@ -41,8 +41,8 @@
     <div>
         {{-- KPI cards --}}
         <div class="stats-grid stats-grid-4">
-            @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'success', 'label' => 'Total Collected (This Month)', 'value' => '₹ '.$inr($kpis['month_collected']), 'trend' => '18.6% vs last month', 'trendType' => 'up'])
-            @include('society.partials.stat-card', ['icon' => 'fa-wallet', 'iconVariant' => 'info', 'label' => 'Total Collected (This Year)', 'value' => '₹ '.$inr($kpis['year_collected']), 'trend' => '22.4% vs last year', 'trendType' => 'up'])
+            @include('society.partials.stat-card', ['icon' => 'fa-indian-rupee-sign', 'iconVariant' => 'success', 'label' => 'Total Collected (This Month)', 'value' => '₹ '.$inr($kpis['month_collected']), 'trend' => $kpis['month_trend'] === null ? 'No collections last month' : abs($kpis['month_trend']).'% vs last month', 'trendType' => ($kpis['month_trend'] ?? 0) < 0 ? 'down' : 'up'])
+            @include('society.partials.stat-card', ['icon' => 'fa-wallet', 'iconVariant' => 'info', 'label' => 'Total Collected (This Year)', 'value' => '₹ '.$inr($kpis['year_collected']), 'trend' => $kpis['year_trend'] === null ? 'No collections last year' : abs($kpis['year_trend']).'% vs last year', 'trendType' => ($kpis['year_trend'] ?? 0) < 0 ? 'down' : 'up'])
             @include('society.partials.stat-card', ['icon' => 'fa-clock', 'iconVariant' => 'warning', 'label' => 'Pending Collections', 'value' => '₹ '.$inr($kpis['pending']), 'trend' => $kpis['pending_sub'], 'trendType' => 'warning'])
             @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'danger', 'label' => 'Overdue Amount', 'value' => '₹ '.$inr($kpis['overdue']), 'trend' => $kpis['overdue_sub'], 'trendType' => 'danger'])
         </div>

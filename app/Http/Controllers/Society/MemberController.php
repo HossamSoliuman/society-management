@@ -33,6 +33,7 @@ class MemberController extends Controller
             'active' => $society->members()->where('status', 'active')->count(),
             'inactive' => $society->members()->where('status', 'inactive')->count(),
             'blocked' => $society->members()->where('status', 'blocked')->count(),
+            'new_this_month' => $society->members()->where('created_at', '>=', now()->startOfMonth())->count(),
         ];
 
         $towers = $society->members()->whereNotNull('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing');

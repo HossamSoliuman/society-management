@@ -27,7 +27,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Outstanding Amount</div>
             <div class="stat-value">&#8377; {{ number_format($totalOutstandingAmount) }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 5.3% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -35,7 +34,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Outstanding Invoices</div>
             <div class="stat-value">{{ $totalOutstandingInvoices }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 8.2% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -43,7 +41,6 @@
         <div class="stat-info">
             <div class="stat-label">Overdue Amount</div>
             <div class="stat-value">&#8377; {{ number_format($overdueAmount) }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 5.3% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -51,7 +48,6 @@
         <div class="stat-info">
             <div class="stat-label">Overdue Invoices</div>
             <div class="stat-value">{{ $overdueInvoices }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 2 from last month</div>
         </div>
     </div>
 </div>

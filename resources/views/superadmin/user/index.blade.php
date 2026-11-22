@@ -25,7 +25,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Users</div>
             <div class="stat-value">{{ $totalUsers }}</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 6.7% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -33,7 +32,6 @@
         <div class="stat-info">
             <div class="stat-label">Active Users</div>
             <div class="stat-value">{{ $activeUsers }}</div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 6.7% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -41,7 +39,6 @@
         <div class="stat-info">
             <div class="stat-label">Inactive Users</div>
             <div class="stat-value">{{ $inactiveUsers }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 2 from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -49,7 +46,6 @@
         <div class="stat-info">
             <div class="stat-label">Suspended Users</div>
             <div class="stat-value">{{ $suspendedUsers }}</div>
-            <div class="stat-trend" style="color: var(--text-muted);">Same as last month</div>
         </div>
     </div>
 </div>

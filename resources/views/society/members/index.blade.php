@@ -45,7 +45,7 @@
 
 {{-- Stats --}}
 <div class="stats-grid">
-    @include('society.partials.stat-card', ['icon' => 'fa-users', 'iconVariant' => 'peach', 'label' => 'Total Members', 'value' => number_format($stats['total']), 'trend' => '8 this month', 'trendType' => 'up'])
+    @include('society.partials.stat-card', ['icon' => 'fa-users', 'iconVariant' => 'peach', 'label' => 'Total Members', 'value' => number_format($stats['total']), 'trend' => number_format($stats['new_this_month']).' this month', 'trendType' => 'up'])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Active Members', 'value' => number_format($stats['active']), 'trend' => $pct($stats['active']).'% of total', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-user-clock', 'iconVariant' => 'warning', 'label' => 'Inactive Members', 'value' => number_format($stats['inactive']), 'trend' => $pct($stats['inactive']).'% of total', 'trendType' => 'warning'])
     @include('society.partials.stat-card', ['icon' => 'fa-user-slash', 'iconVariant' => 'danger', 'label' => 'Blocked Members', 'value' => number_format($stats['blocked']), 'trend' => $pct($stats['blocked']).'% of total', 'trendType' => 'danger'])

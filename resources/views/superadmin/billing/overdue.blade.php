@@ -27,7 +27,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Overdue Amount</div>
             <div class="stat-value">&#8377; {{ number_format($totalOverdueAmount) }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 5.3% from last month</div>
         </div>
     </div>
     <div class="stat-card">
@@ -35,7 +34,6 @@
         <div class="stat-info">
             <div class="stat-label">Total Overdue Invoices</div>
             <div class="stat-value">{{ $totalOverdueInvoices }}</div>
-            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 2 from last month</div>
         </div>
     </div>
     <div class="stat-card">
