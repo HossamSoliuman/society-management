@@ -81,6 +81,78 @@
 
 <div class="card" style="margin-top: 20px;">
     <div class="card-header">
+        <div class="card-title"><i class="fas fa-credit-card" style="color: var(--primary); margin-right: 8px;"></i>Subscription &amp; Billing</div>
+        <a href="{{ route('superadmin.billing.invoices.create') }}" class="btn btn-secondary"><i class="fas fa-file-invoice"></i> Raise Invoice</a>
+    </div>
+    <div class="card-body">
+        <div class="grid-2">
+            <div>
+                <div class="review-row"><span class="review-label">Plan</span><span class="review-value">{{ $society->subscriptionPlan?->name ?? '—' }}</span></div>
+                <div class="review-row"><span class="review-label">Status</span><span class="review-value"><span class="status-badge {{ $society->subscription_status }}">{{ ucwords(str_replace('_', ' ', (string) $society->subscription_status)) }}</span></span></div>
+                <div class="review-row"><span class="review-label">Term</span><span class="review-value">{{ $society->subscription_start_date?->format('d M Y') ?? '—' }} → {{ $society->subscription_end_date?->format('d M Y') ?? '—' }}</span></div>
+                @if($society->subscription_end_date)
+                    <div class="review-row"><span class="review-label">Access Until</span><span class="review-value">{{ $society->subscription_end_date->copy()->addDays((int) $society->grace_period_days)->format('d M Y') }} ({{ (int) $society->grace_period_days }} grace days)</span></div>
+                @endif
+            </div>
+            <div>
+                <div class="review-row"><span class="review-label">Invoices</span><span class="review-value">{{ $society->invoices->count() }}</span></div>
+                <div class="review-row"><span class="review-label">Invoiced</span><span class="review-value">{{ format_inr($society->invoices->sum('total_amount'), 2) }}</span></div>
+                <div class="review-row"><span class="review-label">Outstanding</span><span class="review-value" style="color: var(--warning); font-weight: 700;">{{ format_inr($society->invoices->sum('outstanding_amount'), 2) }}</span></div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Subscription</th><th>Plan</th><th>Start</th><th>End</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @forelse($society->subscriptions->sortByDesc('start_date') as $sub)
+                        <tr>
+                            <td>{{ $sub->subscription_number }}</td>
+                            <td>{{ $sub->plan?->name ?? '—' }}</td>
+                            <td>{{ $sub->start_date?->format('d M Y') }}</td>
+                            <td>{{ $sub->end_date?->format('d M Y') }}</td>
+                            <td><span class="status-badge {{ $sub->status }}">{{ ucwords(str_replace('_', ' ', $sub->status)) }}</span></td>
+                            <td>
+                                @if(in_array($sub->status, ['active', 'expiring_soon', 'expired'], true) && ! $society->subscriptions->contains('renewed_from_id', $sub->id))
+                                    <a href="{{ route('superadmin.subscription.subscriptions.renew', $sub) }}" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Renew</a>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" style="color: var(--text-muted);">No subscriptions yet.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Invoice</th><th>Date</th><th>Due</th><th>Total</th><th>Outstanding</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($society->invoices->sortByDesc('invoice_date')->take(10) as $invoice)
+                        <tr>
+                            <td><a href="{{ route('superadmin.billing.invoices.show', $invoice) }}">{{ $invoice->invoice_number }}</a></td>
+                            <td>{{ $invoice->invoice_date?->format('d M Y') }}</td>
+                            <td>{{ $invoice->due_date?->format('d M Y') }}</td>
+                            <td>{{ format_inr($invoice->total_amount, 2) }}</td>
+                            <td>{{ format_inr($invoice->outstanding_amount, 2) }}</td>
+                            <td><span class="status-badge {{ $invoice->statusBadgeClass() }}">{{ ucwords(str_replace('_', ' ', $invoice->status)) }}</span></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" style="color: var(--text-muted);">No invoices yet.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <div class="card-header">
         <div class="card-title"><i class="fas fa-user-shield" style="color: var(--primary); margin-right: 8px;"></i>Society Administrators</div>
         <a href="{{ route('superadmin.users.create', ['society_id' => $society->id]) }}" class="btn btn-secondary"><i class="fas fa-plus"></i> Add user</a>
     </div>
