@@ -101,6 +101,19 @@
                 <div class="header-search" style="visibility: hidden;"></div>
 
                 <div class="header-actions">
+                    <x-notification-bell>
+                        <x-slot:links>
+                            <a href="{{ route('member.notices.index') }}" class="dropdown-menu-item">
+                                <i class="fas fa-bullhorn"></i>
+                                <span>View all notices</span>
+                            </a>
+                            <a href="{{ route('member.support.index') }}" class="dropdown-menu-item">
+                                <i class="fas fa-headset"></i>
+                                <span>My complaints &amp; requests</span>
+                            </a>
+                        </x-slot:links>
+                    </x-notification-bell>
+
                     <div class="profile-dropdown">
                         <button class="profile-btn">
                             <div class="avatar">
