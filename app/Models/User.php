@@ -47,6 +47,19 @@ class User extends Authenticatable
         return $this->hasOne(Member::class);
     }
 
+    /**
+     * Route name of the panel this user lands on after signing in.
+     */
+    public function homeRouteName(): ?string
+    {
+        return match (true) {
+            $this->hasRole('super_admin') => 'superadmin.dashboard',
+            $this->hasAnyRole(['society_admin', 'manager', 'staff', 'accountant']) => 'society.dashboard',
+            $this->hasRole('member') => 'member.dashboard',
+            default => null,
+        };
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_role');

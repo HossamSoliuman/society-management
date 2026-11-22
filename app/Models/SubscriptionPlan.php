@@ -28,6 +28,18 @@ class SubscriptionPlan extends Model
         'document_management' => ['name' => 'Document Management', 'description' => 'Manage documents & files', 'icon' => 'fa-file-alt', 'color' => 'purple'],
     ];
 
+    /**
+     * Months covered by one payment, keyed by billing_cycle.
+     *
+     * @var array<string, int>
+     */
+    public const CYCLE_MONTHS = ['monthly' => 1, 'quarterly' => 3, 'half_yearly' => 6, 'yearly' => 12];
+
+    /**
+     * Unit limits at or above this are shown as "any number of units".
+     */
+    public const UNLIMITED_UNITS = 9999;
+
     protected $fillable = [
         'name', 'code', 'plan_type', 'description', 'amount', 'max_units',
         'billing_cycle', 'plan_duration', 'trial_period_days', 'badge',
@@ -66,6 +78,41 @@ class SubscriptionPlan extends Model
                 'is_enabled' => in_array($key, $enabledKeys, true),
             ]);
         }
+    }
+
+    /**
+     * Plans without a list price are quoted per society.
+     */
+    public function isCustomPriced(): bool
+    {
+        return (float) $this->amount <= 0;
+    }
+
+    public function hasUnlimitedUnits(): bool
+    {
+        return (int) $this->max_units >= self::UNLIMITED_UNITS;
+    }
+
+    public function cycleSuffix(): string
+    {
+        return match ($this->billing_cycle) {
+            'monthly' => 'month',
+            'quarterly' => 'quarter',
+            'half_yearly' => 'half-year',
+            default => 'year',
+        };
+    }
+
+    /**
+     * Cost per unit per month when the plan is filled to its unit limit.
+     */
+    public function monthlyCostPerUnit(): ?float
+    {
+        if ($this->isCustomPriced() || $this->hasUnlimitedUnits() || (int) $this->max_units < 1) {
+            return null;
+        }
+
+        return (float) $this->amount / (self::CYCLE_MONTHS[$this->billing_cycle] ?? 12) / (int) $this->max_units;
     }
 
     /**

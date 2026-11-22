@@ -6,6 +6,7 @@ use App\Contracts\PaymentGateway;
 use App\Contracts\SmsGateway;
 use App\Models\SecuritySetting;
 use App\Models\SmtpSetting;
+use App\Models\CompanyProfile;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
 use App\Services\Payments\FakeGateway;
@@ -51,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
             if (Auth::check()) {
                 $view->with('authUser', Auth::user());
             }
+        });
+
+        View::composer('marketing.layout', function ($view) {
+            $view->with('company', CompanyProfile::query()->first());
         });
 
         Password::defaults(fn () => Password::min(8));
