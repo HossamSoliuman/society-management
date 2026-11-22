@@ -203,8 +203,15 @@
                 <div>
                     <div style="font-weight: 700; margin-bottom: 4px;">Need immediate help?</div>
                     <div style="margin-bottom: 6px;">For urgent matters, please call or email our support team.</div>
-                    <div><a href="tel:+919876543210" style="color: var(--info); font-weight: 600;">+91 98765 43210</a></div>
-                    <div><a href="mailto:support@society.com" style="color: var(--info); font-weight: 600;">support@society.com</a></div>
+                    @php
+                        $platform = \App\Models\CompanyProfile::first();
+                    @endphp
+                    @if($platform?->phone)
+                        <div><a href="tel:{{ preg_replace('/[^0-9+]/', '', $platform->phone) }}" style="color: var(--info); font-weight: 600;">{{ $platform->phone }}</a></div>
+                    @endif
+                    @if($platform?->email)
+                        <div><a href="mailto:{{ $platform->email }}" style="color: var(--info); font-weight: 600;">{{ $platform->email }}</a></div>
+                    @endif
                 </div>
             </div>
 

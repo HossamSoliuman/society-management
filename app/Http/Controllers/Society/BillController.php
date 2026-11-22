@@ -122,9 +122,18 @@ class BillController extends Controller
             ->values()
             ->all();
 
+        $today = Carbon::today();
+        $defaultMonth = $today->format('F Y');
+        $defaultBillDate = $today->format('d M Y');
+        $defaultDueDate = $today->copy()->addDays((int) ($settings->due_date_days ?: 15))->format('d M Y');
+        $cycleOptions = collect(range(-2, 1))
+            ->map(fn (int $offset) => $today->copy()->startOfMonth()->addMonthsNoOverflow($offset)->format('F Y'))
+            ->all();
+
         return view('society.billing.bills.create', compact(
             'society', 'chargeHeads', 'members', 'units', 'towers', 'floors',
             'paymentModes', 'collectionAccounts', 'defaultLines', 'settings',
+            'defaultMonth', 'defaultBillDate', 'defaultDueDate', 'cycleOptions',
         ));
     }
 
@@ -141,8 +150,8 @@ class BillController extends Controller
             'notes' => ['nullable', 'string'],
             'member_id' => ['nullable', 'integer', Rule::exists('members', 'id')->where('society_id', $society->id)],
             'unit_id' => ['nullable', 'integer', Rule::exists('units', 'id')->where('society_id', $society->id)],
-            'member_name' => ['nullable', 'string', 'max:255'],
-            'flat_number' => ['nullable', 'string', 'max:255'],
+            'member_name' => ['required_without:member_id', 'nullable', 'string', 'max:255'],
+            'flat_number' => ['required_without:member_id', 'nullable', 'string', 'max:255'],
             'tower_wing' => ['nullable', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:255'],
             'items' => ['required', 'array', 'min:1'],

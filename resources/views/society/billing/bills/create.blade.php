@@ -14,6 +14,13 @@
     ])->values();
 
     $subtotal = collect($defaultLines)->sum('amount');
+    $unitOptions = $units->map(fn ($u) => [
+        'id' => $u->id,
+        'number' => $u->unit_number,
+        'building' => $u->building,
+        'floor' => $u->floor,
+    ])->values();
+    $selectedMember = old('member_id') ? $members->firstWhere('id', (int) old('member_id')) : null;
 @endphp
 
 @section('content')
@@ -31,7 +38,6 @@
         </div>
         <div style="display: flex; gap: 8px;">
             <a href="{{ route('society.billing.bills.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to Bills</a>
-            <button type="button" class="btn btn-primary" onclick="previewBill()"><i class="fas fa-eye"></i> Preview Bill</button>
         </div>
     </div>
 </div>
@@ -56,21 +62,21 @@
                         <div class="form-group">
                             <label class="form-label">Bill Month <span class="required">*</span></label>
                             <div class="input-icon-group">
-                                <input type="text" name="bill_month" class="form-control" value="{{ old('bill_month', 'June 2025') }}" required>
+                                <input type="text" name="bill_month" class="form-control" value="{{ old('bill_month', $defaultMonth) }}" required>
                                 <i class="fas fa-calendar"></i>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Bill Date <span class="required">*</span></label>
                             <div class="input-icon-group">
-                                <input type="text" name="bill_date" class="form-control" value="{{ old('bill_date', '30 May 2025') }}" required>
+                                <input type="text" name="bill_date" class="form-control" value="{{ old('bill_date', $defaultBillDate) }}" required>
                                 <i class="fas fa-calendar"></i>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Due Date <span class="required">*</span></label>
                             <div class="input-icon-group">
-                                <input type="text" name="due_date" class="form-control" value="{{ old('due_date', '15 Jun 2025') }}" required>
+                                <input type="text" name="due_date" class="form-control" value="{{ old('due_date', $defaultDueDate) }}" required>
                                 <i class="fas fa-calendar"></i>
                             </div>
                         </div>
@@ -87,8 +93,8 @@
                         <div class="form-group">
                             <label class="form-label">Bill Cycle</label>
                             <select name="bill_cycle" class="form-control">
-                                @foreach(['June 2025', 'May 2025', 'April 2025', 'July 2025'] as $cycle)
-                                    <option value="{{ $cycle }}" {{ old('bill_cycle', 'June 2025') === $cycle ? 'selected' : '' }}>{{ $cycle }}</option>
+                                @foreach($cycleOptions as $cycle)
+                                    <option value="{{ $cycle }}" {{ old('bill_cycle', $defaultMonth) === $cycle ? 'selected' : '' }}>{{ $cycle }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -147,26 +153,26 @@
                     {{-- Selected member chip --}}
                     <input type="hidden" name="member_id" id="member_id" value="{{ old('member_id') }}">
                     <input type="hidden" name="unit_id" id="unit_id" value="{{ old('unit_id') }}">
-                    <input type="hidden" name="member_name" id="member_name" value="{{ old('member_name', 'Mr. Ramesh Sharma') }}">
-                    <input type="hidden" name="flat_number" id="flat_number" value="{{ old('flat_number', 'A-101') }}">
-                    <input type="hidden" name="tower_wing" id="tower_wing" value="{{ old('tower_wing', 'Tower A') }}">
-                    <input type="hidden" name="floor" id="floor" value="{{ old('floor', '1st Floor') }}">
+                    <input type="hidden" name="member_name" id="member_name" value="{{ old('member_name') }}">
+                    <input type="hidden" name="flat_number" id="flat_number" value="{{ old('flat_number') }}">
+                    <input type="hidden" name="tower_wing" id="tower_wing" value="{{ old('tower_wing') }}">
+                    <input type="hidden" name="floor" id="floor" value="{{ old('floor') }}">
 
-                    <div class="member-chip-card" id="memberChip" style="margin-top: 16px;">
+                    <div class="member-chip-card" id="memberChip" style="margin-top: 16px;{{ $selectedMember ? '' : ' display: none;' }}">
                         <div class="member-chip-icon"><i class="fas fa-building"></i></div>
                         <div style="flex: 1;">
                             <div style="display: flex; gap: 40px; align-items: flex-start;">
                                 <div>
-                                    <div style="font-weight: 700; color: var(--text-primary);" id="chipFlat">A-101</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);" id="chipLocation">Tower A, 1st Floor</div>
+                                    <div style="font-weight: 700; color: var(--text-primary);" id="chipFlat">{{ old('flat_number', '—') }}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);" id="chipLocation">{{ collect([old('tower_wing'), old('floor')])->filter()->implode(', ') }}</div>
                                 </div>
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-weight: 700; color: var(--text-primary);" id="chipName">Mr. Ramesh Sharma</span>
-                                        <span class="badge badge-orange" id="chipType">Owner</span>
+                                        <span style="font-weight: 700; color: var(--text-primary);" id="chipName">{{ $selectedMember?->name ?? old('member_name') }}</span>
+                                        <span class="badge badge-orange" id="chipType">{{ $selectedMember?->typeLabel() }}</span>
                                     </div>
-                                    <div style="font-size: 12px; color: var(--primary); margin-top: 2px;" id="chipPhone">9876543210</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);" id="chipEmail">ramesh.sharma@email.com</div>
+                                    <div style="font-size: 12px; color: var(--primary); margin-top: 2px;" id="chipPhone">{{ $selectedMember?->mobile }}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);" id="chipEmail">{{ $selectedMember?->email }}</div>
                                 </div>
                             </div>
                         </div>
@@ -282,21 +288,21 @@
                     <input type="checkbox" class="form-check-input" name="send_email" id="send_email" value="1" checked>
                     <label class="form-check-label" for="send_email" style="display: flex; justify-content: space-between; width: 100%;">
                         <span style="font-weight: 600;">Email</span>
-                        <span style="color: var(--text-secondary);" id="sendEmailValue">ramesh.sharma@email.com</span>
+                        <span style="color: var(--text-secondary);" id="sendEmailValue">{{ $selectedMember?->email ?? '—' }}</span>
                     </label>
                 </div>
                 <div class="form-check" style="margin-bottom: 10px;">
                     <input type="checkbox" class="form-check-input" name="send_sms" id="send_sms" value="1" checked>
                     <label class="form-check-label" for="send_sms" style="display: flex; justify-content: space-between; width: 100%;">
                         <span style="font-weight: 600;">SMS</span>
-                        <span style="color: var(--text-secondary);" id="sendSmsValue">9876543210</span>
+                        <span style="color: var(--text-secondary);" id="sendSmsValue">{{ $selectedMember?->mobile ?? '—' }}</span>
                     </label>
                 </div>
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" name="send_whatsapp" id="send_whatsapp" value="1">
                     <label class="form-check-label" for="send_whatsapp" style="display: flex; justify-content: space-between; width: 100%;">
                         <span style="font-weight: 600;">WhatsApp</span>
-                        <span style="color: var(--text-secondary);" id="sendWaValue">9876543210</span>
+                        <span style="color: var(--text-secondary);" id="sendWaValue">{{ $selectedMember?->mobile ?? '—' }}</span>
                     </label>
                 </div>
             </div>
@@ -313,6 +319,7 @@
 @push('scripts')
 <script>
     const MEMBERS = @json($memberOptions);
+    const UNITS = @json($unitOptions);
     const CHARGE_HEADS = @json($chargeHeads->map(fn ($c) => ['name' => $c->name, 'amount' => (float) $c->default_amount, 'desc' => $c->description])->values());
 
     function numberWords(num) {
@@ -417,13 +424,20 @@
     function addSelectedMember() {
         const id = document.getElementById('filterMember').value;
         const member = MEMBERS.find(m => String(m.id) === String(id));
-        if (!member) return;
+        if (!member) {
+            window.appToast('Select a member to bill.', 'error');
+            return;
+        }
+        const unitNumber = document.getElementById('filterUnit').value || member.flat || '';
+        const unit = UNITS.find(u => String(u.number).toUpperCase() === String(unitNumber).toUpperCase());
         document.getElementById('member_id').value = member.id;
+        document.getElementById('unit_id').value = unit ? unit.id : '';
         document.getElementById('member_name').value = member.name;
-        document.getElementById('flat_number').value = member.flat ?? '';
-        document.getElementById('tower_wing').value = member.tower ?? '';
-        document.getElementById('chipFlat').textContent = member.flat ?? '—';
-        document.getElementById('chipLocation').textContent = member.tower ?? '';
+        document.getElementById('flat_number').value = unit ? unit.number : (member.flat ?? '');
+        document.getElementById('tower_wing').value = unit ? (unit.building ?? '') : (member.tower ?? '');
+        document.getElementById('floor').value = unit ? (unit.floor ?? '') : '';
+        document.getElementById('chipFlat').textContent = document.getElementById('flat_number').value || '—';
+        document.getElementById('chipLocation').textContent = [document.getElementById('tower_wing').value, document.getElementById('floor').value].filter(Boolean).join(', ');
         document.getElementById('chipName').textContent = member.name;
         document.getElementById('chipType').textContent = member.type ?? 'Owner';
         document.getElementById('chipPhone').textContent = member.phone ?? '';
@@ -437,11 +451,6 @@
     function clearMember() {
         ['member_id', 'unit_id', 'member_name', 'flat_number', 'tower_wing', 'floor'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('memberChip').style.display = 'none';
-    }
-
-    function previewBill() {
-        const win = window.open('', '_blank');
-        win.document.write('<p style="font-family: sans-serif; padding: 24px;">Save the bill to view the full printable preview.</p>');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
