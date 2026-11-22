@@ -54,8 +54,8 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        View::composer('marketing.layout', function ($view) {
-            $view->with('company', CompanyProfile::query()->first());
+        View::composer(['marketing.layout', 'marketing.demo'], function ($view) {
+            $view->with('company', once(fn () => CompanyProfile::query()->first()));
         });
 
         Password::defaults(fn () => Password::min(8));

@@ -39,7 +39,7 @@ class StoreDemoRequestRequest extends FormRequest
         return [
             'society_name' => 'society name',
             'units' => 'number of flats',
-            'role' => 'your role',
+            'role' => 'role',
             'phone' => 'phone number',
         ];
     }
