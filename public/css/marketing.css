@@ -281,7 +281,6 @@ button { font: inherit; cursor: pointer; }
     color: var(--glow-soft); padding: 6px 12px; border: 1px solid rgba(255, 226, 163, 0.35); border-radius: 3px;
     text-transform: uppercase; white-space: nowrap;
 }
-.mk-ground { position: absolute; left: -40px; right: -40px; bottom: -14px; height: 14px; background: #121434; border-radius: 2px; }
 
 .mk-collect {
     position: absolute; z-index: 3; left: 0; bottom: 84px; width: 250px;

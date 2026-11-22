@@ -46,7 +46,6 @@
                 </div>
                 <div class="mk-base">
                     <span class="mk-sign">Gulmohar Heights · Wing B</span>
-                    <span class="mk-ground"></span>
                 </div>
             </div>
 
