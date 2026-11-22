@@ -80,10 +80,14 @@
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('society.accounting.transactions') }}">
-                    <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr auto auto; gap: 12px; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto auto; gap: 12px; align-items: end;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Date Range</label>
-                            <input type="text" class="form-control" value="01 May 2025 - 30 May 2025" readonly>
+                            <label class="form-label">From</label>
+                            <input type="date" name="from" value="{{ request('from') }}" class="form-control">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">To</label>
+                            <input type="date" name="to" value="{{ request('to') }}" class="form-control">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Account</label>

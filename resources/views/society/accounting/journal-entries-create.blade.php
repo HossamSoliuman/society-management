@@ -43,7 +43,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Date <span class="required">*</span></label>
-                            <input type="date" name="date" value="{{ old('date', '2025-05-30') }}" class="form-control" required>
+                            <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Narration</label>

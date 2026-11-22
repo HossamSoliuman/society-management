@@ -64,7 +64,7 @@
         </div>
         <div style="font-size: 22px; font-weight: 700;">&#8377; {{ $pl['kpis']['income']['value'] }}</div>
         <div style="font-size: 12px; color: var(--text-muted);">This Period</div>
-        <div class="chg-up" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-up"></i> {{ $pl['kpis']['income']['change'] }} vs Last Period</div>
+        <div class="{{ $pl['kpis']['income']['dir'] === 'up' ? 'chg-up' : 'chg-down' }}" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-{{ $pl['kpis']['income']['dir'] === 'up' ? 'up' : 'down' }}"></i> {{ $pl['kpis']['income']['change'] }} vs Last Period</div>
     </div>
     <div class="kpi-tinted expense">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -73,7 +73,7 @@
         </div>
         <div style="font-size: 22px; font-weight: 700;">&#8377; {{ $pl['kpis']['expenses']['value'] }}</div>
         <div style="font-size: 12px; color: var(--text-muted);">This Period</div>
-        <div class="chg-down" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-down"></i> {{ $pl['kpis']['expenses']['change'] }} vs Last Period</div>
+        <div class="{{ $pl['kpis']['expenses']['dir'] === 'up' ? 'chg-down' : 'chg-up' }}" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-{{ $pl['kpis']['expenses']['dir'] === 'up' ? 'up' : 'down' }}"></i> {{ $pl['kpis']['expenses']['change'] }} vs Last Period</div>
     </div>
     <div class="kpi-tinted profit">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -82,7 +82,7 @@
         </div>
         <div style="font-size: 22px; font-weight: 700;">&#8377; {{ $pl['kpis']['net_profit']['value'] }}</div>
         <div style="font-size: 12px; color: var(--text-muted);">This Period</div>
-        <div class="chg-up" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-up"></i> {{ $pl['kpis']['net_profit']['change'] }} vs Last Period</div>
+        <div class="{{ $pl['kpis']['net_profit']['dir'] === 'up' ? 'chg-up' : 'chg-down' }}" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-{{ $pl['kpis']['net_profit']['dir'] === 'up' ? 'up' : 'down' }}"></i> {{ $pl['kpis']['net_profit']['change'] }} vs Last Period</div>
     </div>
     <div class="kpi-tinted margin">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -91,43 +91,7 @@
         </div>
         <div style="font-size: 22px; font-weight: 700;">{{ $pl['kpis']['margin']['value'] }}</div>
         <div style="font-size: 12px; color: var(--text-muted);">This Period</div>
-        <div class="chg-up" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-up"></i> {{ $pl['kpis']['margin']['change'] }} vs Last Period</div>
-    </div>
-</div>
-
-{{-- Filter bar --}}
-<div class="card">
-    <div class="card-body">
-        <form method="GET" action="{{ route('society.accounting.profit-loss') }}">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto auto; gap: 14px; align-items: end;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">From Date</label>
-                    <input type="date" name="from" value="{{ request('from', '2025-05-01') }}" class="form-control">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">To Date</label>
-                    <input type="date" name="to" value="{{ request('to', '2025-05-30') }}" class="form-control">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Compare With</label>
-                    <select name="compare" class="form-control">
-                        <option>Previous Period</option>
-                        <option>Same Period Last Year</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Account</label>
-                    <select name="account" class="form-control">
-                        <option value="">All Accounts</option>
-                        @foreach($accountsForFilter as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button>
-                <a href="{{ route('society.accounting.profit-loss') }}" class="btn btn-secondary"><i class="fas fa-rotate"></i> Reset</a>
-            </div>
-        </form>
+        <div class="{{ $pl['kpis']['margin']['dir'] === 'up' ? 'chg-up' : 'chg-down' }}" style="font-size: 12px; font-weight: 600; margin-top: 4px;"><i class="fas fa-arrow-{{ $pl['kpis']['margin']['dir'] === 'up' ? 'up' : 'down' }}"></i> {{ $pl['kpis']['margin']['change'] }} vs Last Period</div>
     </div>
 </div>
 
@@ -207,8 +171,8 @@
             <thead>
                 <tr>
                     <th>Particulars</th>
-                    <th class="num">This Period<br><span style="font-weight: 400; text-transform: none;">(01 May - 30 May 2025) (&#8377;)</span></th>
-                    <th class="num">Previous Period<br><span style="font-weight: 400; text-transform: none;">(01 Apr - 30 Apr 2025) (&#8377;)</span></th>
+                    <th class="num">This Period<br><span style="font-weight: 400; text-transform: none;">({{ \Illuminate\Support\Carbon::parse($pl['period']['from'])->format('d M Y') }} - {{ \Illuminate\Support\Carbon::parse($pl['period']['to'])->format('d M Y') }}) (&#8377;)</span></th>
+                    <th class="num">Previous Period<br><span style="font-weight: 400; text-transform: none;">({{ \Illuminate\Support\Carbon::parse($pl['period']['compare_from'])->format('d M Y') }} - {{ \Illuminate\Support\Carbon::parse($pl['period']['compare_to'])->format('d M Y') }}) (&#8377;)</span></th>
                     <th class="num">Change (&#8377;)</th>
                     <th class="num">Change (%)</th>
                 </tr>

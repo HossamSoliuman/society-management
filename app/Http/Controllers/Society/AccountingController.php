@@ -114,6 +114,8 @@ class AccountingController extends Controller
             ->when($request->filled('type'), fn ($q) => $q->where('receipt_type', $request->string('type')))
             ->when($request->filled('account'), fn ($q) => $q->where('account_id', $request->integer('account')))
             ->when($request->filled('location'), fn ($q) => $q->where('location', $request->string('location')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('date', '>=', Carbon::parse($request->string('from'))))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('date', '<=', Carbon::parse($request->string('to'))))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
                 $q->where(function ($sub) use ($term) {
@@ -391,7 +393,6 @@ class AccountingController extends Controller
         return view('society.accounting.profit-loss', [
             'active' => 'profit-loss',
             'pl' => $this->accounting->profitAndLoss($society, $from, $to, $compareFrom, $compareTo),
-            'accountsForFilter' => $this->detailAccounts($society),
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
         ]);

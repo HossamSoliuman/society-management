@@ -43,7 +43,7 @@
     <div>
         <div class="card">
             <div class="card-header">
-                <div class="card-title">Trial Balance <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">As on 30 May 2025</span></div>
+                <div class="card-title">Trial Balance <span style="color: var(--text-muted); font-weight: 400; font-size: 13px;">As on {{ \Illuminate\Support\Carbon::parse($asOn)->format('d M Y') }}</span></div>
             </div>
             <div class="card-body" style="padding: 0;">
                 <div class="table-responsive">
