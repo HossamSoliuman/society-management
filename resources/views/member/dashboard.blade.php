@@ -36,7 +36,7 @@
                     <div class="detail-row" style="align-items: center;">
                         <div class="detail-row-icon"><i class="fas fa-file-invoice"></i></div>
                         <div class="detail-row-label">
-                            <a href="{{ route('member.bills.show', $bill) }}">{{ $bill->bill_number }}</a>
+                            <a href="{{ route('member.bills.show', $bill) }}" style="font-weight: 600; color: var(--text-primary); text-decoration: none;">{{ $bill->bill_number }}</a>
                             <div style="font-size: 12px; color: var(--text-muted);">{{ $bill->bill_month }} · due {{ $bill->due_date?->format('d M Y') }}</div>
                         </div>
                         <div class="detail-row-value" style="text-align: right;">
@@ -81,7 +81,7 @@
             <div class="card-body">
                 @forelse($notices as $notice)
                     <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <a href="{{ route('member.notices.show', $notice) }}" style="font-weight: 600; font-size: 13px;">{{ $notice->title }}</a>
+                        <a href="{{ route('member.notices.show', $notice) }}" style="font-weight: 600; font-size: 13px; color: var(--text-primary); text-decoration: none;">{{ $notice->title }}</a>
                         <div style="font-size: 12px; color: var(--text-muted);">{{ $notice->publish_at?->format('d M Y') }} · <span class="badge {{ $notice->priorityBadgeClass() }}">{{ ucfirst($notice->priority) }}</span></div>
                     </div>
                 @empty
