@@ -199,9 +199,8 @@
                                             @if($expense->payment_status === 'pending')
                                                 <a href="{{ route('society.expenses.edit', $expense) }}" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></a>
                                             @else
-                                                <a href="#" class="action-btn" title="Print"><i class="fas fa-print"></i></a>
+                                                
                                             @endif
-                                            <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                         </div>
                                     </td>
                                 </tr>

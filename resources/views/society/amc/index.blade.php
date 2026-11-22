@@ -160,7 +160,6 @@
                         <th class="num" style="text-align: right;">Amount (&#8377;)</th>
                         <th>Status</th>
                         <th>Days Left</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -189,17 +188,10 @@
                             <td style="text-align: right;">{{ number_format((float) $contract->amount, 0) }}</td>
                             <td><span class="badge {{ $contract->statusBadgeClass() }}">{{ ucwords(str_replace('_', ' ', $contract->status)) }}</span></td>
                             <td style="font-weight: 600; color: {{ $daysColor }}; white-space: nowrap;">{{ $daysLeft }} days</td>
-                            <td>
-                                <div style="display: inline-flex; gap: 6px;">
-                                    <button type="button" class="action-btn" title="View"><i class="fas fa-eye"></i></button>
-                                    <button type="button" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></button>
-                                    <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11">
+                            <td colspan="10">
                                 <div class="empty-state">
                                     <div class="empty-state-icon"><i class="fas fa-file-contract"></i></div>
                                     <div class="empty-state-title">No AMC contracts found</div>

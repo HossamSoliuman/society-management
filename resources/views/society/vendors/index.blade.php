@@ -108,7 +108,7 @@
                         <option value="rejected" {{ request('approval_status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-secondary" style="color: var(--info); border-color: var(--info);"><i class="fas fa-sliders"></i> More Filters</button>
+                
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
                 <a href="{{ route('society.vendors.index') }}" class="btn btn-secondary"><i class="fas fa-rotate"></i> Reset</a>
@@ -124,7 +124,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
             <div class="section-title" style="font-size: 16px; margin-bottom: 0;">Vendors List</div>
             <div style="display: inline-flex; gap: 10px;">
-                <button type="button" class="btn btn-secondary btn-sm"><i class="fas fa-table-columns"></i> Columns</button>
+                
             </div>
         </div>
 
@@ -169,7 +169,6 @@
                                 <div style="display: inline-flex; gap: 6px;">
                                     <a href="{{ route('society.vendors.edit', $vendor) }}" class="action-btn" title="View"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('society.vendors.edit', $vendor) }}" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></a>
-                                    <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                 </div>
                             </td>
                         </tr>

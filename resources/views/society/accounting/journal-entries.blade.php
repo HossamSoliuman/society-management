@@ -100,7 +100,6 @@
                                     <td>
                                         <div style="display: inline-flex; gap: 6px;">
                                             <a href="{{ route('society.accounting.journal-entries') }}" class="action-btn view" title="View"><i class="fas fa-eye"></i></a>
-                                            <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                         </div>
                                     </td>
                                 </tr>

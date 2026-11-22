@@ -117,15 +117,6 @@
                 entries
             </div>
             <div class="action-toolbar-right">
-                <div class="dropdown">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle"><i class="fas fa-layer-group"></i> Bulk Actions <i class="fas fa-chevron-down" style="font-size: 9px;"></i></button>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item"><i class="fas fa-circle-check"></i> Mark as Paid</a>
-                        <a href="#" class="dropdown-item"><i class="fas fa-bell"></i> Send Reminder</a>
-                        <a href="#" class="dropdown-item" style="color: var(--danger);"><i class="fas fa-trash"></i> Delete</a>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-outline-secondary btn-icon"><i class="fas fa-gear"></i></button>
             </div>
         </div>
 

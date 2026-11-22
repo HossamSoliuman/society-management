@@ -160,7 +160,6 @@
                                         <div style="display: inline-flex; gap: 6px;">
                                             <a href="{{ route('society.accounting.receipts') }}" class="action-btn view" title="View"><i class="fas fa-eye"></i></a>
                                             <a href="{{ route('society.accounting.receipts') }}" class="action-btn" title="Print"><i class="fas fa-print"></i></a>
-                                            <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                         </div>
                                     </td>
                                 </tr>

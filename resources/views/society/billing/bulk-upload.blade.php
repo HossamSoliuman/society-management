@@ -189,8 +189,6 @@
                         <td>@include('society.partials.status-badge', ['class' => $upload->statusBadgeClass(), 'label' => ucfirst($upload->status)])</td>
                         <td>
                             <div style="display: flex; gap: 6px;">
-                                <button class="action-btn view"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>

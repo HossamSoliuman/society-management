@@ -97,7 +97,6 @@
                         <th>Assets Covered</th>
                         <th>Status</th>
                         <th>Created On</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,16 +113,10 @@
                             <td>{{ $category->assets_covered ?? $category->contracts_count }}</td>
                             <td><span class="badge {{ $category->statusBadgeClass() }}">{{ ucfirst($category->status) }}</span></td>
                             <td style="white-space: nowrap;">{{ $category->created_at?->format('d M Y') }}</td>
-                            <td>
-                                <div style="display: inline-flex; gap: 6px;">
-                                    <button type="button" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></button>
-                                    <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="6">
                                 <div class="empty-state">
                                     <div class="empty-state-icon"><i class="fas fa-table-cells-large"></i></div>
                                     <div class="empty-state-title">No categories found</div>

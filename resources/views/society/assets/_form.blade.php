@@ -230,7 +230,6 @@
                         <label class="form-label">Asset Tags / QR Code</label>
                         <div style="display: flex; gap: 12px;">
                             <input type="text" name="qr_code" value="{{ $val('qr_code') }}" class="form-control" placeholder="Enter or scan asset QR code">
-                            <button type="button" class="btn btn-secondary btn-icon" title="Scan"><i class="fas fa-qrcode"></i></button>
                         </div>
                     </div>
 

@@ -168,7 +168,7 @@
                                     <td style="text-align: right;">{{ (float) $txn->debit > 0 ? number_format((float) $txn->debit, 2) : '—' }}</td>
                                     <td style="text-align: right;">{{ (float) $txn->credit > 0 ? number_format((float) $txn->credit, 2) : '—' }}</td>
                                     <td style="text-align: right; font-weight: 600;">{{ number_format((float) $txn->running_balance, 2) }}</td>
-                                    <td><button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button></td>
+                                    <td></td>
                                 </tr>
                             @empty
                                 <tr>

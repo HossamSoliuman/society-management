@@ -165,7 +165,6 @@
                                 <div style="display: flex; gap: 6px;">
                                     <a href="{{ route('society.units.show', $unit) }}" class="action-btn view"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('society.units.edit', $unit) }}" class="action-btn edit"><i class="fas fa-pencil"></i></a>
-                                    <button class="action-btn"><i class="fas fa-ellipsis-vertical"></i></button>
                                 </div>
                             </td>
                         </tr>

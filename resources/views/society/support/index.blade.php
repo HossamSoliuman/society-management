@@ -168,7 +168,6 @@
                                     <td>
                                         <div style="display: inline-flex; gap: 6px;">
                                             <a href="{{ route('society.support.show', $request) }}" class="action-btn view" title="View"><i class="fas fa-eye"></i></a>
-                                            <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                         </div>
                                     </td>
                                 </tr>

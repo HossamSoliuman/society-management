@@ -80,7 +80,6 @@
                 entries
             </div>
             <div class="action-toolbar-right">
-                <button type="button" class="btn btn-outline-secondary btn-icon"><i class="fas fa-gear"></i></button>
             </div>
         </div>
 

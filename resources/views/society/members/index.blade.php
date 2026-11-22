@@ -104,14 +104,6 @@
     </div>
 </form>
 
-{{-- Table toolbar --}}
-<div class="action-toolbar" style="justify-content: flex-end;">
-    <div class="action-toolbar-right">
-        <button class="action-btn view" style="border-color: var(--primary); color: var(--primary);"><i class="fas fa-list"></i></button>
-        <button class="action-btn"><i class="fas fa-table-cells-large"></i></button>
-        <button class="action-btn"><i class="fas fa-gear"></i></button>
-    </div>
-</div>
 
 {{-- Members table --}}
 <div class="card">
@@ -159,7 +151,6 @@
                                 <div style="display: flex; gap: 6px;">
                                     <a href="{{ route('society.members.show', $member) }}" class="action-btn view"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('society.members.edit', $member) }}" class="action-btn edit"><i class="fas fa-pencil"></i></a>
-                                    <button class="action-btn"><i class="fas fa-ellipsis-vertical"></i></button>
                                 </div>
                             </td>
                         </tr>

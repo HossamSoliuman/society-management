@@ -161,7 +161,6 @@
                                         <div style="display: inline-flex; gap: 6px;">
                                             <a href="{{ route('society.assets.edit', $asset) }}" class="action-btn view" title="View"><i class="fas fa-eye"></i></a>
                                             <a href="{{ route('society.assets.edit', $asset) }}" class="action-btn edit" title="Edit" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-pencil"></i></a>
-                                            <button type="button" class="action-btn" title="More"><i class="fas fa-ellipsis-vertical"></i></button>
                                         </div>
                                     </td>
                                 </tr>
