@@ -9,7 +9,7 @@
      * @var array $expenseForOptions
      */
     $isEdit = ($mode ?? 'create') === 'edit';
-    $dateValue = old('expense_date', optional($expense?->expense_date)->format('Y-m-d') ?? '2024-05-31');
+    $dateValue = old('expense_date', optional($expense?->expense_date)->format('Y-m-d') ?? now()->toDateString());
     $billDateValue = old('bill_date', optional($expense?->bill_date)->format('Y-m-d'));
     $statusValue = old('payment_status', $expense?->payment_status ?? 'paid');
     $descriptionValue = old('description', $expense?->description);

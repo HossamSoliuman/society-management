@@ -83,11 +83,11 @@
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 16px;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">From Date</label>
-                            <input type="date" name="from" value="{{ request('from', '2024-05-01') }}" class="form-control">
+                            <input type="date" name="from" value="{{ request('from') }}" class="form-control">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">To Date</label>
-                            <input type="date" name="to" value="{{ request('to', '2024-05-31') }}" class="form-control">
+                            <input type="date" name="to" value="{{ request('to') }}" class="form-control">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Category</label>
