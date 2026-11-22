@@ -18,19 +18,19 @@
     ])->all();
     $subtotal = collect($items)->sum('amount');
     $bill = [
-        'number' => 'MB-2025-000156',
-        'date' => '30 May 2025',
-        'due_date' => '15 Jun 2025',
-        'to_name' => 'Mr. Ramesh Sharma',
+        'number' => 'MB-'.now()->format('Y').'-000001',
+        'date' => now()->format('d M Y'),
+        'due_date' => now()->addDays(15)->format('d M Y'),
+        'to_name' => 'Sample Resident',
         'to_flat' => 'A-101, Tower A, 1st Floor',
-        'month' => 'June 2025',
+        'month' => now()->format('F Y'),
         'type' => 'Monthly Maintenance',
-        'cycle' => 'June 2025',
+        'cycle' => now()->format('F Y'),
         'items' => $items,
         'subtotal' => $subtotal,
         'total' => $subtotal,
         'total_payable' => $subtotal,
-        'upi_id' => 'greenview@sbi',
+        'upi_id' => $settings->upi_id ?: null,
     ];
     $design = $settings;
 @endphp
@@ -91,7 +91,6 @@
                         <div class="logo-preview">
                             <span style="color: #16a34a; font-weight: 700; letter-spacing: 1px;"><i class="fas fa-building"></i> {{ strtoupper($settings->society_name ?: 'Green View Residency') }}</span>
                         </div>
-                        <button type="button" class="btn btn-outline-secondary"><i class="fas fa-upload"></i> Change Logo</button>
                     </div>
                     <div class="form-text">Recommended size: 250 x 80px</div>
                 </div>
@@ -197,7 +196,6 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div class="card-title" style="font-size: 16px;">Preview</div>
                 <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Download Sample</button>
                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()"><i class="fas fa-rotate"></i> Reset to Default</button>
                 </div>
             </div>

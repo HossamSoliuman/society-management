@@ -23,7 +23,6 @@
                 <span>Taxes</span>
             </div>
         </div>
-        <button type="button" class="btn btn-primary"><i class="fas fa-save"></i> Save Tax Settings</button>
     </div>
 </div>
 
@@ -34,47 +33,10 @@
     @include('society.partials.stat-card', ['icon' => 'fa-file-invoice', 'iconVariant' => 'purple', 'label' => 'Total Taxes', 'value' => number_format($stats['total']), 'trend' => 'Configured Taxes', 'trendType' => 'muted'])
     @include('society.partials.stat-card', ['icon' => 'fa-circle-check', 'iconVariant' => 'success', 'label' => 'Active Taxes', 'value' => number_format($stats['active']), 'trend' => $activePct.'% of total', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-percent', 'iconVariant' => 'danger', 'label' => 'Total Tax Rate', 'value' => number_format($stats['total_rate'], 2).'%', 'trend' => 'Overall Tax Percentage', 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-calendar-days', 'iconVariant' => 'info', 'label' => 'Last Updated', 'value' => $lastUpdated, 'trend' => 'By Super Admin', 'trendType' => 'muted'])
+    @include('society.partials.stat-card', ['icon' => 'fa-calendar-days', 'iconVariant' => 'info', 'label' => 'Last Updated', 'value' => $lastUpdated, 'trend' => 'Most recent tax change', 'trendType' => 'muted'])
 </div>
 
-<div class="settings-2col">
-    {{-- Tax Settings --}}
-    <div class="card">
-        <div class="card-body">
-            <div class="card-title" style="font-size: 16px;">Tax Settings</div>
-            <div class="card-subtitle">Configure and manage taxes that will be applied on maintenance bills.</div>
-
-            <div class="setting-toggle-row">
-                <div class="setting-text">
-                    <div class="label">Enable Taxes</div>
-                    <div class="help">Taxes will be applied on bill charges</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="form-group" style="margin-top: 16px;">
-                <label class="form-check">
-                    <input type="radio" name="apply_scope" class="form-check-input" checked>
-                    <span class="form-check-label">On Total Bill Amount (Including Other Charges)</span>
-                </label>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Rounding Method</label>
-                <select class="form-control">
-                    <option>Round Off to Nearest Rupee</option>
-                    <option>Round Up</option>
-                    <option>Round Down</option>
-                    <option>No Rounding</option>
-                </select>
-                <div class="form-text">Select how tax amount should be rounded off</div>
-            </div>
-        </div>
-    </div>
-
+<div>
     {{-- Tax List --}}
     <div class="card">
         <div class="card-body">
