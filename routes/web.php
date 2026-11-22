@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\JoinRequestController;
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\Member\AmenityController as MemberAmenityController;
 use App\Http\Controllers\Member\AnnouncementController as MemberAnnouncementController;
 use App\Http\Controllers\Member\BillController as MemberBillController;
@@ -81,9 +82,12 @@ use App\Http\Controllers\SuperAdmin\TermsConditionController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// Public marketing site.
+Route::get('/', [MarketingController::class, 'home'])->name('home');
+Route::get('/features', [MarketingController::class, 'features'])->name('features');
+Route::get('/pricing', [MarketingController::class, 'pricing'])->name('pricing');
+Route::get('/request-demo', [MarketingController::class, 'demo'])->name('demo.create');
+Route::post('/request-demo', [MarketingController::class, 'storeDemo'])->middleware('throttle:5,1')->name('demo.store');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:20,1');
