@@ -19,6 +19,7 @@ Schedule::command('bills:apply-late-fees')->dailyAt('01:00');
 Schedule::command('bills:send-reminders')->dailyAt('09:00');
 Schedule::command('amc:send-expiry-alerts')->dailyAt('08:30');
 Schedule::command('tenants:send-agreement-alerts')->dailyAt('08:40');
+Schedule::command('numbering:roll-financial-year')->dailyAt('00:05');
 
 // Backups follow the super-admin Backup Settings row (frequency and time of day).
 try {
