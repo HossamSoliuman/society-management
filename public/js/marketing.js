@@ -23,6 +23,16 @@
         }
     }
 
+    /* Demo form: after a submit, bring the first invalid field or the confirmation into view. */
+    var firstInvalid = document.querySelector('.mk-form-card .is-invalid');
+    var success = document.querySelector('.mk-success');
+    if (firstInvalid) {
+        firstInvalid.focus({ preventScroll: true });
+        firstInvalid.scrollIntoView({ block: 'center' });
+    } else if (success && window.innerWidth < 1080) {
+        success.scrollIntoView({ block: 'center' });
+    }
+
     /* Role tabs. */
     document.querySelectorAll('[data-tabs]').forEach(function (group) {
         var tabs = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));

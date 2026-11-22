@@ -195,16 +195,25 @@ button { font: inherit; cursor: pointer; }
 .mk-page-hero .mk-lead { margin-top: 20px; }
 .mk-page-hero::after {
     /* distant skyline along the bottom edge */
-    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; z-index: -1;
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 64px; z-index: -1;
     background:
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 4% 100% / 90px 34px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 12% 100% / 60px 52px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 19% 100% / 120px 24px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 52% 100% / 70px 44px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 61% 100% / 140px 28px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 83% 100% / 80px 50px no-repeat,
-        linear-gradient(var(--dusk-900), var(--dusk-900)) 93% 100% / 110px 30px no-repeat;
-    opacity: 0.55;
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 1% 100% / 70px 30px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 6% 100% / 46px 54px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 10% 100% / 110px 22px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 17% 100% / 60px 40px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 23% 100% / 90px 30px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 30% 100% / 40px 62px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 35% 100% / 120px 24px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 44% 100% / 64px 46px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 51% 100% / 86px 34px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 58% 100% / 48px 58px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 64% 100% / 130px 26px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 72% 100% / 70px 44px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 79% 100% / 54px 60px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 85% 100% / 100px 28px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 91% 100% / 60px 48px no-repeat,
+        linear-gradient(var(--dusk-900), var(--dusk-900)) 97% 100% / 90px 32px no-repeat;
+    opacity: 0.7;
 }
 
 /* ---------- Signature: the tower ---------- */
@@ -427,12 +436,12 @@ button { font: inherit; cursor: pointer; }
 .mk-price { margin-top: 22px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
 .mk-price strong {
     font-family: var(--font-display); font-weight: 800; font-size: 2.1rem; line-height: 1; color: var(--ink);
-    font-variation-settings: 'wdth' 106; font-stretch: 106%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+    font-variation-settings: 'wdth' 100; font-stretch: 100%; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
 }
 .mk-plan.is-featured .mk-price strong { color: #fff; }
-.mk-price span { color: var(--muted); font-size: 0.95rem; }
+.mk-price span { color: var(--muted); font-size: 0.95rem; white-space: nowrap; }
 .mk-plan.is-featured .mk-price span { color: var(--on-dusk-muted); }
-.mk-per-flat { margin-top: 8px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--paid); font-weight: 600; }
+.mk-per-flat { margin-top: 8px; font-size: 0.86rem; color: var(--paid); font-weight: 650; }
 .mk-plan.is-featured .mk-per-flat { color: var(--glow); }
 .mk-plan-limit { margin: 22px 0; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-weight: 600; color: var(--ink); display: flex; gap: 10px; align-items: center; }
 .mk-plan-limit i { color: var(--brand); }
@@ -501,6 +510,7 @@ button { font: inherit; cursor: pointer; }
 .mk-area-intro { position: sticky; top: calc(var(--header-h) + 32px); }
 .mk-area-intro .mk-label { display: block; margin-bottom: 14px; }
 .mk-area-intro p { margin-top: 16px; color: var(--muted); }
+.mk-area-intro .mk-h2 { font-size: clamp(1.7rem, 2.6vw, 2.3rem); }
 .mk-area-shot { margin-bottom: 32px; }
 .mk-caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 32px; list-style: none; }
 .mk-caps li { display: flex; gap: 14px; align-items: flex-start; }
@@ -525,7 +535,7 @@ button { font: inherit; cursor: pointer; }
     background: var(--surface); color: var(--ink-2); border-radius: var(--radius-lg); padding: 36px;
     box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5);
 }
-.mk-form-card .mk-h3 { font-size: 1.4rem; margin-bottom: 24px; }
+.mk-form-card .mk-h3 { font-size: 1.4rem; margin-bottom: 24px; color: var(--ink); }
 .mk-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .mk-field { display: flex; flex-direction: column; gap: 7px; }
 .mk-field.is-wide { grid-column: 1 / -1; }
@@ -549,6 +559,8 @@ select.mk-input { appearance: none; background-image: linear-gradient(45deg, tra
 .mk-success-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 20px; display: grid; place-items: center; background: #DDF5EA; color: var(--paid); font-size: 1.5rem; }
 .mk-success p { margin-top: 12px; color: var(--muted); }
 .mk-success .mk-hero-actions { justify-content: center; margin-top: 28px; }
+.on-dusk .mk-form-card .mk-btn-ghost { color: var(--ink); background: var(--surface); border-color: var(--line); }
+.on-dusk .mk-form-card .mk-btn-ghost:hover { border-color: var(--ink); }
 
 .mk-alert { padding: 12px 16px; border-radius: 11px; background: #FEF2F2; color: #991B1B; font-size: 0.93rem; margin-bottom: 20px; border: 1px solid #FECACA; }
 
