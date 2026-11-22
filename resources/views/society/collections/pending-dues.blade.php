@@ -52,17 +52,30 @@
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('society.collections.pending-dues') }}">
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 16px;">
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Building</label><select class="form-control"><option>All Buildings</option></select></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Wing / Block</label><select class="form-control"><option>All Wings</option></select></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Floor</label><select class="form-control"><option>All Floors</option></select></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Unit Type</label><select class="form-control"><option>All Types</option></select></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Status</label><select class="form-control"><option>All Status</option></select></div>
+                    <input type="hidden" name="bucket" value="{{ $bucket }}">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Building / Wing</label>
+                            <select name="tower" class="form-control">
+                                <option value="">All Buildings</option>
+                                @foreach($towers as $tower)
+                                    <option value="{{ $tower }}" @selected(request('tower') === $tower)>{{ $tower }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-control">
+                                <option value="">All Status</option>
+                                @foreach(['pending' => 'Pending', 'partial' => 'Partially Paid', 'overdue' => 'Overdue'] as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Due From</label><input type="date" name="from" value="{{ request('from') }}" class="form-control"></div>
+                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Due To</label><input type="date" name="to" value="{{ request('to') }}" class="form-control"></div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 2fr auto auto; gap: 16px; align-items: end;">
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Due Date</label><input type="text" class="form-control" placeholder="Select date range"></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Dues Aging</label><select class="form-control"><option>All</option></select></div>
-                        <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Member Type</label><select class="form-control"><option>All</option></select></div>
+                    <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: end;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Search</label>
                             <div class="header-search" style="max-width: none;">
@@ -82,7 +95,7 @@
             <div class="card-body">
                 <div class="tab-pills">
                     @foreach($agingTabs as $key => $label)
-                        <a href="{{ route('society.collections.pending-dues', ['bucket' => $key]) }}" class="tab-pill {{ $bucket === $key ? 'active' : '' }}">{{ $label }}</a>
+                        <a href="{{ route('society.collections.pending-dues', array_merge(request()->except(['bucket', 'page']), ['bucket' => $key])) }}" class="tab-pill {{ $bucket === $key ? 'active' : '' }}">{{ $label }}</a>
                     @endforeach
                 </div>
 
@@ -122,15 +135,17 @@
                                     <td style="text-align: right; font-weight: 600;">{{ number_format($row['total_due'], 2) }}</td>
                                     <td style="text-align: right; font-weight: 600; color: {{ $row['paid'] > 0 ? 'var(--success)' : 'var(--text-muted)' }};">{{ number_format($row['paid'], 2) }}</td>
                                     <td style="text-align: right; font-weight: 700; color: var(--danger);">{{ number_format($row['balance'], 2) }}</td>
-                                    <td style="{{ $row['days_overdue'] > 0 ? 'color: var(--danger); font-weight: 700;' : 'color: var(--text-muted);' }}">{{ $row['days_overdue'] }}</td>
+                                    <td style="{{ $row['days_overdue'] > 0 ? 'color: var(--danger); font-weight: 700;' : 'color: var(--text-muted);' }}">{{ max(0, $row['days_overdue']) }}</td>
                                     <td>
-                                        @if($row['days_overdue'] === 0)
+                                        @if($row['days_overdue'] < 0)
+                                            <span class="status-badge pending">Due in {{ abs($row['days_overdue']) }} {{ \Illuminate\Support\Str::plural('day', abs($row['days_overdue'])) }}</span>
+                                        @elseif($row['days_overdue'] === 0)
                                             <span class="status-badge due-today">Due Today</span>
                                         @else
                                             <span class="status-badge overdue">{{ $row['days_overdue'] }} Days Overdue</span>
                                         @endif
                                     </td>
-                                    <td><a href="#" class="action-btn view" title="View"><i class="fas fa-eye"></i></a></td>
+                                    <td><a href="{{ route('society.billing.bills.show', $row['id']) }}" class="action-btn view" title="View bill"><i class="fas fa-eye"></i></a></td>
                                 </tr>
                             @empty
                                 <tr>
@@ -147,17 +162,7 @@
                     </table>
                 </div>
 
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">Showing 1 to {{ $rows->count() }} of {{ $counts['all'] }} entries</div>
-                    <div class="pagination">
-                        <span class="page-link disabled"><i class="fas fa-angles-left"></i></span>
-                        <span class="page-link active">1</span>
-                        <a href="#" class="page-link">2</a>
-                        <a href="#" class="page-link">3</a>
-                        <span class="page-link disabled">&hellip;</span>
-                        <a href="#" class="page-link"><i class="fas fa-angles-right"></i></a>
-                    </div>
-                </div>
+                @include('society.partials.pagination', ['items' => $rows, 'firstLast' => false, 'side' => 2, 'unit' => 'dues'])
             </div>
         </div>
     </div>
@@ -191,17 +196,17 @@
                         <span class="ql-icon"><i class="fas fa-money-bill-wave"></i></span>
                         <span><span class="ql-title">Record Payment</span><br><span class="ql-sub">Add new payment</span></span>
                     </a>
-                    <a href="#" class="quick-link-item">
+                    <a href="{{ route('society.billing.settings.notifications') }}" class="quick-link-item">
                         <span class="ql-icon"><i class="fas fa-bell"></i></span>
-                        <span><span class="ql-title">Send Reminder</span><br><span class="ql-sub">Send payment reminders</span></span>
+                        <span><span class="ql-title">Reminder Settings</span><br><span class="ql-sub">When dues reminders go out</span></span>
                     </a>
-                    <a href="#" class="quick-link-item">
+                    <a href="{{ route('society.reports.show', 'defaulter') }}" class="quick-link-item">
                         <span class="ql-icon"><i class="fas fa-file-arrow-down"></i></span>
-                        <span><span class="ql-title">Dues Report</span><br><span class="ql-sub">Download dues report</span></span>
+                        <span><span class="ql-title">Defaulter Report</span><br><span class="ql-sub">Excel or PDF of all dues</span></span>
                     </a>
-                    <a href="#" class="quick-link-item">
+                    <a href="{{ route('society.collections.pending-dues', ['bucket' => '90+']) }}" class="quick-link-item">
                         <span class="ql-icon"><i class="fas fa-list-check"></i></span>
-                        <span><span class="ql-title">Follow Up List</span><br><span class="ql-sub">View follow up list</span></span>
+                        <span><span class="ql-title">Follow Up List</span><br><span class="ql-sub">Dues older than 90 days</span></span>
                     </a>
                 </div>
             </div>

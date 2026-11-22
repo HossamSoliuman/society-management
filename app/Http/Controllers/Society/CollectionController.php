@@ -207,7 +207,11 @@ class CollectionController extends Controller
         $base = MaintenanceBill::query()
             ->forSociety($society)
             ->whereIn('status', ['pending', 'partial', 'overdue'])
-            ->where('outstanding_amount', '>', 0);
+            ->where('outstanding_amount', '>', 0)
+            ->when($request->filled('tower'), fn ($q) => $q->where('tower_wing', $request->string('tower')))
+            ->when(in_array($request->string('status')->toString(), ['pending', 'partial', 'overdue'], true), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('due_date', '>=', Carbon::parse($request->string('from'))))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('due_date', '<=', Carbon::parse($request->string('to'))));
 
         $counts = ['all' => (clone $base)->count()];
         foreach (self::BUCKETS as $key => [$from, $to]) {
@@ -230,7 +234,8 @@ class CollectionController extends Controller
             ->paginate(10)
             ->withQueryString()
             ->through(function (MaintenanceBill $bill) {
-                $days = max(0, (int) $bill->due_date->diffInDays(Carbon::today(), false));
+                // Negative for bills that are not due yet.
+                $days = (int) $bill->due_date->copy()->startOfDay()->diffInDays(Carbon::today(), false);
 
                 return [
                     'id' => $bill->id,
@@ -244,7 +249,7 @@ class CollectionController extends Controller
                     'paid' => (float) $bill->collected_amount,
                     'balance' => (float) $bill->outstanding_amount,
                     'days_overdue' => $days,
-                    'bucket' => $this->bucketFor($days),
+                    'bucket' => $this->bucketFor(max(0, $days)),
                 ];
             });
 
@@ -255,6 +260,7 @@ class CollectionController extends Controller
             'counts' => $counts,
             'kpis' => $this->pendingDuesKpis($society, clone $base),
             'aging' => $this->duesAgingDonut(clone $base),
+            'towers' => MaintenanceBill::query()->forSociety($society)->whereNotNull('tower_wing')->distinct()->orderBy('tower_wing')->pluck('tower_wing'),
         ]);
     }
 
