@@ -53,7 +53,7 @@
                         <td style="font-size: 12px;">{{ $type->created_at->format('d M Y') }}</td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="action-btn edit"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="action-btn edit" title="Edit" data-master-edit="addSocietyType" data-url="{{ route('superadmin.masters.society-types.update', $type) }}" data-name="{{ $type->name }}" data-description="{{ $type->description }}" data-status="{{ $type->status }}"><i class="fas fa-pen"></i></button>
                                 <form action="{{ route('superadmin.masters.society-types.destroy', $type) }}" method="POST" style="display: inline;" data-confirm="Delete this type?">
                                     @csrf
                                     @method('DELETE')
@@ -133,7 +133,7 @@
                         <td style="font-size: 12px;">{{ $type->created_at->format('d M Y') }}</td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="action-btn edit"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="action-btn edit" title="Edit" data-master-edit="addUnitType" data-url="{{ route('superadmin.masters.unit-types.update', $type) }}" data-name="{{ $type->name }}" data-description="{{ $type->description }}" data-status="{{ $type->status }}"><i class="fas fa-pen"></i></button>
                                 <form action="{{ route('superadmin.masters.unit-types.destroy', $type) }}" method="POST" style="display: inline;" data-confirm="Delete this type?">
                                     @csrf
                                     @method('DELETE')
@@ -213,7 +213,7 @@
                         <td style="font-size: 12px;">{{ $mode->created_at->format('d M Y') }}</td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="action-btn edit"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="action-btn edit" title="Edit" data-master-edit="addPaymentMode" data-url="{{ route('superadmin.masters.payment-modes.update', $mode) }}" data-name="{{ $mode->name }}" data-description="{{ $mode->description }}" data-status="{{ $mode->status }}"><i class="fas fa-pen"></i></button>
                                 <form action="{{ route('superadmin.masters.payment-modes.destroy', $mode) }}" method="POST" style="display: inline;" data-confirm="Delete this mode?">
                                     @csrf
                                     @method('DELETE')
@@ -263,4 +263,32 @@
     </div>
 </div>
 @endif
+
+@push('scripts')
+<script>
+    // Reuse each "Add" panel as the edit form: point it at the update route with PUT.
+    document.querySelectorAll('[data-master-edit]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var panel = document.getElementById(button.dataset.masterEdit);
+            var form = panel.querySelector('form');
+            var method = form.querySelector('input[name="_method"]');
+            if (!method) {
+                method = document.createElement('input');
+                method.type = 'hidden';
+                method.name = '_method';
+                form.appendChild(method);
+            }
+            method.value = 'PUT';
+            form.action = button.dataset.url;
+            form.querySelector('[name="name"]').value = button.dataset.name || '';
+            form.querySelector('[name="description"]').value = button.dataset.description || '';
+            form.querySelector('[name="status"]').value = button.dataset.status || 'active';
+            panel.querySelector('.card-title').textContent = 'Edit ' + button.dataset.name;
+            form.querySelector('button[type="submit"]').textContent = 'Update';
+            panel.style.display = 'block';
+            panel.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+</script>
+@endpush
 @endsection
