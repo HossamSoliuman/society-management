@@ -182,6 +182,12 @@
                     </div>
                 </div>
 
+                {{-- Demo Requests --}}
+                <a href="{{ route('superadmin.demo-requests.index') }}" class="nav-item {{ request()->routeIs('superadmin.demo-requests.*') ? 'active' : '' }}">
+                    <i class="fas fa-handshake"></i>
+                    <span>Demo Requests</span>
+                </a>
+
                 {{-- Support Tickets --}}
                 <a href="{{ route('superadmin.tickets.index') }}" class="nav-item {{ request()->routeIs('superadmin.tickets.*') ? 'active' : '' }}">
                     <i class="fas fa-headset"></i>

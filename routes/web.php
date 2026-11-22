@@ -67,6 +67,7 @@ use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BillingController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
+use App\Http\Controllers\SuperAdmin\DemoRequestController;
 use App\Http\Controllers\SuperAdmin\MasterController;
 use App\Http\Controllers\SuperAdmin\NoticeController;
 use App\Http\Controllers\SuperAdmin\NotificationController;
@@ -186,6 +187,11 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
     Route::post('/notices/{notice}/publish', [NoticeController::class, 'publish'])->name('notices.publish');
     Route::delete('/notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
+
+    Route::get('/demo-requests', [DemoRequestController::class, 'index'])->name('demo-requests.index');
+    Route::get('/demo-requests/{demoRequest}', [DemoRequestController::class, 'show'])->name('demo-requests.show');
+    Route::put('/demo-requests/{demoRequest}', [DemoRequestController::class, 'update'])->name('demo-requests.update');
+    Route::delete('/demo-requests/{demoRequest}', [DemoRequestController::class, 'destroy'])->name('demo-requests.destroy');
 
     Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
