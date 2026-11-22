@@ -67,7 +67,7 @@ class PlatformReportService
                 $s->registration_number,
                 $s->societyType?->name,
                 $s->city,
-                (int) $s->flats_count + (int) $s->shops_count + (int) $s->offices_count,
+                (int) $s->total_units,
                 $s->subscriptionPlan?->name,
                 $s->subscription_end_date ? Carbon::parse($s->subscription_end_date)->format('d M Y') : null,
                 $s->subscription_status ? ucfirst((string) $s->subscription_status) : null,
@@ -78,7 +78,7 @@ class PlatformReportService
                 'Societies' => $societies->count(),
                 'Active' => $societies->where('status', 'active')->count(),
                 'Inactive' => $societies->where('status', '!=', 'active')->count(),
-                'Units' => number_format($societies->sum(fn (Society $s) => (int) $s->flats_count + (int) $s->shops_count + (int) $s->offices_count)),
+                'Units' => number_format($societies->sum(fn (Society $s) => (int) $s->total_units)),
             ],
         ];
     }

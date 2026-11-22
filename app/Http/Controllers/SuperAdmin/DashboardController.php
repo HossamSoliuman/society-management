@@ -43,7 +43,7 @@ class DashboardController extends Controller
                 'expired' => Subscription::where('status', 'expired')->count(),
             ],
             'recentSocieties' => Society::with('subscriptionPlan')->latest()->take(5)->get(),
-            'recentPayments' => Payment::with('society')->latest()->take(5)->get(),
+            'recentPayments' => Payment::with('society')->orderByDesc('payment_date')->orderByDesc('id')->take(5)->get(),
             'totalUsers' => User::where('status', 'active')->count(),
             'openTickets' => SupportTicket::where('status', 'open')->count(),
         ]);
