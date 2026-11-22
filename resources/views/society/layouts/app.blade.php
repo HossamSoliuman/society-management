@@ -486,6 +486,8 @@
                     </div>
                 @endif
 
+                @include('society.partials.subscription-banner')
+
                 @yield('content')
             </main>
         </div>
