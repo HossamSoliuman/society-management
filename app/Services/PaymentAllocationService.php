@@ -11,6 +11,7 @@ use App\Models\Unit;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Records member payments and applies them to maintenance bills — either the
@@ -22,7 +23,7 @@ class PaymentAllocationService
     /**
      * Allocations produced by the most recent record() call.
      *
-     * @var array<int, array{bill_id: int, bill_number: string, amount: float}>
+     * @var array<int, array{bill_id: int, bill_number: string, amount: float, paid: float}>
      */
     public array $lastAllocations = [];
 
@@ -92,7 +93,7 @@ class PaymentAllocationService
      * that bill is touched; otherwise open bills for the member/unit are settled
      * oldest-first and any remainder is left unallocated on the payment.
      *
-     * @return array<int, array{bill_id: int, bill_number: string, amount: float}>
+     * @return array<int, array{bill_id: int, bill_number: string, amount: float, paid: float}>
      */
     public function allocate(CollectionPayment $payment, ?MaintenanceBill $bill, ?Member $member, ?Unit $unit): array
     {
@@ -132,11 +133,63 @@ class PaymentAllocationService
                 $payment->forceFill(['maintenance_bill_id' => $target->id, 'bill_period' => $target->bill_month])->saveQuietly();
             }
 
-            $allocations[] = ['bill_id' => $target->id, 'bill_number' => $target->bill_number, 'amount' => round($amount, 2)];
+            $allocations[] = ['bill_id' => $target->id, 'bill_number' => $target->bill_number, 'amount' => round($amount, 2), 'paid' => round($paidOnBill, 2)];
             $available = round($available - $amount, 2);
         }
 
+        // Keep the split on the receipt so a refund can put every bill back exactly.
+        $payment->forceFill(['allocations' => $allocations])->saveQuietly();
+
         return $allocations;
+    }
+
+    /**
+     * Refund a recorded payment: reopen every bill it settled, mark it refunded
+     * and (through the ledger observer) reverse its accounting entries.
+     */
+    public function refund(CollectionPayment $payment, string $reason): CollectionPayment
+    {
+        if ($payment->status === 'refunded') {
+            throw new InvalidArgumentException("Receipt {$payment->receipt_number} is already refunded.");
+        }
+
+        return DB::transaction(function () use ($payment, $reason): CollectionPayment {
+            $allocations = $payment->allocations ?: ($payment->maintenance_bill_id ? [[
+                'bill_id' => $payment->maintenance_bill_id,
+                'amount' => round((float) $payment->paid_amount + (float) $payment->discount, 2),
+                'paid' => (float) $payment->paid_amount,
+            ]] : []);
+
+            foreach ($allocations as $allocation) {
+                $bill = MaintenanceBill::query()->whereKey($allocation['bill_id'])->lockForUpdate()->first();
+                if (! $bill) {
+                    continue;
+                }
+
+                $collected = max(0, round((float) $bill->collected_amount - (float) $allocation['paid'], 2));
+                $outstanding = min((float) $bill->total_amount, round((float) $bill->outstanding_amount + (float) $allocation['amount'], 2));
+
+                $bill->forceFill([
+                    'collected_amount' => $collected,
+                    'outstanding_amount' => $outstanding,
+                    'status' => match (true) {
+                        $bill->status === 'cancelled' => 'cancelled',
+                        $outstanding <= 0 => 'paid',
+                        $collected > 0 => 'partial',
+                        $bill->due_date && $bill->due_date->lt(Carbon::today()) => 'overdue',
+                        default => 'pending',
+                    },
+                ])->save();
+            }
+
+            $payment->forceFill([
+                'status' => 'refunded',
+                'refunded_at' => now(),
+                'refund_reason' => $reason,
+            ])->save();
+
+            return $payment;
+        });
     }
 
     /**

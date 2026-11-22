@@ -29,6 +29,27 @@
     </div>
 </div>
 
+@if($payment->status === 'refunded')
+    <div class="alert alert-warning">
+        <i class="fas fa-rotate-left"></i>
+        Refunded on {{ $payment->refunded_at?->format('d M Y, h:i A') ?? '—' }}{{ $payment->refund_reason ? ' · '.$payment->refund_reason : '' }}. The bills it paid are open again.
+    </div>
+@elseif((float) $payment->paid_amount > 0)
+    <details class="card" style="margin-bottom: 20px;">
+        <summary class="card-body" style="cursor: pointer; font-weight: 600;"><i class="fas fa-rotate-left" style="color: var(--danger); margin-right: 6px;"></i> Refund this payment</summary>
+        <div class="card-body" style="padding-top: 0;">
+            <form method="POST" action="{{ route('society.collections.receipts.refund', $payment) }}" data-confirm="Refund {{ format_inr($payment->paid_amount) }} on {{ $payment->receipt_number }}? The bills it paid will be reopened." data-confirm-label="Refund">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Reason <span class="required">*</span></label>
+                    <input type="text" name="refund_reason" class="form-control" maxlength="255" required placeholder="e.g. Paid twice, cheque bounced">
+                </div>
+                <button type="submit" class="btn btn-outline-danger"><i class="fas fa-rotate-left"></i> Refund {{ format_inr($payment->paid_amount) }}</button>
+            </form>
+        </div>
+    </details>
+@endif
+
 <div class="content-grid" style="grid-template-columns: 45% 1fr;">
     {{-- Left detail --}}
     <div>

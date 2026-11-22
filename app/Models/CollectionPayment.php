@@ -23,6 +23,7 @@ class CollectionPayment extends Model
         'total_due', 'paid_amount', 'discount', 'fine_penalty', 'balance_due',
         'payment_mode', 'reference_no', 'transaction_utr', 'collected_by',
         'status', 'is_online', 'notes', 'attachment_path',
+        'allocations', 'refunded_at', 'refund_reason',
     ];
 
     protected function casts(): array
@@ -36,6 +37,8 @@ class CollectionPayment extends Model
             'fine_penalty' => 'decimal:2',
             'balance_due' => 'decimal:2',
             'is_online' => 'boolean',
+            'allocations' => 'array',
+            'refunded_at' => 'datetime',
         ];
     }
 

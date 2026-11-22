@@ -438,6 +438,7 @@ Route::middleware(['auth', 'active', 'role:society_admin,manager,staff,accountan
         Route::get('collections/online/checkout/{order}', [OnlinePaymentController::class, 'checkout'])->name('collections.online.checkout');
         Route::get('collections/receipts/{payment}/pdf', [PaymentReceiptController::class, 'pdf'])->name('collections.receipts.pdf');
         Route::post('collections/receipts/{payment}/email', [PaymentReceiptController::class, 'email'])->name('collections.receipts.email');
+        Route::post('collections/receipts/{payment}/refund', [PaymentReceiptController::class, 'refund'])->name('collections.receipts.refund');
     });
 
     // Expenses. Static segments precede the {expense} wildcard so they aren't captured by binding.

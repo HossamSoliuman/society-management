@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Society;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionPayment;
 use App\Notifications\PaymentReceiptIssued;
+use App\Services\PaymentAllocationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class PaymentReceiptController extends Controller
 {
@@ -64,5 +66,23 @@ class PaymentReceiptController extends Controller
         Notification::route('mail', $email)->notify(new PaymentReceiptIssued($payment));
 
         return back()->with('success', "Receipt {$payment->receipt_number} emailed to {$email}.");
+    }
+
+    /**
+     * Refund a member payment and reopen the bills it settled.
+     */
+    public function refund(Request $request, CollectionPayment $payment, PaymentAllocationService $allocations): RedirectResponse
+    {
+        $data = $request->validate([
+            'refund_reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $allocations->refund($payment, $data['refund_reason']);
+        } catch (InvalidArgumentException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', "Receipt {$payment->receipt_number} refunded; its bills are open again.");
     }
 }
