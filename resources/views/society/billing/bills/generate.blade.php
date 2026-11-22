@@ -50,18 +50,18 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label class="form-label">Bill Cycle</label>
-                            <input type="text" name="bill_cycle" class="form-control" value="{{ old('bill_cycle') }}" placeholder="Defaults to bill month">
+                            <input type="text" name="bill_cycle" class="form-control" value="{{ old('bill_cycle', $form['bill_cycle'] ?? '') }}" placeholder="Defaults to bill month">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Billing Type</label>
-                            <input type="text" name="billing_type" class="form-control" value="{{ old('billing_type', $settings->default_bill_type) }}">
+                            <input type="text" name="billing_type" class="form-control" value="{{ old('billing_type', $form['billing_type'] ?? $settings->default_bill_type) }}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tower / Building</label>
                             <select name="tower" class="form-control">
                                 <option value="">All occupied units</option>
                                 @foreach($towers as $tower)
-                                    <option value="{{ $tower }}" {{ old('tower') === $tower ? 'selected' : '' }}>{{ $tower }}</option>
+                                    <option value="{{ $tower }}" {{ old('tower', $form['tower'] ?? '') === $tower ? 'selected' : '' }}>{{ $tower }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -75,7 +75,7 @@
                         <div class="icon" style="background: var(--success-light); color: var(--success);"><i class="fas fa-list-check"></i></div>
                         <div><div class="title" style="font-size: 16px;">Charge Heads</div></div>
                     </div>
-                    @php($selected = collect(old('charge_heads', $chargeHeads->where('type', 'recurring')->pluck('id')->all()))->map(fn ($v) => (int) $v))
+                    @php($selected = collect(old('charge_heads', $form['charge_heads'] ?? $chargeHeads->where('type', 'recurring')->pluck('id')->all()))->map(fn ($v) => (int) $v))
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
@@ -106,12 +106,12 @@
                         <div><div class="title" style="font-size: 16px;">Delivery</div></div>
                     </div>
                     <div style="display: flex; gap: 24px; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="send_email" value="1" @checked(old('send_email', $settings->auto_email_bill))> Email bill (PDF) to members</label>
-                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="send_sms" value="1" @checked(old('send_sms', $settings->auto_sms_bill))> Send SMS</label>
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="send_email" value="1" @checked(old('send_email', $form ? ! empty($form['send_email']) : $settings->auto_email_bill))> Email bill (PDF) to members</label>
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="send_sms" value="1" @checked(old('send_sms', $form ? ! empty($form['send_sms']) : $settings->auto_sms_bill))> Send SMS</label>
                     </div>
                     <div class="form-group" style="margin-top: 12px;">
                         <label class="form-label">Notes (printed on every bill)</label>
-                        <textarea name="notes" class="form-control" rows="2">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="2">{{ old('notes', $form['notes'] ?? '') }}</textarea>
                     </div>
                 </div>
             </div>

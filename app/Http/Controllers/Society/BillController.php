@@ -213,6 +213,7 @@ class BillController extends Controller
             'defaultBillDate' => $billDate->toDateString(),
             'defaultDueDate' => $billDate->copy()->addDays((int) ($settings->due_date_days ?: 15))->toDateString(),
             'preview' => null,
+            'form' => null,
         ]);
     }
 
@@ -266,6 +267,16 @@ class BillController extends Controller
                 'defaultBillDate' => $data['bill_date'],
                 'defaultDueDate' => $data['due_date'],
                 'preview' => $preview,
+                // Re-render the admin's choices so "Confirm" generates exactly what was previewed.
+                'form' => [
+                    'bill_cycle' => $data['bill_cycle'] ?? '',
+                    'billing_type' => $data['billing_type'] ?? '',
+                    'tower' => $data['tower'] ?? '',
+                    'charge_heads' => array_map('intval', $data['charge_heads']),
+                    'send_email' => $request->boolean('send_email'),
+                    'send_sms' => $request->boolean('send_sms'),
+                    'notes' => $data['notes'] ?? '',
+                ],
             ]);
         }
 
