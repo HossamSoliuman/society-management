@@ -370,7 +370,8 @@ class BillingService
     }
 
     /**
-     * Resolve the member for a unit: explicit link first, then flat-number match.
+     * Resolve the member for a unit: explicit link first, then flat-number match
+     * (active residents before inactive ones, owners before tenants).
      */
     public function memberFor(Unit $unit): ?Member
     {
@@ -381,6 +382,7 @@ class BillingService
         return Member::query()
             ->where('society_id', $unit->society_id)
             ->whereRaw('UPPER(flat_unit) = ?', [strtoupper((string) $unit->unit_number)])
+            ->orderByRaw("CASE status WHEN 'active' THEN 0 ELSE 1 END")
             ->orderByRaw("CASE member_type WHEN 'owner' THEN 0 WHEN 'tenant' THEN 1 ELSE 2 END")
             ->first();
     }
