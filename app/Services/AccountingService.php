@@ -269,6 +269,36 @@ class AccountingService
     }
 
     /**
+     * Set each listed row's running_balance to its account's balance right
+     * after that row (opening + every earlier movement, ordered by date then id).
+     *
+     * @param  iterable<Transaction>  $transactions
+     */
+    public function withRunningBalances(iterable $transactions): void
+    {
+        foreach ($transactions as $transaction) {
+            $account = $transaction->account;
+            if (! $account) {
+                continue;
+            }
+
+            $day = Carbon::parse($transaction->date)->toDateString();
+            $sums = Transaction::query()
+                ->where('account_id', $account->id)
+                ->where(fn ($q) => $q->whereDate('date', '<', $day)
+                    ->orWhere(fn ($same) => $same->whereDate('date', $day)->where('id', '<=', $transaction->id)))
+                ->selectRaw('COALESCE(SUM(debit),0) as d, COALESCE(SUM(credit),0) as c')
+                ->first();
+
+            $movement = $this->isDebitNature($account)
+                ? (float) $sums->d - (float) $sums->c
+                : (float) $sums->c - (float) $sums->d;
+
+            $transaction->running_balance = round((float) $account->opening_balance + $movement, 2);
+        }
+    }
+
+    /**
      * Sync the denormalised accounts.balance column from the ledger.
      *
      * @param  array<int, int>|null  $accountIds  limit to these accounts

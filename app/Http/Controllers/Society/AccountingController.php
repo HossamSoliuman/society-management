@@ -43,12 +43,13 @@ class AccountingController extends Controller
         $society = $this->currentSociety();
 
         $recent = Transaction::query()
-            ->with('account')
+            ->with('account.group')
             ->forSociety($society)
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->limit(5)
             ->get();
+        $this->accounting->withRunningBalances($recent);
 
         return view('society.accounting.index', [
             'active' => 'dashboard',
@@ -76,7 +77,7 @@ class AccountingController extends Controller
         };
 
         $transactions = Transaction::query()
-            ->with('account')
+            ->with('account.group')
             ->forSociety($society)
             ->when($tabType, fn ($q) => $q->where('type', $tabType))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
@@ -89,6 +90,7 @@ class AccountingController extends Controller
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
+        $this->accounting->withRunningBalances($transactions->getCollection());
 
         return view('society.accounting.transactions', [
             'active' => 'transactions',
