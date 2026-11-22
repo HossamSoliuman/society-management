@@ -233,6 +233,18 @@ class SubscriptionController extends Controller
         return back()->with('success', "Subscription {$subscription->subscription_number} cancelled.");
     }
 
+    /**
+     * Remind society admins about every subscription that is due for renewal.
+     */
+    public function remindRenewals(): RedirectResponse
+    {
+        $sent = $this->subscriptions->remindDueRenewals();
+
+        return back()->with($sent ? 'success' : 'error', $sent
+            ? "Renewal reminder sent for {$sent} subscription(s)."
+            : 'No subscription due for renewal has an active society admin to remind.');
+    }
+
     public function renewals(): View
     {
         $totalRenewals = Subscription::where('end_date', '<=', now()->addDays(60))
@@ -243,6 +255,7 @@ class SubscriptionController extends Controller
         $overdue = Subscription::where('end_date', '<', now())->where('status', '!=', 'cancelled')->count();
 
         $renewals = Subscription::with(['society', 'plan'])
+            ->withCount('renewals')
             ->where('end_date', '<=', now()->addDays(60))
             ->where('status', '!=', 'cancelled')
             ->orderBy('end_date')

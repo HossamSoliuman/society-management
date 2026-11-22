@@ -113,7 +113,7 @@
                         <td style="font-weight: 600;">&#8377; {{ number_format($sub->amount ?: ($sub->plan->amount ?? 0), 2) }}</td>
                         <td>
                             @if($sub->end_date)
-                                @php $daysLeft = now()->diffInDays($sub->end_date, false); @endphp
+                                @php $daysLeft = (int) now()->startOfDay()->diffInDays($sub->end_date->copy()->startOfDay(), false); @endphp
                                 <div>{{ $sub->end_date->format('d M Y') }}</div>
                                 <div style="font-size: 11px; color: {{ $daysLeft <= 30 ? 'var(--danger)' : 'var(--primary)' }};">
                                     @if($daysLeft > 0) in {{ $daysLeft }} days @elseif($daysLeft == 0) Today @else - @endif

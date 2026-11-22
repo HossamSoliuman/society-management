@@ -100,6 +100,7 @@ class NotificationController extends Controller
         $overdue = Subscription::where('end_date', '<', now())->where('status', '!=', 'cancelled')->count();
 
         $renewals = Subscription::with(['society', 'plan'])
+            ->withCount('renewals')
             ->where('end_date', '<=', now()->addDays(60))
             ->where('status', '!=', 'cancelled')
             ->orderBy('end_date')

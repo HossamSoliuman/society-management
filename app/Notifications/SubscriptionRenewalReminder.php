@@ -26,10 +26,10 @@ class SubscriptionRenewalReminder extends Notification implements ShouldQueue
     {
         $society = $this->subscription->society;
         $plan = $this->subscription->plan;
-        $when = $this->daysLeft === 1 ? 'tomorrow' : "in {$this->daysLeft} days";
+        $when = $this->whenLabel();
 
         return (new MailMessage)
-            ->subject("Your {$society?->name} subscription expires {$when}")
+            ->subject("Your {$society?->name} subscription {$when}")
             ->greeting("Hello {$notifiable->name},")
             ->line("The {$plan?->name} subscription for {$society?->name} ends on {$this->subscription->end_date->format('d M Y')}.")
             ->line("Access continues for {$society?->grace_period_days} grace days after that, then the society panel is locked.")
@@ -44,10 +44,20 @@ class SubscriptionRenewalReminder extends Notification implements ShouldQueue
     {
         return [
             'type' => 'subscription_renewal',
-            'title' => 'Subscription expiring '.($this->daysLeft === 1 ? 'tomorrow' : "in {$this->daysLeft} days"),
+            'title' => 'Subscription '.$this->whenLabel(),
             'subscription_id' => $this->subscription->id,
             'end_date' => $this->subscription->end_date->toDateString(),
             'url' => route('society.subscription.index'),
         ];
+    }
+
+    private function whenLabel(): string
+    {
+        return match (true) {
+            $this->daysLeft < 0 => 'has expired',
+            $this->daysLeft === 0 => 'expires today',
+            $this->daysLeft === 1 => 'expires tomorrow',
+            default => "expires in {$this->daysLeft} days",
+        };
     }
 }

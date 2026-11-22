@@ -166,6 +166,39 @@ class SubscriptionService
     }
 
     /**
+     * Remind the society admins of every live subscription that ends within
+     * $withinDays (or has already ended but is still on record), right now.
+     * Returns the number of subscriptions notified.
+     */
+    public function remindDueRenewals(int $withinDays = 60, ?Carbon $asOf = null): int
+    {
+        $asOf ??= Carbon::today();
+        $sent = 0;
+
+        Subscription::query()
+            ->with(['society.users.roles', 'plan'])
+            ->whereIn('status', ['active', 'expiring_soon', 'expired'])
+            ->whereDate('end_date', '<=', $asOf->copy()->addDays($withinDays)->toDateString())
+            ->whereDoesntHave('renewals')
+            ->each(function (Subscription $subscription) use ($asOf, &$sent) {
+                $admins = $subscription->society?->users
+                    ->filter(fn ($user) => $user->status === 'active' && $user->hasRole('society_admin'));
+
+                if (! $admins || $admins->isEmpty()) {
+                    return;
+                }
+
+                $daysLeft = (int) $asOf->diffInDays($subscription->end_date->copy()->startOfDay(), false);
+                foreach ($admins as $admin) {
+                    $admin->notify(new SubscriptionRenewalReminder($subscription, $daysLeft));
+                }
+                $sent++;
+            });
+
+        return $sent;
+    }
+
+    /**
      * End date for a plan duration starting at $start (inclusive day count).
      */
     public function endDateFor(SubscriptionPlan $plan, Carbon $start): Carbon

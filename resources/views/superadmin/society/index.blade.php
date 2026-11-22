@@ -127,7 +127,7 @@
                             <div style="font-size: 12px;">
                                 <div>{{ $society->subscription_end_date ? $society->subscription_end_date->format('d M Y') : 'N/A' }}</div>
                                 @if($society->subscription_end_date)
-                                    @php $daysLeft = now()->diffInDays($society->subscription_end_date, false); @endphp
+                                    @php $daysLeft = (int) now()->startOfDay()->diffInDays($society->subscription_end_date->copy()->startOfDay(), false); @endphp
                                     <div style="color: {{ $daysLeft <= 30 ? 'var(--danger)' : 'var(--success)' }}; font-size: 11px;">
                                         {{ $daysLeft > 0 ? $daysLeft . ' days left' : 'Expired' }}
                                     </div>

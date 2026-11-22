@@ -10,7 +10,10 @@
             <p class="page-subtitle">Monitor and manage upcoming subscription renewals.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-primary"><i class="fas fa-bell"></i> Send Reminders</a>
+            <form method="POST" action="{{ route('superadmin.subscription.renewals.remind') }}" style="display: inline;" data-confirm="Email a renewal reminder to the admins of every society due for renewal?" data-confirm-label="Send">
+                @csrf
+                <button type="submit" class="btn btn-primary"><i class="fas fa-bell"></i> Send Reminders</button>
+            </form>
         </div>
     </div>
     <div class="breadcrumb">
@@ -94,7 +97,7 @@
                         <td>{{ $sub->end_date ? $sub->end_date->format('d M Y') : 'N/A' }}</td>
                         <td>
                             @if($sub->end_date)
-                                @php $daysLeft = now()->diffInDays($sub->end_date, false); @endphp
+                                @php $daysLeft = (int) now()->startOfDay()->diffInDays($sub->end_date->copy()->startOfDay(), false); @endphp
                                 <span style="color: {{ $daysLeft <= 7 ? 'var(--danger)' : ($daysLeft <= 30 ? 'var(--warning)' : 'var(--success)') }}; font-weight: 600;">
                                     {{ $daysLeft > 0 ? $daysLeft . ' days' : 'Expired' }}
                                 </span>
@@ -103,7 +106,7 @@
                             @endif
                         </td>
                         <td><span class="status-badge {{ $sub->status }}">{{ ucfirst(str_replace('_', ' ', $sub->status)) }}</span></td>
-                        <td><div style="display: flex; gap: 4px;"><button class="action-btn view"><i class="fas fa-eye"></i></button><button class="btn btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Renew</button></div></td>
+                        <td><div style="display: flex; gap: 4px;">@if($sub->society)<a href="{{ route('superadmin.societies.show', $sub->society) }}" class="action-btn view" title="View society"><i class="fas fa-eye"></i></a>@endif @if($sub->renewals_count === 0)<a href="{{ route('superadmin.subscription.subscriptions.renew', $sub) }}" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Renew</a>@else<span class="badge badge-success">Renewed</span>@endif</div></td>
                     </tr>
                     @endforeach
                 </tbody>
