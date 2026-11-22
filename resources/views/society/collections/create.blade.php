@@ -11,6 +11,17 @@
         'cheque' => ['label' => 'Cheque', 'icon' => 'fa-money-check'],
         'other' => ['label' => 'Other', 'icon' => 'fa-ellipsis'],
     ];
+    $billOptions = $openBills->map(fn ($b) => [
+        'id' => $b->id,
+        'member_id' => $b->member_id,
+        'unit_id' => $b->unit_id,
+        'number' => $b->bill_number,
+        'month' => $b->bill_month,
+        'due' => $b->due_date?->toDateString(),
+        'outstanding' => (float) $b->outstanding_amount,
+    ])->values();
+    $defaultMemberId = (int) old('member_id', $selectedBill?->member_id);
+    $defaultUnitId = (int) old('unit_id', $selectedBill?->unit_id);
 @endphp
 
 @section('content')
@@ -48,8 +59,9 @@
                         <div class="form-group">
                             <label class="form-label">Select Member <span style="color: var(--danger);">*</span></label>
                             <select name="member_id" id="memberSelect" class="form-control" required>
+                                <option value="">Select member</option>
                                 @foreach($members as $member)
-                                    <option value="{{ $member->id }}"
+                                    <option value="{{ $member->id }}" @selected($defaultMemberId === $member->id)
                                         data-name="{{ $member->name }}"
                                         data-type="{{ $member->typeLabel() }}"
                                         data-phone="{{ $member->mobile }}"
@@ -65,8 +77,9 @@
                         <div class="form-group">
                             <label class="form-label">Select Unit / Flat <span style="color: var(--danger);">*</span></label>
                             <select name="unit_id" id="unitSelect" class="form-control" required>
+                                <option value="">Select unit</option>
                                 @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}"
+                                    <option value="{{ $unit->id }}" @selected($defaultUnitId === $unit->id)
                                         data-flat="{{ $unit->unit_number }}"
                                         data-type="{{ $unit->unit_type }}"
                                         data-label="{{ $unit->unit_number }} ({{ $unit->building }}, {{ $unit->wing }}, {{ $unit->floor }}, {{ $unit->unit_type }})"
@@ -76,6 +89,12 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label class="form-label">Apply To</label>
+                        <select name="maintenance_bill_id" id="billSelect" class="form-control" data-selected="{{ old('maintenance_bill_id', $selectedBill?->id) }}">
+                            <option value="">All open dues (oldest bill first)</option>
+                        </select>
                     </div>
 
                     {{-- 2. Payment Details --}}
@@ -87,30 +106,25 @@
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Bill Period <span style="color: var(--danger);">*</span></label>
-                            <select name="bill_period" class="form-control">
-                                <option value="May 2024">May 2024</option>
-                                @foreach($billPeriods as $period)
-                                    <option value="{{ $period }}">{{ $period }}</option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="bill_period" id="billPeriod" class="form-control" value="{{ old('bill_period') }}" style="background: var(--gray-50);" readonly>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Due Date</label>
-                            <input type="date" name="due_date" value="2024-05-31" class="form-control" style="background: var(--gray-50);">
+                            <input type="date" name="due_date" id="dueDate" value="{{ old('due_date') }}" class="form-control" style="background: var(--gray-50);" readonly>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Receipt Date <span style="color: var(--danger);">*</span></label>
-                            <input type="date" name="receipt_date" value="2024-05-31" class="form-control" required>
+                            <input type="date" name="receipt_date" value="{{ old('receipt_date', now()->toDateString()) }}" class="form-control" required>
                         </div>
                     </div>
                     <div class="form-row-3" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Total Due (&#8377;)</label>
-                            <input type="number" step="0.01" name="total_due" id="totalDue" value="2850.00" class="form-control" style="background: var(--gray-50);" readonly>
+                            <input type="number" step="0.01" name="total_due" id="totalDue" value="{{ old('total_due', '0.00') }}" class="form-control" style="background: var(--gray-50);" readonly>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Paid Amount (&#8377;) <span style="color: var(--danger);">*</span></label>
-                            <input type="number" step="0.01" name="paid_amount" id="paidAmount" value="2850.00" class="form-control" required>
+                            <input type="number" step="0.01" name="paid_amount" id="paidAmount" value="{{ old('paid_amount') }}" class="form-control" required>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Discount (&#8377;)</label>
@@ -199,11 +213,11 @@
                 <div class="card-body">
                     <div class="section-title" style="font-size: 15px;">Payment Summary</div>
                     <div class="summary-item"><span class="summary-label">Bill Type</span><span class="summary-value">Maintenance</span></div>
-                    <div class="summary-item"><span class="summary-label">Bill Period</span><span class="summary-value" id="sumPeriod">May 2024</span></div>
-                    <div class="summary-item" style="border-top: 1px solid var(--border-color);"><span class="summary-label">Total Due</span><span class="summary-value" id="sumTotalDue">&#8377; 2,850.00</span></div>
+                    <div class="summary-item"><span class="summary-label">Bill Period</span><span class="summary-value" id="sumPeriod">—</span></div>
+                    <div class="summary-item" style="border-top: 1px solid var(--border-color);"><span class="summary-label">Total Due</span><span class="summary-value" id="sumTotalDue">&#8377; 0.00</span></div>
                     <div class="summary-item"><span class="summary-label">Discount</span><span class="summary-value" style="color: var(--success);" id="sumDiscount">- &#8377; 0.00</span></div>
                     <div class="summary-item"><span class="summary-label">Fine / Penalty</span><span class="summary-value" style="color: var(--danger);" id="sumFine">+ &#8377; 0.00</span></div>
-                    <div class="summary-item" style="border-top: 1px solid var(--border-color);"><span class="summary-label" style="font-weight: 700; color: var(--text-primary);">Amount Paid</span><span class="summary-value" style="color: var(--success); font-weight: 700;" id="sumPaid">&#8377; 2,850.00</span></div>
+                    <div class="summary-item" style="border-top: 1px solid var(--border-color);"><span class="summary-label" style="font-weight: 700; color: var(--text-primary);">Amount Paid</span><span class="summary-value" style="color: var(--success); font-weight: 700;" id="sumPaid">&#8377; 0.00</span></div>
                     <div class="summary-item"><span class="summary-label" style="font-weight: 700; color: var(--text-primary);">Balance Due</span><span class="summary-value" style="font-weight: 700;" id="sumBalance">&#8377; 0.00</span></div>
                 </div>
             </div>
@@ -223,6 +237,40 @@
     const fmt = (n) => '₹ ' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const memberSelect = document.getElementById('memberSelect');
     const unitSelect = document.getElementById('unitSelect');
+    const billSelect = document.getElementById('billSelect');
+    const OPEN_BILLS = @json($billOptions);
+
+    function memberBills() {
+        const memberId = Number(memberSelect.value);
+        const unitId = Number(unitSelect.value);
+        return OPEN_BILLS.filter(b => (memberId && b.member_id === memberId) || (!memberId && unitId && b.unit_id === unitId));
+    }
+
+    function fillBills() {
+        const wanted = billSelect.dataset.selected || billSelect.value;
+        billSelect.querySelectorAll('option:not([value=""])').forEach(o => o.remove());
+        memberBills().forEach(b => {
+            billSelect.add(new Option(b.number + ' · ' + b.month + ' · due ' + fmt(b.outstanding), b.id));
+        });
+        billSelect.value = memberBills().some(b => String(b.id) === String(wanted)) ? String(wanted) : '';
+        billSelect.dataset.selected = '';
+        applyBill();
+    }
+
+    function applyBill() {
+        const bill = OPEN_BILLS.find(b => String(b.id) === billSelect.value);
+        const bills = memberBills();
+        const total = bill ? bill.outstanding : bills.reduce((sum, b) => sum + b.outstanding, 0);
+        document.getElementById('billPeriod').value = bill ? bill.month : (bills.length ? bills[0].month : '');
+        document.getElementById('dueDate').value = bill ? (bill.due || '') : (bills.length ? (bills[0].due || '') : '');
+        document.getElementById('totalDue').value = total.toFixed(2);
+        document.getElementById('paidAmount').value = total.toFixed(2);
+        if (bill && bill.unit_id && !unitSelect.value) {
+            unitSelect.value = String(bill.unit_id);
+            updateUnitRail();
+        }
+        recompute();
+    }
 
     function updateMemberRail() {
         const opt = memberSelect.options[memberSelect.selectedIndex];
@@ -260,12 +308,12 @@
         document.getElementById('sumPeriod').textContent = document.querySelector('[name=bill_period]').value;
     }
 
-    memberSelect.addEventListener('change', updateMemberRail);
-    unitSelect.addEventListener('change', updateUnitRail);
+    memberSelect.addEventListener('change', function () { updateMemberRail(); fillBills(); });
+    unitSelect.addEventListener('change', function () { updateUnitRail(); if (!memberSelect.value) { fillBills(); } });
+    billSelect.addEventListener('change', applyBill);
     ['totalDue', 'paidAmount', 'discount', 'finePenalty'].forEach((id) => {
         document.getElementById(id).addEventListener('input', recompute);
     });
-    document.querySelector('[name=bill_period]').addEventListener('change', recompute);
 
     document.getElementById('attachment').addEventListener('change', function () {
         if (this.files.length) {
@@ -275,7 +323,7 @@
 
     updateMemberRail();
     updateUnitRail();
-    recompute();
+    fillBills();
 })();
 </script>
 @endpush

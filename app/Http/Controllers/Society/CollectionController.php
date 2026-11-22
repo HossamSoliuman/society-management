@@ -131,14 +131,11 @@ class CollectionController extends Controller
             ->orderBy('due_date')
             ->get();
 
-        $billPeriods = MaintenanceBill::query()->forSociety($society)->select('bill_month')->distinct()->pluck('bill_month');
-
         return view('society.collections.create', [
             'society' => $society,
             'members' => $members,
             'units' => $units,
             'openBills' => $openBills,
-            'billPeriods' => $billPeriods,
             'selectedBill' => $request->integer('bill') ? $openBills->firstWhere('id', $request->integer('bill')) : null,
         ]);
     }
@@ -158,7 +155,7 @@ class CollectionController extends Controller
             'bill_period' => ['nullable', 'string', 'max:255'],
             'due_date' => ['nullable', 'date'],
             'receipt_date' => ['required', 'date'],
-            'total_due' => ['required', 'numeric', 'min:0'],
+            'total_due' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'fine_penalty' => ['nullable', 'numeric', 'min:0'],
@@ -171,6 +168,11 @@ class CollectionController extends Controller
 
         if ($request->hasFile('attachment')) {
             $data['attachment_path'] = $request->file('attachment')->store('collection-attachments', 'public');
+        }
+
+        // The amount due comes from the member's open bills, never from the browser.
+        if (! empty($data['member_id']) || ! empty($data['maintenance_bill_id'])) {
+            unset($data['total_due']);
         }
 
         $payment = $this->allocations->record($society, $data, $request->user()->name);
