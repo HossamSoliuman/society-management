@@ -95,4 +95,26 @@ class NoticeController extends Controller
                 default => 'Notice saved as draft.',
             });
     }
+
+    /**
+     * Publish a draft or scheduled notice right away.
+     */
+    public function publish(Notice $notice): RedirectResponse
+    {
+        if ($notice->status === 'published') {
+            return back()->with('error', 'This notice is already published.');
+        }
+
+        $notice->forceFill(['status' => 'published', 'publish_at' => now()])->save();
+        DeliverAnnouncement::dispatch($notice);
+
+        return back()->with('success', "\"{$notice->title}\" published and queued for {$notice->estimated_recipients} recipient(s).");
+    }
+
+    public function destroy(Notice $notice): RedirectResponse
+    {
+        $notice->delete();
+
+        return back()->with('success', "\"{$notice->title}\" deleted. Societies no longer see it.");
+    }
 }

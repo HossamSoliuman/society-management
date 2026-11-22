@@ -21,10 +21,9 @@
 </div>
 
 <div class="tab-pills">
-    <a href="#" class="tab-pill active">All Documents</a>
-    <a href="#" class="tab-pill">Member App</a>
-    <a href="#" class="tab-pill">Web Portal</a>
-    <a href="#" class="tab-pill">Other Documents</a>
+    @foreach(['' => 'All Documents', 'member_app' => 'Member App', 'web_portal' => 'Web Portal', 'other_documents' => 'Other Documents'] as $type => $label)
+        <a href="{{ route('superadmin.terms.index', $type ? ['type' => $type] : []) }}" class="tab-pill {{ request('type', '') === $type ? 'active' : '' }}">{{ $label }}</a>
+    @endforeach
 </div>
 
 <div class="card">

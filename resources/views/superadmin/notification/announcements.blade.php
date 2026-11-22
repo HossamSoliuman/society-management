@@ -39,7 +39,6 @@
                         <th>Channel</th>
                         <th>Status</th>
                         <th>Sent Date</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,7 +56,6 @@
                         <td>{{ ucfirst(str_replace('_', ' ', $ann->delivery_channel)) }}</td>
                         <td><span class="status-badge {{ $ann->status }}">{{ ucfirst($ann->status) }}</span></td>
                         <td>{{ $ann->sent_at ? $ann->sent_at->format('d M Y') : 'N/A' }}</td>
-                        <td><div style="display: flex; gap: 4px;"><button class="action-btn view"><i class="fas fa-eye"></i></button><button class="action-btn"><i class="fas fa-ellipsis-h"></i></button></div></td>
                     </tr>
                     @endforeach
                 </tbody>

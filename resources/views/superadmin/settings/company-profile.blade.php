@@ -74,15 +74,6 @@
                     </div>
                 </div>
 
-                <div class="section-title" style="margin-top: 24px;"><i class="fas fa-image"></i> Branding</div>
-                <div class="form-group">
-                    <label class="form-label">Company Logo</label>
-                    <div class="file-upload">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <div class="file-upload-text">Drag & drop logo here or</div>
-                        <button type="button" class="btn btn-outline-primary btn-sm">Browse Files</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

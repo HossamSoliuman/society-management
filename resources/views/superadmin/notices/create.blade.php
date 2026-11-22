@@ -75,15 +75,6 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Attach Document (Optional)</label>
-                        <div class="upload-dropzone" style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 28px; text-align: center; color: var(--text-muted);">
-                            <i class="fas fa-cloud-arrow-up" style="font-size: 22px;"></i>
-                            <div style="margin-top: 8px;">Drag &amp; drop files here or click <span style="color: var(--primary);">to browse</span></div>
-                            <div style="font-size: 11px;">PDF, JPG, PNG up to 5MB</div>
-                        </div>
-                        <input type="hidden" name="attach_path" value="{{ old('attach_path') }}">
-                    </div>
                 </div>
             </div>
 
@@ -191,7 +182,7 @@
     <div class="card" style="margin-top: 20px;">
         <div class="card-body" style="display: flex; justify-content: flex-end; gap: 12px;">
             <a href="{{ route('superadmin.notices.index') }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" name="status" value="draft" class="btn btn-outline-secondary"><i class="fas fa-eye"></i> Preview Notice</button>
+            <button type="submit" name="status" value="draft" class="btn btn-outline-secondary"><i class="fas fa-floppy-disk"></i> Save as Draft</button>
             <button type="submit" name="status" value="published" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Publish Notice</button>
         </div>
     </div>

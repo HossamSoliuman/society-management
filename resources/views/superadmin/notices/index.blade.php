@@ -16,7 +16,6 @@
             </div>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-secondary"><i class="fas fa-file-lines"></i> Notice Templates</a>
             <a href="{{ route('superadmin.notices.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Notice</a>
         </div>
     </div>
@@ -175,9 +174,17 @@
                             <td><span class="badge {{ $notice->statusBadgeClass() }}">{{ ucfirst($notice->status) }}</span></td>
                             <td>
                                 <div style="display: flex; gap: 4px;">
-                                    <button class="action-btn view"><i class="fas fa-eye"></i></button>
-                                    <button class="action-btn edit"><i class="fas fa-pen"></i></button>
-                                    <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
+                                    @if(in_array($notice->status, ['draft', 'scheduled'], true))
+                                        <form method="POST" action="{{ route('superadmin.notices.publish', $notice) }}" data-confirm="Publish &quot;{{ $notice->title }}&quot; now?" data-confirm-label="Publish">
+                                            @csrf
+                                            <button type="submit" class="action-btn edit" title="Publish now"><i class="fas fa-paper-plane"></i></button>
+                                        </form>
+                                    @endif
+                                    <form method="POST" action="{{ route('superadmin.notices.destroy', $notice) }}" data-confirm="Delete &quot;{{ $notice->title }}&quot;? Societies will no longer see it." data-confirm-label="Delete">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

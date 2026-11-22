@@ -184,6 +184,8 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
     Route::get('/notices/create', [NoticeController::class, 'create'])->name('notices.create');
     Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
+    Route::post('/notices/{notice}/publish', [NoticeController::class, 'publish'])->name('notices.publish');
+    Route::delete('/notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
 
     Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
@@ -192,6 +194,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
 
     Route::get('/logs/user-activities', [ActivityLogController::class, 'userActivities'])->name('logs.user-activities');
     Route::get('/logs/system-logs', [ActivityLogController::class, 'systemLogs'])->name('logs.system-logs');
+    Route::delete('/logs/system-logs', [ActivityLogController::class, 'clearSystemLogs'])->name('logs.system-logs.clear');
     Route::get('/logs/audit-trail', [ActivityLogController::class, 'auditTrail'])->name('logs.audit-trail');
 
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');

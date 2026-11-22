@@ -10,7 +10,11 @@
             <p class="page-subtitle">View system logs and monitor platform health.</p>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-outline-danger"><i class="fas fa-trash"></i> Clear Logs</a>
+            <form method="POST" action="{{ route('superadmin.logs.system-logs.clear') }}" style="display: inline;" data-confirm="Delete every system log entry? This cannot be undone." data-confirm-label="Clear Logs">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash"></i> Clear Logs</button>
+            </form>
         </div>
     </div>
     <div class="breadcrumb">

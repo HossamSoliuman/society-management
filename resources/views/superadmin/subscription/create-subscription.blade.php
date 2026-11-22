@@ -164,15 +164,6 @@
                             <input type="date" name="payment_date" class="form-control" required>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Payment Proof (Optional)</label>
-                        <div class="file-upload">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <div class="file-upload-text">Drag & drop file here or</div>
-                            <button type="button" class="btn btn-outline-primary btn-sm">Browse Files</button>
-                            <div class="file-upload-hint" style="margin-top: 8px;">Supports: JPG, PNG, PDF (Max 5MB)</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

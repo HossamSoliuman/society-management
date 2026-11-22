@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\TermsCondition;
+use Illuminate\Http\Request;
 
 class TermsConditionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $terms = TermsCondition::with('creator')->latest()->paginate(10);
+        $terms = TermsCondition::with('creator')
+            ->when(in_array($request->string('type')->toString(), ['member_app', 'web_portal', 'other_documents'], true), fn ($q) => $q->where('document_type', $request->string('type')))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return view('superadmin.terms.index', compact('terms'));
     }
 
@@ -33,6 +38,7 @@ class TermsConditionController extends Controller
         $validated['created_by'] = auth()->id();
 
         TermsCondition::create($validated);
+
         return redirect()->route('superadmin.terms.index')->with('success', 'Terms & Conditions created');
     }
 
@@ -53,12 +59,14 @@ class TermsConditionController extends Controller
         ]);
 
         $term->update($validated);
+
         return redirect()->route('superadmin.terms.index')->with('success', 'Terms & Conditions updated');
     }
 
     public function destroy(TermsCondition $term)
     {
         $term->delete();
+
         return redirect()->route('superadmin.terms.index')->with('success', 'Terms & Conditions deleted');
     }
 }
