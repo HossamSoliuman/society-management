@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') · Society Management</title>
+    <x-favicons />
     <meta name="description" content="@yield('description')">
     <meta property="og:type" content="website">
     <meta property="og:title" content="@yield('title') · Society Management">
