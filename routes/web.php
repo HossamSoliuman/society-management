@@ -138,12 +138,15 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::post('/subscription/subscriptions/{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscription.subscriptions.renew.store');
     Route::post('/subscription/subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.subscriptions.cancel');
     Route::get('/subscription/renewals', [SubscriptionController::class, 'renewals'])->name('subscription.renewals');
+    Route::post('/subscription/renewals/remind', [SubscriptionController::class, 'remindRenewals'])->name('subscription.renewals.remind');
 
     Route::get('/billing/overview', [BillingController::class, 'overview'])->name('billing.overview');
     Route::get('/billing/overview/data', [BillingController::class, 'overviewData'])->name('billing.overview.data');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
     Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
+    Route::post('/billing/invoices/remind', [BillingController::class, 'remindInvoices'])->name('billing.invoices.remind');
+    Route::get('/billing/invoices/{invoice}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
     Route::get('/billing/payments/data', [BillingController::class, 'paymentsData'])->name('billing.payments.data');
     Route::get('/billing/payments/create', [BillingController::class, 'createPayment'])->name('billing.payments.create');
@@ -151,6 +154,7 @@ Route::middleware(['auth', 'active', 'role:super_admin'])->prefix('superadmin')-
     Route::get('/billing/refunds/create', [BillingController::class, 'createRefund'])->name('billing.refunds.create');
     Route::post('/billing/refunds', [BillingController::class, 'storeRefund'])->name('billing.refunds.store');
     Route::get('/billing/receipts', [BillingController::class, 'receipts'])->name('billing.receipts');
+    Route::get('/billing/receipts/{payment}', [BillingController::class, 'showReceipt'])->name('billing.receipts.show');
     Route::get('/billing/outstanding', [BillingController::class, 'outstanding'])->name('billing.outstanding');
     Route::get('/billing/overdue', [BillingController::class, 'overdue'])->name('billing.overdue');
     Route::get('/billing/refunds', [BillingController::class, 'refunds'])->name('billing.refunds');

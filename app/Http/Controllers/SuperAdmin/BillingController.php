@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentMode;
 use App\Models\Refund;
 use App\Models\Society;
 use App\Models\Subscription;
+use App\Notifications\PlatformInvoiceReminder;
 use App\Services\PlatformBillingService;
 use App\Support\Period;
 use Illuminate\Http\JsonResponse;
@@ -303,6 +305,54 @@ class BillingController extends Controller
 
         return redirect()->route('superadmin.billing.refunds')
             ->with('success', "Refund {$refund->refund_number} of ₹".number_format((float) $refund->amount, 2)." issued against {$payment->receipt_number}.");
+    }
+
+    public function showInvoice(Invoice $invoice): View
+    {
+        return view('superadmin.billing.invoice-show', [
+            'invoice' => $invoice->load(['society', 'subscription.plan', 'payments']),
+            'company' => CompanyProfile::first(),
+        ]);
+    }
+
+    public function showReceipt(Payment $payment): View
+    {
+        return view('superadmin.billing.receipt-show', [
+            'payment' => $payment->load(['society', 'invoice', 'refunds']),
+            'company' => CompanyProfile::first(),
+        ]);
+    }
+
+    /**
+     * Email and notify society admins about open invoices: one invoice, or every
+     * open (or only overdue) invoice when none is given.
+     */
+    public function remindInvoices(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'invoice_id' => ['nullable', 'integer', 'exists:invoices,id'],
+            'scope' => ['nullable', 'in:open,overdue'],
+        ]);
+
+        $invoices = Invoice::query()
+            ->with('society.users.roles')
+            ->where('outstanding_amount', '>', 0)
+            ->when(! empty($data['invoice_id']), fn ($q) => $q->whereKey($data['invoice_id']))
+            ->when(empty($data['invoice_id']), fn ($q) => $q->whereIn('status', ($data['scope'] ?? 'open') === 'overdue' ? ['overdue'] : ['pending', 'partially_paid', 'overdue']))
+            ->get();
+
+        $sent = 0;
+        foreach ($invoices as $invoice) {
+            $admins = $invoice->society?->users->filter(fn ($user) => $user->status === 'active' && $user->hasRole('society_admin')) ?? collect();
+            foreach ($admins as $admin) {
+                $admin->notify(new PlatformInvoiceReminder($invoice));
+            }
+            $sent += $admins->isNotEmpty() ? 1 : 0;
+        }
+
+        return back()->with($sent ? 'success' : 'error', $sent
+            ? "Reminder sent for {$sent} invoice(s)."
+            : 'No society admin to remind for the selected invoices.');
     }
 
     /**

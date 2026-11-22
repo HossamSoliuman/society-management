@@ -125,9 +125,10 @@
                             <td>
                                 <div style="display: flex; gap: 4px;">
                                     @if($inv->isOpen())
+                                        <a href="{{ route('superadmin.billing.invoices.show', $inv) }}" class="action-btn view" title="View invoice"><i class="fas fa-eye"></i></a>
                                         <a href="{{ route('superadmin.billing.payments.create', ['invoice' => $inv->id]) }}" class="action-btn edit" title="Record payment"><i class="fas fa-indian-rupee-sign"></i></a>
                                     @else
-                                        <span class="action-btn" title="Settled" style="opacity: .4;"><i class="fas fa-check"></i></span>
+                                        <a href="{{ route('superadmin.billing.invoices.show', $inv) }}" class="action-btn view" title="View invoice"><i class="fas fa-eye"></i></a>
                                     @endif
                                 </div>
                             </td>

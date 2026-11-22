@@ -9,7 +9,7 @@
             <h1 class="page-title">Receipts</h1>
         </div>
         <div class="action-toolbar-right">
-            <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Create Receipt</a>
+            <a href="{{ route('superadmin.billing.payments.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment</a>
         </div>
     </div>
     <div class="breadcrumb">
@@ -98,7 +98,7 @@
                                 <span class="payment-method"><i class="fas {{ $methodIcons[$payment->payment_method] ?? 'fa-money-bill' }}"></i> {{ $payment->payment_method }}</span>
                             </td>
                             <td><span class="status-badge {{ $payment->status }}">{{ ucfirst($payment->status) }}</span></td>
-                            <td><div style="display: flex; gap: 4px;"><button class="action-btn view"><i class="fas fa-eye"></i></button><button class="action-btn"><i class="fas fa-print"></i></button></div></td>
+                            <td><div style="display: flex; gap: 4px;"><a href="{{ route('superadmin.billing.receipts.show', $payment) }}" class="action-btn view" title="View receipt"><i class="fas fa-eye"></i></a><a href="{{ route('superadmin.billing.receipts.show', $payment) }}" class="action-btn" title="Print receipt"><i class="fas fa-print"></i></a></div></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -124,8 +124,8 @@
         <div class="card">
             <div class="card-header"><div class="card-title">Quick Actions</div></div>
             <div class="card-body" style="padding: 12px;">
-                @foreach(['Create Receipt' => 'fa-file-invoice', 'Bulk Receipt' => 'fa-copy', 'Receipt Settings' => 'fa-cog'] as $label => $icon)
-                <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: var(--radius); text-decoration: none; color: var(--text-primary); font-size: 13px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px;">
+                @foreach(['Record Payment' => ['fa-file-invoice', route('superadmin.billing.payments.create')], 'Payment Report' => ['fa-chart-bar', route('superadmin.reports.payment')], 'Receipt Numbering' => ['fa-cog', route('superadmin.settings.prefix')]] as $label => [$icon, $url])
+                <a href="{{ $url }}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: var(--radius); text-decoration: none; color: var(--text-primary); font-size: 13px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px;">
                     <span style="display: flex; align-items: center; gap: 10px;"><i class="fas {{ $icon }}" style="color: var(--primary);"></i> {{ $label }}</span>
                     <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 10px;"></i>
                 </a>

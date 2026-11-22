@@ -89,8 +89,7 @@
                         <td><span class="status-badge {{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span></td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="action-btn view"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn"><i class="fas fa-download"></i></button>
+                                <a href="{{ route('superadmin.billing.invoices.show', $invoice) }}" class="action-btn view" title="View invoice"><i class="fas fa-eye"></i></a>
                             </div>
                         </td>
                     </tr>
