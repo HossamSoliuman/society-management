@@ -33,6 +33,17 @@
         success.scrollIntoView({ block: 'center' });
     }
 
+    /* Sign in: show or hide the password. */
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        var input = document.getElementById(button.getAttribute('aria-controls'));
+        button.addEventListener('click', function () {
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            button.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+        });
+    });
+
     /* Role tabs. */
     document.querySelectorAll('[data-tabs]').forEach(function (group) {
         var tabs = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));

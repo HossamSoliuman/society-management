@@ -3,230 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Society Management SaaS</title>
+    <title>Sign in · Society Management</title>
     <x-favicons />
+    <meta name="theme-color" content="#13163A">
+    <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f1f5f9;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-wrapper {
-            display: flex;
-            width: 100%;
-            max-width: 1100px;
-            min-height: 600px;
-            background: #fff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
-        .login-left {
-            flex: 1;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            color: #fff;
-            position: relative;
-            overflow: hidden;
-        }
-        .login-left::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(232,75,30,0.2) 0%, transparent 70%);
-        }
-        .login-brand {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-        .login-brand-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-        }
-        .login-brand-icon svg { display: block; width: 100%; height: 100%; }
-        .login-brand h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .login-brand p { font-size: 14px; opacity: 0.8; }
-        .login-features {
-            position: relative;
-            z-index: 1;
-            margin-top: 40px;
-            list-style: none;
-        }
-        .login-features li {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            opacity: 0.9;
-        }
-        .login-features li i { color: #FDBA74; }
-        .login-right {
-            flex: 1;
-            padding: 60px 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .login-header { margin-bottom: 32px; }
-        .login-header h2 { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-        .login-header p { font-size: 13px; color: #64748b; }
-        .form-group { margin-bottom: 20px; }
-        .form-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 6px;
-        }
-        .form-control {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: inherit;
-            color: #1e293b;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-        .form-control:focus {
-            border-color: #E84B1E;
-            box-shadow: 0 0 0 3px rgba(232,75,30,0.1);
-        }
-        .input-wrapper { position: relative; }
-        .input-wrapper i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        .input-wrapper .form-control { padding-left: 40px; }
-        .form-options {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            font-size: 12px;
-        }
-        .form-check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .form-check input { accent-color: #E84B1E; }
-        .form-check label { color: #475569; cursor: pointer; }
-        .forgot-link { color: #E84B1E; text-decoration: none; font-weight: 500; }
-        .forgot-link:hover { text-decoration: underline; }
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: #E84B1E;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn-login:hover { background: #C63D15; }
-        .login-footer {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        .error-message {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #fecaca;
-        }
-        @media (max-width: 768px) {
-            .login-wrapper { flex-direction: column; }
-            .login-left { display: none; }
-            .login-right { padding: 40px 24px; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/marketing.css') }}?v={{ filemtime(public_path('css/marketing.css')) }}">
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-left">
-            <div class="login-brand">
-                <div class="login-brand-icon">
+    <div class="mk-dusk on-dusk mk-auth">
+        <header class="mk-container mk-auth-header">
+            <a href="{{ route('home') }}" class="mk-brand" aria-label="Society Management home">
+                <span class="mk-brand-mark">
                     <x-brand-mark />
+                </span>
+                <span class="mk-brand-name">Society Management</span>
+            </a>
+            <a href="{{ route('home') }}" class="mk-auth-back" aria-label="Back to site"><i class="fas fa-arrow-left" aria-hidden="true"></i><span>Back to site</span></a>
+        </header>
+
+        <main class="mk-container mk-auth-grid">
+            <div class="mk-auth-main">
+                <h1 class="mk-display">Welcome <em>back.</em></h1>
+
+                <div class="mk-form-card mk-auth-card">
+                    @if(session('status'))
+                        <div class="mk-notice" role="status">{{ session('status') }}</div>
+                    @endif
+
+                    @if($errors->any())
+                        <div class="mk-alert" role="alert">{{ $errors->first() }}</div>
+                    @endif
+
+                    <form method="POST" action="{{ route('login') }}" class="mk-auth-form">
+                        @csrf
+                        <div class="mk-field">
+                            <label for="email">Email address</label>
+                            <input type="email" id="email" name="email" value="{{ old('email') }}" class="mk-input" autocomplete="username" required autofocus>
+                        </div>
+
+                        <div class="mk-field">
+                            <label for="password">Password</label>
+                            <div class="mk-password">
+                                <input type="password" id="password" name="password" class="mk-input" autocomplete="current-password" required>
+                                <button type="button" class="mk-password-toggle" data-password-toggle aria-controls="password" aria-label="Show password">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mk-auth-row">
+                            <label class="mk-check">
+                                <input type="checkbox" name="remember" @checked(old('remember'))>
+                                <span>Remember me</span>
+                            </label>
+                            <a href="{{ route('password.request') }}" class="mk-auth-link">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="mk-btn mk-btn-primary mk-btn-block">Sign in <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+                    </form>
+
+                    <p class="mk-auth-alt">New to Society Management? <a href="{{ route('demo.create') }}" class="mk-auth-link">Request a demo</a></p>
                 </div>
-                <h1>Society Management</h1>
-                <p>SaaS Platform</p>
-            </div>
-            <ul class="login-features">
-                <li><i class="fas fa-check-circle"></i> Manage multiple societies</li>
-                <li><i class="fas fa-check-circle"></i> Subscription & billing management</li>
-                <li><i class="fas fa-check-circle"></i> Real-time analytics & reports</li>
-                <li><i class="fas fa-check-circle"></i> Secure role-based access</li>
-            </ul>
-        </div>
-        <div class="login-right">
-            <div class="login-header">
-                <h2>Welcome Back</h2>
-                <p>Sign in to your platform or society account</p>
             </div>
 
-            @if($errors->any())
-                <div class="error-message">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" class="form-control" placeholder="Enter your email" value="{{ old('email') }}" required autofocus>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
-                    </div>
-                </div>
-                <div class="form-options">
-                    <label class="form-check">
-                        <input type="checkbox" name="remember">
-                        <label>Remember me</label>
-                    </label>
-                    <a href="{{ route('password.request') }}" class="forgot-link">Forgot password?</a>
-                </div>
-                <button type="submit" class="btn-login">Sign In</button>
-            </form>
-            @if(session('status'))
-                <div class="login-footer" style="color: #15803d;">{{ session('status') }}</div>
-            @endif
-        </div>
+            @include('marketing.partials.tower', ['floorCount' => 6])
+        </main>
     </div>
+
+    <script src="{{ asset('js/marketing.js') }}?v={{ filemtime(public_path('js/marketing.js')) }}" defer></script>
 </body>
 </html>
