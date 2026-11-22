@@ -22,7 +22,6 @@
                 <span style="color: var(--primary);">Numbering</span>
             </div>
         </div>
-        <button type="button" class="btn btn-primary"><i class="fas fa-save"></i> Save Numbering Settings</button>
     </div>
 </div>
 
@@ -31,9 +30,9 @@
 {{-- KPI cards --}}
 <div class="stats-grid stats-grid-4">
     @include('society.partials.stat-card', ['icon' => 'fa-calendar-days', 'iconVariant' => 'purple', 'label' => 'Active Numbering Series', 'value' => number_format($stats['active_series']), 'trend' => 'Total Active Series', 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-file-circle-check', 'iconVariant' => 'success', 'label' => 'Unused Numbers (This Month)', 'value' => number_format($stats['unused_this_month']), 'trend' => 'Across all series', 'trendType' => 'success'])
+    @include('society.partials.stat-card', ['icon' => 'fa-file-circle-check', 'iconVariant' => 'success', 'label' => 'Numbers Issued (This Month)', 'value' => number_format($stats['issued_this_month']), 'trend' => 'Bills and receipts', 'trendType' => 'success'])
     @include('society.partials.stat-card', ['icon' => 'fa-arrow-right-arrow-left', 'iconVariant' => 'warning', 'label' => 'Last Number Generated', 'value' => $stats['last_generated'] ?? '—', 'trend' => 'On '.$stats['last_generated_date'], 'trendType' => 'muted'])
-    @include('society.partials.stat-card', ['icon' => 'fa-calendar', 'iconVariant' => 'info', 'label' => 'Financial Year', 'value' => $fyDisplay, 'trend' => '01 Apr 2025 to 31 Mar 2026', 'trendType' => 'muted'])
+    @include('society.partials.stat-card', ['icon' => 'fa-calendar', 'iconVariant' => 'info', 'label' => 'Financial Year', 'value' => $fyDisplay, 'trend' => $stats['fy_range'], 'trendType' => 'muted'])
 </div>
 
 {{-- Numbering Series table --}}
@@ -46,7 +45,6 @@
             </div>
             <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn btn-primary" onclick="resetSeriesForm(); document.getElementById('seriesFormCard').scrollIntoView({behavior:'smooth'});"><i class="fas fa-plus"></i> Add Series</button>
-                <button type="button" class="btn btn-outline-secondary"><i class="fas fa-rotate"></i> Reset</button>
             </div>
         </div>
 
@@ -177,7 +175,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Start Date</label>
-                        <input type="date" name="start_date" id="s_start_date" class="form-control" value="2025-04-01">
+                        <input type="date" name="start_date" id="s_start_date" class="form-control" value="{{ $stats['fy_start'] }}">
                         <div class="form-text">From which date this series will be active</div>
                     </div>
                     <div class="form-group">
