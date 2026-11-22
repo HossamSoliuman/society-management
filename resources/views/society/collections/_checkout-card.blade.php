@@ -53,7 +53,7 @@
                 </script>
                 @endpush
             @else
-                <form method="POST" action="{{ $webhookUrl }}" style="margin-top: 16px;">
+                <form method="POST" action="{{ $webhookUrl }}" style="margin-top: 16px;" data-simulate-payment>
                     <input type="hidden" name="order_id" value="{{ $order->provider_order_id }}">
                     <input type="hidden" name="amount" value="{{ $order->amount }}">
                     <input type="hidden" name="status" value="paid">
@@ -61,6 +61,25 @@
                     <button type="submit" class="btn btn-primary"><i class="fas fa-vial"></i> Simulate successful payment (test gateway)</button>
                 </form>
                 <div class="form-text" style="margin-top: 8px;">The "fake" gateway is active. Set PAYMENT_GATEWAY=razorpay with keys in .env for live payments.</div>
+                @push('scripts')
+                <script>
+                    (function () {
+                        // Send the simulated callback in the background, then come back here to see the receipt.
+                        var form = document.querySelector('[data-simulate-payment]');
+                        if (!form) { return; }
+                        form.addEventListener('submit', function (event) {
+                            event.preventDefault();
+                            form.querySelector('button').disabled = true;
+                            fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } })
+                                .then(function () { window.location.reload(); })
+                                .catch(function () {
+                                    form.querySelector('button').disabled = false;
+                                    window.appToast('The test payment could not be sent. Please try again.', 'error');
+                                });
+                        });
+                    })();
+                </script>
+                @endpush
             @endif
         </div>
     </div>
